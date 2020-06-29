@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Test Page</title>
+    </head>
+    <body>
+        <h1>Test Page</h1>
+        <h1>Model and view data</h1>
+        <p>model-and-view-string : <span th:text="${string}"></span><br></p>
+        <p>model-and-view-map : <span th:text="${map}"><br></span></p>
+        <p>model-and-view-list : <span th:text="${list}"><br></span></p>
+        <p>model-and-view-object : <span th:text="${object}"><br></span></p>
+
+        <h1>Map get data</h1>
+        <p>map data1 : <span th:text="${map.get('key1')}"><br></span></p>
+        <p>map data2 : <span th:text="${map.get('key2')}"><br></span></p>
+        <p>map data3 : <span th:text="${map.get('key3')}"><br></span></p>
+
+        <h1>List get data</h1>
+        <p>list data1 : <span th:text="${list.get(0)}"><br></span></p>
+        <p>list data2 : <span th:text="${list.get(1)}"><br></span></p>
+        <p>list data3 : <span th:text="${list.get(2)}"><br></span></p>
+
+        <h1>Object get data</h1>
+        <p>object data : <span th:text="${object.getD()}"><br></span></p>
+    </body>
+</html>
