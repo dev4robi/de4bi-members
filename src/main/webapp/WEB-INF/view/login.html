@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100">
 <head>
 	<title>Login</title>
 	<meta charset="utf-8">
@@ -12,10 +12,49 @@
 	<link rel="stylesheet" href="/lib/bootstrap-4.5.0/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/lib/bootstrap-4.5.0/css/bootstrap-colorex.min.css">
 	<script type="text/javascript" src="/lib/bootstrap-4.5.0/js/bootstrap.bundle.min.js"></script>
+	<!-- js & css-->
+	<link rel="stylesheet" href="/view/css/login.css">
 </head>
-<body class="container-fluid bg-dark">
-	<div class="fixed-top bg-purple" style="height:3%;"></div>
-	
-	<div class="fixed-bottom bg-purple" style="height:3%;"></div>
+<body style="height:100%;">
+<div class="fixed-top bg-purple" style="height:3%;"></div>
+<div class="container h-100">
+	<div class="row h-100 justify-content-center align-items-center border border-danger">
+		<div class="col-sm-8 login-box">
+			<div class="col-sm-12 login-title">
+				de4bi
+			</div>
+			<div class="col-sm-12 login-form">
+				<div class="col-sm-12 login-form">
+					<form>
+						<div class="form-group">
+							<label class="form-control-label">ID</label>
+							<input type="text" class="form-control">
+						</div>
+						<div class="form-group">
+							<label class="form-control-label">PASSWORD</label>
+							<input type="password" class="form-control">
+						</div>
+						<div class="col-sm-12 loginbttm">
+							<div class="col-sm-5 login-btm border border-success">
+								<input type="checkbox" aria-label="checkbox_stay_logged_in">
+								<span class="login-text">Keep login</span>
+							</div>
+							<div class="col-sm-7 pb-3 login-btm text-right border-success">
+								<small><a href="#">Forget ID or PASS?</a></small>
+							</div>
+							<div class="col-sm-12 text-right login-btm login-button border border-danger">
+								<img src="/img/icon-google.png" alt="G" style="width:32px;height:32px;">
+								<img src="/img/icon-naver.png" alt="N" style="width:32px;height:32px;">
+								<img src="/img/icon-kakao.png" alt="K" style="width:32px;height:32px;">
+								<button type="submit" class="btn btn-outline-primary">LOGIN</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="fixed-bottom bg-purple" style="height:3%;"></div>
 </body>
 </html>
