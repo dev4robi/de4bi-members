@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="h-100">
+<html>
 <head>
 	<title>Login</title>
 	<meta charset="utf-8">
@@ -15,17 +15,16 @@
 	<!-- js & css-->
 	<link rel="stylesheet" href="/view/css/login.css">
 </head>
-<body>
-<div class="fixed-top bg-purple top-n-bottom"></div>
+<body style="height:100%;">
+<div class="fixed-top bg-purple" style="height:3%;"></div>
 <div class="container h-100">
 	<div class="row h-100 justify-content-center align-items-center border-danger">
-		<!-- Login Box -->
 		<div class="col-sm-8 login-box">
-			<div class="row pt-2 pb-1 justify-content-center align-items-center">
-				<div class="col-sm-8 p-1 login-title">de4bi</div>
+			<div class="col-sm-12 login-title">
+				de4bi
 			</div>
-			<div class="row justify-content-center align-items-center border-danger">
-				<div class="col-sm-8 login-form border-warning">
+			<div class="col-sm-12 login-form">
+				<div class="col-sm-12 login-form">
 					<form>
 						<div class="form-group">
 							<label class="form-control-label">ID</label>
@@ -35,29 +34,27 @@
 							<label class="form-control-label">PASSWORD</label>
 							<input type="password" class="form-control">
 						</div>
-						<div class="row row-keep-login border-danger">
-							<div class="col-6 login-bottom text-left border-success">
+						<div class="col-sm-12 loginbttm">
+							<div class="col-sm-12 login-btm text-right border-success" style="margin-right:-16px;margin-bottom:-32px;">
+								<small><a href="#">Forget pass?</a></small>
+							</div>
+							<div class="col-sm-12 login-btm border-success" style="margin-left:-12px;">
 								<input type="checkbox" aria-label="checkbox_keep_login">
-								<small><span class="keep-login-text">Keep login</span></small>
+								<span class="login-text">Keep login</span>
 							</div>
-							<div class="col-6 login-bottom text-right border-success">
-								<small><a href="#">Forget info?</a></small>
+							<div class="col-sm-12 pt-3 text-right login-btm login-button border-danger">
+								<img src="/img/icon-google.png" alt="G" style="width:32px;height:32px;margin-right:2px;">
+								<img src="/img/icon-naver.png" alt="N" style="width:32px;height:32px;margin-right:2px;">
+								<img src="/img/icon-kakao.png" alt="K" style="width:32px;height:32px;margin-right:2px;">
+								<button type="submit" class="btn btn-outline-primary">LOGIN</button>
 							</div>
-						</div>
-						<div class="d-flex pt-3 justify-content-end align-items-center">
-							<img src="/img/icon-google.png" alt="G" class="join-icon">
-							<img src="/img/icon-naver.png" alt="N" class="join-icon">
-							<img src="/img/icon-kakao.png" alt="K" class="join-icon">
-							<img src="/img/icon-de4bi.png" alt="J" class="join-icon">
-							<button type="submit" class="btn btn-outline-primary login-button">LOGIN</button>
 						</div>
 					</form>
 				</div>
 			</div>
-			<div class="row pt-1 pb-2 justify-content-center align-items-center"></div>
 		</div>
 	</div>
 </div>
-<div class="fixed-bottom bg-purple top-n-bottom"></div>
+<div class="fixed-bottom bg-purple" style="height:3%;"></div>
 </body>
 </html>

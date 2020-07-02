@@ -1,15 +1,6 @@
-html {
-    height: 100%;
-}
-
 body {
-    height: 100%;
     background: #222D32;
     font-family: 'Roboto', sans-serif;
-}
-
-.top-n-bottom {
-    height: 1rem;
 }
 
 .login-box {
@@ -20,15 +11,17 @@ body {
 }
 
 .login-title {
+    margin-top: 15px;
     text-align: center;
     font-size: 30px;
     letter-spacing: 2px;
+    margin-top: 15px;
     font-weight: bold;
     color: #ECF0F5;
 }
 
 .login-form {
-    width: 80%;
+    margin-top: 25px;
     text-align: left;
 }
 
@@ -61,10 +54,6 @@ input[type=password] {
 .form-group {
     margin-bottom: 20px;
     outline: 0px;
-}
-
-.row-keep-login {
-    margin-top: -15px;
 }
 
 .form-control:focus {
@@ -107,13 +96,17 @@ label {
     right: 0px;
 }
 
-.login-text {
-    text-align: left;
-    padding-left: 0px;
-    color: #A2A4A4;
+.login-btm {
+    float: left;
 }
 
-.keep-login-text {
+.login-button {
+    padding-right: 0px;
+    text-align: right;
+    margin-bottom: 25px;
+}
+
+.login-text {
     text-align: left;
     padding-left: 0px;
     color: #A2A4A4;
@@ -125,12 +118,6 @@ label {
     color: #ff0000;
 }
 
-.join-icon {
-    width: 32px;
-    height: 32px;
-    margin: 2px;
-}
-
-.login-button {
-    margin-left: 7px;
+.loginbttm {
+    padding: 0px;
 }

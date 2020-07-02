@@ -1,6 +1,15 @@
+html {
+    height: 100%;
+}
+
 body {
+    height: 100%;
     background: #222D32;
     font-family: 'Roboto', sans-serif;
+}
+
+.top-n-bottom {
+    height: 1rem;
 }
 
 .login-box {
@@ -11,17 +20,15 @@ body {
 }
 
 .login-title {
-    margin-top: 15px;
     text-align: center;
     font-size: 30px;
     letter-spacing: 2px;
-    margin-top: 15px;
     font-weight: bold;
     color: #ECF0F5;
 }
 
 .login-form {
-    margin-top: 25px;
+    width: 80%;
     text-align: left;
 }
 
@@ -54,6 +61,10 @@ input[type=password] {
 .form-group {
     margin-bottom: 20px;
     outline: 0px;
+}
+
+.row-keep-login {
+    margin-top: -15px;
 }
 
 .form-control:focus {
@@ -96,17 +107,13 @@ label {
     right: 0px;
 }
 
-.login-btm {
-    float: left;
-}
-
-.login-button {
-    padding-right: 0px;
-    text-align: right;
-    margin-bottom: 25px;
-}
-
 .login-text {
+    text-align: left;
+    padding-left: 0px;
+    color: #A2A4A4;
+}
+
+.keep-login-text {
     text-align: left;
     padding-left: 0px;
     color: #A2A4A4;
@@ -118,6 +125,12 @@ label {
     color: #ff0000;
 }
 
-.loginbttm {
-    padding: 0px;
+.join-icon {
+    width: 32px;
+    height: 32px;
+    margin: 2px;
+}
+
+.login-button {
+    margin-left: 7px;
 }
