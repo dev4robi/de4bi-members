@@ -10,13 +10,12 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Controller
-@RequestMapping("/members")
-public class MemberPageController {
+public class MainPageController {
     
-    private static final Logger logger = LoggerFactory.getLogger(MemberPageController.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainPageController.class);
 
-    @RequestMapping("")
-    public ModelAndView getLoginPage() {
+    @RequestMapping(value = {"", "/login"})
+    public ModelAndView loginPage() {
         return new ModelAndView("login");
     }
 }
