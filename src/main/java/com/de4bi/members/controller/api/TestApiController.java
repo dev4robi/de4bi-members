@@ -26,9 +26,9 @@ public class TestApiController {
         final String secret = "e7r6b97ia3956f2459sai3e8iuvb47ha";
         final String userJwt = UserJwtUtil.issue(new HashMap<>(), JwtClaims.builder()
             .id("robi9202@gamil.com").subject("de4bi-user-jwt").issuer("de4bi-members").audience("de4bi-bgz")
-            .issuedAt(curTime).expiration(curTime + 60000L).notBefore(curTime).build(), secret);
+            .issuedAt(curTime).expiration(curTime + 60000L).notBefore(0L).build(), secret);
 
-        if (UserJwtUtil.validate(userJwt, secret)) {
+        if (UserJwtUtil.validate(userJwt, secret, null) == null) {
             return "valid:" + userJwt;
         }
         else {
