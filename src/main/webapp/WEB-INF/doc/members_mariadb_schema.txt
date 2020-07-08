@@ -8,11 +8,11 @@ USE db_members;
 
 -- 코드 테이블
 CREATE TABLE `db_members`.`tb_codes` (
-    `code_group`    VARCHAR(32) NOT NULL,   -- 코드 그룹
-    `code`          INT NOT NULL,           -- 코드값
+    `groups`        VARCHAR(16) NOT NULL,   -- 코드 그룹
+    `value`         VARCHAR(16) NOT NULL,   -- 코드값
     `name`          VARCHAR(32) NOT NULL,   -- 코드명
 
-    PRIMARY KEY (`group`,`value`)
+    PRIMARY KEY (`groups`,`id`)
 );
 
 -- 회원 테이블
