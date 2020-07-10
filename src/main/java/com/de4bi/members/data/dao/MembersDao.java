@@ -2,8 +2,10 @@ package com.de4bi.members.data.dao;
 
 import java.sql.Date;
 
+import lombok.Builder;
 import lombok.Data;
 
+@Builder
 @Data
 public class MembersDao {
     

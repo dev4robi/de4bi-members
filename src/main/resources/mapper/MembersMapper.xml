@@ -4,5 +4,44 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.de4bi.members.db.mapper.MembersMapper">
+    <!-- Insert -->
+    <insert id="insert" parameterType="com.de4bi.members.data.dto.MembersDto" useGeneratedKeys="true" keyProperty="seq">
+        INSERT INTO members (id,password,nickname,name,authority,level,exp,status,join_date)
+        VALUES (#{id},#{password},#{nickname},#{name},#{authority},#{level},#{exp},#{status},#{joinDate});
+    </insert>
 
+    <!-- Select -->
+    <select id="select" parameterType="Long" resultType="com.de4bi.members.data.dao.MembersDao">
+        SELECT *
+        FROM members
+        WHERE seq = #{seq};
+    </select>
+
+    <select id="selectById" parameterType="String" resultType="com.de4bi.members.data.dao.MembersDao">
+        SELECT *
+        FROM members;
+        WHERE id = #{id};
+    </select>
+
+    <!-- Update -->
+    <update id="update" parameterType="com.de4bi.members.data.dto.MembersDto">
+        UPDATE members SET
+            id=#{id},
+            password=#{password},
+            nickname=#{nickname},
+            name=#{name},
+            authority=#{authority},
+            level=#{level},
+            exp=#{exp},
+            status=#{status},
+            join_date=#{joinDate},
+            last_login_date=#{lastLoginDate}
+        WHERE seq = #{seq};
+    </update>
+
+    <!-- Delete -->
+    <delete id="delete" parameterType="Long">
+        DELETE FROM members
+        WHERE seq = #{seq}
+    </delete>
 </mapper>

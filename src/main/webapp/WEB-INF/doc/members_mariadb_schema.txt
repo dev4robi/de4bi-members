@@ -8,9 +8,9 @@ USE db_members;
 
 -- 코드 테이블
 CREATE TABLE `db_members`.`tb_codes` (
-    `groups`        VARCHAR(16) NOT NULL,   -- 코드 그룹
-    `value`         VARCHAR(16) NOT NULL,   -- 코드값
-    `name`          VARCHAR(32) NOT NULL,   -- 코드명
+    `groups`        VARCHAR(16) NOT NULL,  -- 코드 그룹
+    `value`         VARCHAR(8) NOT NULL,   -- 코드값
+    `name`          VARCHAR(16) NOT NULL,  -- 코드명
 
     PRIMARY KEY (`groups`,`id`)
 );
@@ -31,6 +31,6 @@ CREATE TABLE `db_members`.`tb_members` (
 
   PRIMARY KEY (`seq`),
   UNIQUE KEY (`id`, `nickname`),
-  UNIQUE INDEX `members_uk_idx_email` (`id` ASC),
+  UNIQUE INDEX `members_uk_idx_id` (`id` ASC),
   UNIQUE INDEX `members_uk_idx_nickname` (`nickname` ASC)
 );
