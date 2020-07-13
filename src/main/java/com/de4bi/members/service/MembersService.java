@@ -43,10 +43,7 @@ public class MembersService {
             .lastLoginDate(null)
             .build();
 
-            // Aop만들어서 로깅이랑 스레드로컬 테스트...
-            // Mapper도 Aop로 예외관리...
-            // 여기서부터 시작 @@
-
+        membersMpr.insert(insertMembersDao);
 
         return ResponseEntity.ok(ApiResult.of(true, "Hello World!"));
     }
