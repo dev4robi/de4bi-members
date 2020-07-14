@@ -1,4 +1,4 @@
-package com.de4bi.members;
+package com.de4bi.members.spring;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

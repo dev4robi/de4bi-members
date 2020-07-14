@@ -11,6 +11,7 @@ import com.de4bi.members.service.TestService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,8 +28,8 @@ public class TestApiController {
     private TestService testSvc;
 
     @GetMapping("/test")
-    public String getTest() {
+    public ResponseEntity<ApiResult> getTest() {
         ThreadStorage.put(ApiResult.KEY_TID, RandomStringUtils.randomAlphanumeric(16));
-        return testSvc.insert().getBody().toString();
+        return testSvc.insert();
     }
 }

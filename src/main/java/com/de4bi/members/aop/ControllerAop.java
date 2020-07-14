@@ -1,5 +1,8 @@
 package com.de4bi.members.aop;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import com.de4bi.common.data.ApiResult;
@@ -23,7 +26,7 @@ public class ControllerAop {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerAop.class);
 
-    @Around("execution(* com.de4bi.members.controller.api..*.*(..))")
+    // @Around("execution(* com.de4bi.members.controller.api..*.*(..))")
     public String aroundApiController(ProceedingJoinPoint pjp) {
         // 초기화
         final long bgnTime = System.currentTimeMillis();
@@ -56,11 +59,12 @@ public class ControllerAop {
         }
         catch (Throwable e) {
             logger.error("Exception!", e);
+            ctrResult = "{}";
         }
 
         // 결과 로깅 및 반환
         final String ctrResultStr = ctrResult.toString();
-        logger.info("<< Result: '" + ctrResultStr + "'");
+        logger.info("<< CtrResult: '" + ctrResultStr + "'");
         final long elapsedTime = System.currentTimeMillis() - bgnTime;
         logger.info("=== API Controller end! === (Time: " + elapsedTime + "ms)");
         MDC.put("layer", oldLayer);
