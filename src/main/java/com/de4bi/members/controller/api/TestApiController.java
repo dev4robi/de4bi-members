@@ -28,8 +28,8 @@ public class TestApiController {
     private TestService testSvc;
 
     @GetMapping("/test")
-    public ResponseEntity<ApiResult> getTest() {
+    public String getTest() {
         ThreadStorage.put(ApiResult.KEY_TID, RandomStringUtils.randomAlphanumeric(16));
-        return testSvc.insert();
+        return testSvc.insert().getBody().toString();
     }
 }

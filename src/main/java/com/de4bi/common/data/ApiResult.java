@@ -5,11 +5,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.Data;
+
+@Data
 public class ApiResult {
 
+    @JsonProperty("de4bi")
     private final Map<String, Object> resultMap;
 
     public static final String KEY_TID = "tid";

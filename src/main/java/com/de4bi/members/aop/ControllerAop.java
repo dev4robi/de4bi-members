@@ -1,12 +1,15 @@
 package com.de4bi.members.aop;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.net.HttpURLConnection;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.data.ThreadStorage;
+import com.de4bi.common.exception.ControllerException;
+import com.de4bi.common.exception.MapperException;
+import com.de4bi.common.exception.ServiceException;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -26,7 +29,13 @@ public class ControllerAop {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerAop.class);
 
-    // @Around("execution(* com.de4bi.members.controller.api..*.*(..))")
+    /**
+     * Controller전/후를 감싸는 AOP입니다. Controller메서드 호출 및 응답, 예외상황을 핸들링합니다.
+     * 
+     * @param pjp - {@code @Around}의 필수 인자입니다.
+     * @return 클라이언트에게 응답할 내용을 담은 String 객체.
+     */
+    @Around("execution(* com.de4bi.members.controller.api..*.*(..))")
     public String aroundApiController(ProceedingJoinPoint pjp) {
         // 초기화
         final long bgnTime = System.currentTimeMillis();
@@ -39,6 +48,7 @@ public class ControllerAop {
         // 접근 로깅
         final ServletRequestAttributes svlReqAttrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         final HttpServletRequest httpSvlReq = svlReqAttrs.getRequest();
+        final HttpServletResponse httpSvlRes = svlReqAttrs.getResponse();
         final String reqInfo = ">> " + httpSvlReq.getMethod() + " " + httpSvlReq.getRequestURI() + " " + httpSvlReq.getProtocol();
         final Signature sign = pjp.getSignature();
         final String reqFunc = ">> " + sign.getDeclaringTypeName() + "." + sign.getName() + "()";
@@ -51,15 +61,32 @@ public class ControllerAop {
         Object ctrResult = null;
 
         try {
+
             ctrResult = pjp.proceed();
 
             if (ctrResult == null) {
                 ctrResult = "{}";
             }
         }
+        catch (ControllerException e) {
+            logger.error("ControllerException!", e);
+            httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+            ctrResult = getErrorResultStr(tid, "CONTROLLER_ERROR");
+        }
+        catch (ServiceException e) {
+            logger.error("ServiceException!", e);
+            httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+            ctrResult = getErrorResultStr(tid, "SERVICE_ERROR");
+        }
+        catch (MapperException e) {
+            logger.error("MapperException!", e);
+            httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+            ctrResult = getErrorResultStr(tid, "MAPPER_ERROR");
+        }
         catch (Throwable e) {
-            logger.error("Exception!", e);
-            ctrResult = "{}";
+            logger.error("UnhandledException!", e);
+            httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+            ctrResult = getErrorResultStr(tid, "INTERNAL_SERVER_ERROR");
         }
 
         // 결과 로깅 및 반환
@@ -69,5 +96,17 @@ public class ControllerAop {
         logger.info("=== API Controller end! === (Time: " + elapsedTime + "ms)");
         MDC.put("layer", oldLayer);
         return ctrResultStr;
+    }
+
+    /**
+     * 클라이언트에게 전송할 오류 결과 문자열을 다음 포멧으로 생성합니다.
+     * <p>{"tid":"($tid)","result":false,"message":"($message)"}</p>
+     * 
+     * @param tid - 컨트롤러에서 생성된 tid.
+     * @param message - 응답 메시지.
+     * @return 생성된 JSON문자열을 반환합니다.
+     */
+    private String getErrorResultStr(String tid, String message) {
+        return ("{\"tid\":\"" + tid + "\",\"result\":false,\"message\":\"" + message + "\"}");
     }
 }
