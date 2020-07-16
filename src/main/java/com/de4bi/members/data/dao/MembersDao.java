@@ -1,6 +1,6 @@
 package com.de4bi.members.data.dao;
 
-import java.sql.Date;
+import java.util.Date;
 
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +14,7 @@ public class MembersDao {
     private String password;    // 비밀번호 (SALTED + SHA-256)
     private String nickname;    // 별명 (닉네임/유니크)
     private String name;        // 이름
-    private String autority;    // 권한
+    private String authority;   // 권한
     private String status;      // 레벨
     private int level;          // 경험치
     private int exp;            // 계정상태

@@ -18,13 +18,12 @@ public class MapperAop {
     private static final Logger logger = LoggerFactory.getLogger(MapperAop.class);
 
     /**
-     * Mapper는 반환값이 일치하지 않으므로 다른 AOP사용을 감안해 봐야 한다. @@
      * Mapper전/후를 감싸는 AOP입니다. Mapper메서드 호출 및 응답, 예외상황을 핸들링합니다.
      * 
      * @param pjp - @Around AOP의 필수 인자입니다.
      * @return DB로부터 획득한 값을 
      */
-    // @Around("execution(* com.de4bi.members.db.mapper..*.*(..))")
+    @Around("execution(* com.de4bi.members.db.mapper..*.*(..))")
     public Object aroundMapper(ProceedingJoinPoint pjp) {
         // 초기화
         final long bgnTime = System.currentTimeMillis();

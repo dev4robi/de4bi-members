@@ -20,7 +20,7 @@ public class MembersService {
  
     private static final Logger logger = LoggerFactory.getLogger(MembersService.class);
 
-    private static MembersMapper membersMpr;
+    private MembersMapper membersMpr;
 
     /**
      * 
@@ -35,7 +35,7 @@ public class MembersService {
             .password(postMembersDto.getPassword())
             .nickname(postMembersDto.getNickname())
             .name(postMembersDto.getName())
-            .autority(MembersCode.MEMBERS_AUTHORITY_BASIC.getValue())
+            .authority(MembersCode.MEMBERS_AUTHORITY_BASIC.getValue())
             .status(MembersCode.MEMBERS_STATUS_NORMAL.getValue())
             .level(1)
             .exp(0)

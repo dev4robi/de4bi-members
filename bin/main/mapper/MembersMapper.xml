@@ -5,27 +5,27 @@
 
 <mapper namespace="com.de4bi.members.db.mapper.MembersMapper">
     <!-- Insert -->
-    <insert id="insert" parameterType="com.de4bi.members.data.dto.MembersDto" useGeneratedKeys="true" keyProperty="seq">
-        INSERT INTO members (id,password,nickname,name,authority,level,exp,status,join_date)
+    <insert id="insert" parameterType="com.de4bi.members.data.dao.MembersDao" useGeneratedKeys="true" keyProperty="seq">
+        INSERT INTO tb_members (id,password,nickname,name,authority,level,exp,status,join_date)
         VALUES (#{id},#{password},#{nickname},#{name},#{authority},#{level},#{exp},#{status},#{joinDate});
     </insert>
 
     <!-- Select -->
     <select id="select" parameterType="Long" resultType="com.de4bi.members.data.dao.MembersDao">
         SELECT *
-        FROM members
+        FROM tb_members
         WHERE seq = #{seq};
     </select>
 
     <select id="selectById" parameterType="String" resultType="com.de4bi.members.data.dao.MembersDao">
         SELECT *
-        FROM members;
+        FROM tb_members;
         WHERE id = #{id};
     </select>
 
     <!-- Update -->
-    <update id="update" parameterType="com.de4bi.members.data.dto.MembersDto">
-        UPDATE members SET
+    <update id="update" parameterType="com.de4bi.members.data.dao.MembersDao">
+        UPDATE tb_members SET
             id=#{id},
             password=#{password},
             nickname=#{nickname},
@@ -41,7 +41,7 @@
 
     <!-- Delete -->
     <delete id="delete" parameterType="Long">
-        DELETE FROM members
+        DELETE FROM tb_members
         WHERE seq = #{seq}
     </delete>
 </mapper>
