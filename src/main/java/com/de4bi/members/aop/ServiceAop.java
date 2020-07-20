@@ -44,18 +44,12 @@ public class ServiceAop {
         // 서비스 수행
         ResponseEntity<T> svcResult = null;
         try {
-            try {
-                // [Note] 의도된 SuppressWarnings입니다. 개발자의 실수로 일반적인 Service에서
-                // ResponseEntity<T extends ApiResult>를 반환하지 않는다면, 설계상 오류입니다.
-                // 반드시 위 클래스를 반환하도록 설계하도록 해주시길 바랍니다.
-                @SuppressWarnings("unchecked")
-                final ResponseEntity<T> tempResult = (ResponseEntity<T>) pjp.proceed();
-                svcResult = tempResult;
-            }
-            catch (ClassCastException e) {
-                logger.error("All Service components must return 'ResponseEntity<T extends ApiResult>'!");
-                throw new Exception();
-            }
+            // [Note] 의도된 SuppressWarnings입니다. 개발자의 실수로 일반적인 Service에서
+            // ResponseEntity<T extends ApiResult>를 반환하지 않는다면, 설계상 오류입니다.
+            // 반드시 위 클래스를 반환하도록 설계하도록 해주시길 바랍니다.
+            @SuppressWarnings("unchecked")
+            final ResponseEntity<T> tempResult = (ResponseEntity<T>) pjp.proceed();
+            svcResult = tempResult;
         }
         catch (MapperException e) {
             throw e;

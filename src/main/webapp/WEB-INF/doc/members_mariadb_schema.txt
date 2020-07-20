@@ -1,5 +1,5 @@
 -- Service: de4bi-members
--- Last Modified: 2020.07.07
+-- Last Modified: 2020.07.20
 -- Version: 1.0.0
 -- name : db_members
 
@@ -9,12 +9,25 @@ USE db_members;
 -- 코드 테이블
 CREATE TABLE `db_members`.`tb_codes` (
     
-    `groups`        VARCHAR(16) NOT NULL,         -- 코드 그룹
-    `value`         VARCHAR(8) NOT NULL,          -- 코드값
-    `name`          VARCHAR(16) NOT NULL,         -- 코드명
+    `seq`           BIGINT NOT NULL,          -- 고유 시퀀스
+    `groups`        VARCHAR(16) NOT NULL,     -- 코드 그룹
+    `value`         VARCHAR(8) NOT NULL,      -- 코드값
+    `name`          VARCHAR(16) NOT NULL,     -- 코드명
 
-    PRIMARY KEY (`groups`,`id`)
+    PRIMARY KEY (`seq`),
+    UNIQUE KEY (`groups`, `value`)
 );
+
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(1,'MEMBERS_AUTHORITY','AU00','준회원');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(2,'MEMBERS_AUTHORITY','AU01','정회원');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(3,'MEMBERS_AUTHORITY','AU02','프리미엄');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(4,'MEMBERS_AUTHORITY','AU98','운영진');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(4,'MEMBERS_AUTHORITY','AU99','관리자');
+
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(101,'MEMBERS_STATUS','ST00','일반');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(102,'MEMBERS_STATUS','ST01','휴면');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(103,'MEMBERS_STATUS','ST02','정지');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(104,'MEMBERS_STATUS','ST03','탈퇴');
 
 -- 회원 테이블
 CREATE TABLE `db_members`.`tb_members` (
@@ -23,15 +36,23 @@ CREATE TABLE `db_members`.`tb_members` (
   `password`        VARCHAR(64) NOT NULL,           -- 비밀번호 (SALTED + SHA-256)
   `nickname`        VARCHAR(16) NOT NULL,           -- 별명 (닉네임/유니크)
   `name`            VARCHAR(64) NOT NULL,           -- 이름
-  `authority`       INT NOT NULL DEFAULT '0',       -- 권한
+  `authority`       BIGINT NOT NULL DEFAULT '0',    -- 권한
+  `status`          BIGINT NOT NULL DEFAULT '0',    -- 계정상태
   `level`           INT NOT NULL DEFAULT '1',       -- 레벨
   `exp`             INT NOT NULL DEFAULT '0',       -- 경험치
-  `status`          INT NOT NULL,                   -- 계정상태
   `join_date`       DATETIME NOT NULL,              -- 가입일자 (재가입시 갱신)
   `last_login_date` DATETIME,                       -- 마지막 로그인 일자
 
   PRIMARY KEY (`seq`),
   UNIQUE KEY (`id`, `nickname`),
   UNIQUE INDEX `members_uk_idx_id` (`id` ASC),
-  UNIQUE INDEX `members_uk_idx_nickname` (`nickname` ASC)
+  UNIQUE INDEX `members_uk_idx_nickname` (`nickname` ASC),
+  CONSTRAINT `members_fk_authority`
+    FOREIGN KEY (`authority`) REFERENCES `db_members`.`tb_codes` (`seq`)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE,
+  CONSTRAINT `members_fk_status`
+    FOREIGN KEY (`status`) REFERENCES `db_members`.`tb_codes` (`seq`)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE
 );

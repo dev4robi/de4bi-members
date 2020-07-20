@@ -20,7 +20,7 @@ public class TestPageController {
     
     private static final Logger logger = LoggerFactory.getLogger(TestPageController.class);
 
-    @RequestMapping("/test")
+    @RequestMapping(value= {"", "/test"})
     public ModelAndView getTest() {
         Map<String, String> map = new HashMap<>();
         map.put("key1", "value1_" + System.currentTimeMillis());

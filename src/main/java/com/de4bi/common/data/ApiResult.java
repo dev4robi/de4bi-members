@@ -14,12 +14,11 @@ import lombok.Data;
 @Data
 public class ApiResult {
 
-    @JsonProperty("de4bi")
     private final Map<String, Object> resultMap;
 
-    public static final String KEY_TID = "tid";
-    public static final String KEY_RESULT = "result";
-    public static final String KEY_MESSAGE = "message";
+    public static final String KEY_TID      = "tid";
+    public static final String KEY_RESULT   = "result";
+    public static final String KEY_MESSAGE  = "message";
 
     private ApiResult(Map<String, Object> resultMap) {
         this.resultMap = resultMap;
@@ -40,9 +39,15 @@ public class ApiResult {
         return rtResult;
     }
 
+    public static ApiResult of(boolean result) {
+        return of(result, null);
+    }
+
     public static ApiResult of(boolean result, String message, Map<String, Object> dataMap) {
         final ApiResult rtResult = of(result, message);
-        rtResult.putAll(dataMap);
+        if (dataMap != null) {
+            rtResult.putAll(dataMap);
+        }
         return rtResult;
     }
 

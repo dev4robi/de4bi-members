@@ -5,8 +5,8 @@ import java.net.HttpURLConnection;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.data.ThreadStorage;
+import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.exception.ControllerException;
 import com.de4bi.common.exception.MapperException;
 import com.de4bi.common.exception.ServiceException;
@@ -29,6 +29,10 @@ public class ControllerAop {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerAop.class);
 
+    // 상수
+    public static final String CTR_TID      = "CTR_TID";
+    public static final String CTR_REQ_TIME = "REQ_TIME";
+
     /**
      * Controller전/후를 감싸는 AOP입니다. Controller메서드 호출 및 응답, 예외상황을 핸들링합니다.
      * 
@@ -43,7 +47,8 @@ public class ControllerAop {
         final String oldLayer = MDC.get("layer");
         MDC.put("layer", "CTR");
         MDC.put("tid", tid);
-        ThreadStorage.put(ApiResult.KEY_TID, tid); // 스레드 스토리지에 'tid'를 꼭 넣어줘야 합니다
+        ThreadStorage.put(CTR_TID, tid); // 스레드 스토리지에 'tid'를 꼭 넣어줘야 합니다
+        ThreadStorage.put(CTR_REQ_TIME, bgnTime);
 
         // 접근 로깅
         final ServletRequestAttributes svlReqAttrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -61,7 +66,6 @@ public class ControllerAop {
         Object ctrResult = null;
 
         try {
-
             ctrResult = pjp.proceed();
 
             if (ctrResult == null) {
@@ -71,22 +75,28 @@ public class ControllerAop {
         catch (ControllerException e) {
             logger.error("ControllerException!", e);
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            ctrResult = getErrorResultStr(tid, "CONTROLLER_ERROR");
+            ctrResult = getErrorResultStr(tid, "[CTR] 요청 처리 중 오류가 발생했습니다.");
         }
         catch (ServiceException e) {
             logger.error("ServiceException!", e);
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            ctrResult = getErrorResultStr(tid, "SERVICE_ERROR");
+            ctrResult = getErrorResultStr(tid, "[SVC] 서비스 처리 중 오류가 발생했습니다.");
         }
         catch (MapperException e) {
             logger.error("MapperException!", e);
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            ctrResult = getErrorResultStr(tid, "MAPPER_ERROR");
+            ctrResult = getErrorResultStr(tid, "[MPR] DB처리 중 오류가 발생했습니다.");
+        }
+        catch (ApiException e) {
+            // 외부로 사용자 지정 HTTP Status와 오류 메시지 응답
+            logger.error("ApiException!", e);
+            httpSvlRes.setStatus(e.getHttpStatus());
+            ctrResult = getErrorResultStr(tid, e.getMessage());
         }
         catch (Throwable e) {
             logger.error("UnhandledException!", e);
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            ctrResult = getErrorResultStr(tid, "INTERNAL_SERVER_ERROR");
+            ctrResult = getErrorResultStr(tid, "[SYS] 서버 오류가 발생했습니다.");
         }
 
         // 결과 로깅 및 반환
