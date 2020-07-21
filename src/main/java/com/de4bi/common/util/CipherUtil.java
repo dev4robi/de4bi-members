@@ -154,10 +154,22 @@ public class CipherUtil {
             hashingResultBytes = md.digest();
         }
         catch (NoSuchAlgorithmException | ArrayIndexOutOfBoundsException e) {
-            throw new IllegalStateException("Fail to hasing!", e);
+            throw new IllegalStateException("Hashing Fail!", e);
         }
 
         return hashingResultBytes;
+    }
+
+    /**
+     * <p>입력된 바이트 배열을 해싱하여 반환합니다.</p>
+     * @param hashingType : 해시 알고리즘
+     * <ul><li>MD5 : MD5 알고리즘 (32byte output)</li>
+     *     <li>SHA256 : SHA256 알고리즘 (64byte output)</li></ul>
+     * @param originStr : 원본 문자열.
+     * @return 해싱된 바이트 배열.
+     */
+    public static byte[] hashing(int hashingType, String originStr) {
+        return hashing(hashingType, originStr.getBytes(), null);
     }
     
     /**

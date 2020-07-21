@@ -1,28 +1,37 @@
 package com.de4bi.members.service;
 
 import java.sql.Date;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.Objects;
 
 import com.de4bi.common.data.ApiResult;
-import com.de4bi.common.data.ThreadStorage;
 import com.de4bi.common.util.CipherUtil;
-import com.de4bi.members.aop.ControllerAop;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.data.dto.PostMembersDto;
 import com.de4bi.members.db.mapper.MembersMapper;
+import com.de4bi.members.spring.SecureProperties;
 
+import org.apache.tomcat.util.buf.HexUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import lombok.AllArgsConstructor;
+
+/**
+ * Members에 대한 서비스입니다.
+ */
+@AllArgsConstructor
 @Service
 public class MembersService {
  
     private static final Logger logger = LoggerFactory.getLogger(MembersService.class);
-
-    private MembersMapper membersMpr;
+    
+    private final MembersMapper membersMpr;
+    private final SecureProperties secureProps;
 
     /**
      * 신규 맴버를 추가합니다.
@@ -40,9 +49,8 @@ public class MembersService {
             .name(postMembersDto.getName())
             .authority(MembersCode.MEMBERS_AUTHORITY_BASIC.getSeq())
             .status(MembersCode.MEMBERS_STATUS_NORMAL.getSeq())
-            .level(1)
-            .exp(0)
-            .joinDate((Date)ThreadStorage.get(ControllerAop.CTR_REQ_TIME))
+            .level(1).exp(0)
+            .joinDate(Date.from(Instant.now()))
             .lastLoginDate(null)
             .build();
 
@@ -74,13 +82,13 @@ public class MembersService {
     }
 
     /**
-     * {@code Salted + SHA256} 해싱된 비밀번호를 반환합니다.
+     * {@code Salted + SHA256} 해싱된 비밀번호를 16진수로 반환합니다.
      * @param password - 해싱되기 전 비밀번호.
      * @return 보안 해싱된 64자리의 비밀번호를 반환합니다.
      */
-    private static final byte[] SALT_BYTES = {}; // @@ 여기부터 시작. 환경값에서 SALT를 가져와야 보안상에 좋다. 지난번처럼 프로퍼티는 좀... @@
     private String passwordSecureHashing(String password) {
         Objects.requireNonNull(password, "'password' is null!");
-        return new String(CipherUtil.hashing(CipherUtil.SHA256, password.getBytes(), SALT_BYTES));
+        return HexUtils.toHexString( // sha256이 32byte길이를 반환한다. 뭔가 이상한데...? @@
+            CipherUtil.hashing(CipherUtil.SHA256, password.getBytes() + secureProps.getMemberPasswordSalt()));
     }
 }

@@ -6,6 +6,7 @@ import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.data.ThreadStorage;
 import com.de4bi.common.util.UserJwtUtil;
 import com.de4bi.common.util.UserJwtUtil.JwtClaims;
+import com.de4bi.members.service.MembersService;
 import com.de4bi.members.service.TestService;
 
 import org.apache.commons.lang3.RandomStringUtils;
