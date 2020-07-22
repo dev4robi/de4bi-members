@@ -73,23 +73,23 @@ public class ControllerAop {
             }
         }
         catch (ControllerException e) {
-            logger.error("ControllerException!", e);
+            logger.error("ControllerException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             ctrResult = getErrorResultStr(tid, "[CTR] 요청 처리 중 오류가 발생했습니다.");
         }
         catch (ServiceException e) {
-            logger.error("ServiceException!", e);
+            logger.error("ServiceException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             ctrResult = getErrorResultStr(tid, "[SVC] 서비스 처리 중 오류가 발생했습니다.");
         }
         catch (MapperException e) {
-            logger.error("MapperException!", e);
+            logger.error("MapperException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             ctrResult = getErrorResultStr(tid, "[MPR] DB처리 중 오류가 발생했습니다.");
         }
         catch (ApiException e) {
             // 외부로 사용자 지정 HTTP Status와 오류 메시지 응답
-            logger.error("ApiException!", e);
+            logger.error("ApiException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(e.getHttpStatus());
             ctrResult = getErrorResultStr(tid, e.getMessage());
         }

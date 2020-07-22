@@ -116,8 +116,8 @@ public class CipherUtil {
     /**
      * <p>입력된 바이트 배열을 해싱하여 반환합니다.</p>
      * @param hashingType : 해시 알고리즘
-     * <ul><li>MD5 : MD5 알고리즘 (32byte output)</li>
-     *     <li>SHA256 : SHA256 알고리즘 (64byte output)</li></ul>
+     * <ul><li>MD5 : MD5 알고리즘 (16byte output)</li>
+     *     <li>SHA256 : SHA256 알고리즘 (32byte output)</li></ul>
      * @param originBytes : 원본 데이터 바이트 배열.
      * @param saltBytes : SALTING을 위한 바이트 배열. (null일 경우 Salting 생략)
      * @return 해싱된 바이트 배열.
@@ -163,8 +163,8 @@ public class CipherUtil {
     /**
      * <p>입력된 바이트 배열을 해싱하여 반환합니다.</p>
      * @param hashingType : 해시 알고리즘
-     * <ul><li>MD5 : MD5 알고리즘 (32byte output)</li>
-     *     <li>SHA256 : SHA256 알고리즘 (64byte output)</li></ul>
+     * <ul><li>MD5 : MD5 알고리즘 (16byte output)</li>
+     *     <li>SHA256 : SHA256 알고리즘 (32byte output)</li></ul>
      * @param originStr : 원본 문자열.
      * @return 해싱된 바이트 배열.
      */
