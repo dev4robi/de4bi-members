@@ -66,6 +66,7 @@ public class ControllerAop {
         Object ctrResult = null;
 
         try {
+            // @RequireJWT를 읽는 부분을 추가해야 합니다. @@ 
             ctrResult = pjp.proceed();
 
             if (ctrResult == null) {

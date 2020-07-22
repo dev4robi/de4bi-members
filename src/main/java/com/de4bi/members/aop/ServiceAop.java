@@ -11,7 +11,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -25,10 +24,10 @@ public class ServiceAop {
      * 
      * @param <T> - ApiResult클래스를 상속한 제너릭 클래스입니다.
      * @param pjp - {@code @Around} AOP의 필수 인자입니다. 
-     * @return Service로부터 생성된 ResponseEntity<T>를 반환합니다.
+     * @return Service로부터 생성된 ApiResult<?>를 반환합니다.
      */
     @Around("execution(* com.de4bi.members.service..*.*(..))")
-    public <T extends ApiResult> ResponseEntity<T> aroundService(ProceedingJoinPoint pjp) {
+    public ApiResult<?> aroundService(ProceedingJoinPoint pjp) {
         // 초기화
         final long bgnTime = System.currentTimeMillis();
         final String oldLayer = MDC.get("layer");
@@ -42,14 +41,11 @@ public class ServiceAop {
         logger.info(reqFunc);
 
         // 서비스 수행
-        ResponseEntity<T> svcResult = null;
+        ApiResult<?> svcResult = null;
         try {
-            // [Note] 의도된 SuppressWarnings입니다. 개발자의 실수로 일반적인 Service에서
-            // ResponseEntity<T extends ApiResult>를 반환하지 않는다면, 설계상 오류입니다.
-            // 반드시 위 클래스를 반환하도록 설계하도록 해주시길 바랍니다.
-            @SuppressWarnings("unchecked")
-            final ResponseEntity<T> tempResult = (ResponseEntity<T>) pjp.proceed();
-            svcResult = tempResult;
+            // [Note] 개발자의 실수로 일반적인 Service에서 ApiResult<?>를 반환하지 않는 경우
+            // ClassCastException이 발생합니다. 반드시 위 클래스를 반환하도록 설계하셔야 합니다.
+            svcResult = (ApiResult<?>) pjp.proceed();
         }
         catch (MapperException e) {
             throw e;

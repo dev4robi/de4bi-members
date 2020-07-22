@@ -31,6 +31,6 @@ public class TestApiController {
     @GetMapping("/test")
     public String getTest() {
         ThreadStorage.put(ApiResult.KEY_TID, RandomStringUtils.randomAlphanumeric(16));
-        return testSvc.insert().getBody().toString();
+        return testSvc.insert().toString();
     }
 }

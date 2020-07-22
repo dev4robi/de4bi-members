@@ -27,10 +27,10 @@ public class TestService {
 
     private MembersService membersSvc;
     
-    public ResponseEntity<ApiResult> insert() {
-        return membersSvc.insert(PostMembersDto.builder()
+    public ApiResult<MembersDao> insert() {
+        membersSvc.insert(PostMembersDto.builder()
             .id("de4bi@gmail.com").password("1234")
-            .name("dev-lee").nickname("admin").build()
-        );
+            .name("dev-lee").nickname("admin").build());
+        return ApiResult.of(true);
     }
 }
