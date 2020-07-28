@@ -1,6 +1,7 @@
 package com.de4bi.members.aop;
 
 import com.de4bi.common.data.ApiResult;
+import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.exception.MapperException;
 import com.de4bi.common.exception.ServiceException;
 
@@ -47,7 +48,7 @@ public class ServiceAop {
             // ClassCastException이 발생합니다. 반드시 위 클래스를 반환하도록 설계하셔야 합니다.
             svcResult = (ApiResult<?>) pjp.proceed();
         }
-        catch (MapperException e) {
+        catch (MapperException | ApiException e) {
             throw e;
         }
         catch (Throwable e) {

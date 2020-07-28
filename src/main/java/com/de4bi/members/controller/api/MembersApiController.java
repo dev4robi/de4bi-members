@@ -2,6 +2,7 @@ package com.de4bi.members.controller.api;
 
 import java.util.Map;
 
+import com.de4bi.common.annotation.RequireAdminJwt;
 import com.de4bi.common.annotation.RequireUserJwt;
 import com.de4bi.members.data.dto.PostMembersDto;
 import com.de4bi.members.data.dto.PutMembersDto;
@@ -11,13 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
@@ -47,13 +46,12 @@ public class MembersApiController {
     public String putMembers(
         @PathVariable long seq,
         @RequestBody PutMembersDto putMembersDto) {
-            @@ 여기부터 시작 : requestbody에 받는 방법은?
-        return membersSvc.update(putMembersDto).toString();
+        return membersSvc.update(seq, putMembersDto).toString();
     }
 
-    @RequireUserJwt
+    @RequireAdminJwt
     @DeleteMapping("/members/{seq}")
     public String deleteMembers(@PathVariable long seq) {
-        return null;
+        return membersSvc.rawDelete(seq).toString();
     }
 }

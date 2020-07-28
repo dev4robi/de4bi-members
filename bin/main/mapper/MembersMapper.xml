@@ -23,6 +23,12 @@
         WHERE id = #{id};
     </select>
 
+    <select id="selectByNickname" parameterType="String" resultType="com.de4bi.members.data.dao.MembersDao">
+        SELECT *
+        FROM tb_members
+        WHERE nickname = #{nickname};
+    </select>
+
     <!-- Update -->
     <update id="update" parameterType="com.de4bi.members.data.dao.MembersDao">
         UPDATE tb_members SET

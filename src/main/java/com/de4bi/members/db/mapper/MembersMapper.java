@@ -13,9 +13,10 @@ public interface MembersMapper {
     // Select
     public MembersDao select(long seq);
     public MembersDao selectById(String id);
+    public MembersDao selectByNickname(String nickname);
 
     // Update
-    public MembersDao update(MembersDao updateMembersDao);
+    public void update(MembersDao updateMembersDao);
 
     // Delete
     public void delete(long seq);

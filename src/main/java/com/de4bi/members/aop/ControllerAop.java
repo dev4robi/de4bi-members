@@ -66,7 +66,8 @@ public class ControllerAop {
         Object ctrResult = null;
 
         try {
-            // @RequireJWT를 읽는 부분을 추가해야 합니다. @@ 
+            // @RequireJWT를 읽는 부분을 추가해야 합니다. @@ 여기부터 시작하면 될 듯?
+            // 일단 각 메서드별 어노테이션을 읽어와 보자... @@
             ctrResult = pjp.proceed();
 
             if (ctrResult == null) {
@@ -91,7 +92,7 @@ public class ControllerAop {
         catch (ApiException e) {
             // 외부로 사용자 지정 HTTP Status와 오류 메시지 응답
             logger.error("ApiException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
-            httpSvlRes.setStatus(e.getHttpStatus());
+            httpSvlRes.setStatus(e.getHttpStatus().value());
             ctrResult = getErrorResultStr(tid, e.getMessage());
         }
         catch (Throwable e) {
