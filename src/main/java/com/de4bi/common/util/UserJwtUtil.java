@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.de4bi.common.exception.ApiException;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +124,7 @@ public class UserJwtUtil {
      * @return 성공 시 {@code Jws<Claims>}객체, 실패 시 null.
      * @throws JwtException JWT검증 중 포멧, 유효기간, 필수값, 서명등의 오류가 발생한 경우.
      */
-    public static Jws<Claims> validate(final String userJwt, final String secret, final JwtClaims reqClaims) throws JwtException {
+    public static Jws<Claims> validate(final String userJwt, final String secret, final JwtClaims reqClaims) {
         // 파라미터 검사
         Objects.requireNonNull(userJwt, "'userJwt' is null!");
         Objects.requireNonNull(secret, "'secret' is null!");
@@ -145,31 +147,30 @@ public class UserJwtUtil {
         catch (IllegalArgumentException e) {
             // JWT가 null이거나 길이가 0이거나, SigningKey가 빌더에 등록되지 않은 경우
             throw e;
-            
         }
         catch (UnsupportedJwtException e) {
             // JWT파싱중 오류 발생
-            throw new JwtException("Error while paring JWT!", e.getCause());
+            throw new ApiException("토큰 분석에 실패했습니다.", e.getCause());
         }
         catch (MalformedJwtException e) {
             // JWT토큰 포멧이 아닌경우
-            throw new JwtException("'Invaild JWT format!", e.getCause());
+            throw new ApiException("'올바르지 않은 토큰 포멧입니다.'", e.getCause());
         }
         catch (ExpiredJwtException e) {
             // 토큰 유효기간이 만료된 경우
-            throw new JwtException("'Expired JWT!", e.getCause());
+            throw new ApiException("만료된 토큰입니다. 다시 로그인 해주세요.", e.getCause());
         }
         catch (SignatureException e) {
             // 서명검사 오류가 발생한 경우.
-            throw new JwtException("Invalid JWT sign!", e.getCause());
+            throw new ApiException("변조된 토큰입니다. 다시 로그인 해주세요.", e.getCause());
         }
         catch (MissingClaimException e) {
             // jwtRequried의 key값이 Claims에 존재하지 않는 경우
-            throw new JwtException("Missing vital claim element!", e.getCause());
+            throw new ApiException("토큰에 필수 정보가 존재하지 않습니다.", e.getCause());
         }
-        catch (IncorrectClaimException e){
+        catch (IncorrectClaimException e) {
             // jwtRequried의 key값에 해당하는 value가 불일치하는 경우
-            throw new JwtException("Incorrect vital claim element!", e.getCause());
+            throw new ApiException("토큰 필수값이 일치하지 않습니다.", e.getCause());
         }
 
         return rtClaims;

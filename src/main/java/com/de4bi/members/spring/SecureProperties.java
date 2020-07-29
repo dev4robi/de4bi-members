@@ -35,4 +35,7 @@ public class SecureProperties {
     // custom.secure.keys
     @Value("${custom.secure.keys.member-password-salt}")
     private String memberPasswordSalt;
+
+    @Value("${custom.secure.keys.member-jwt-secret")
+    private String memberJwtSecret;
 }

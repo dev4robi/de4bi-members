@@ -1,5 +1,6 @@
 package com.de4bi.members.spring;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -14,5 +15,12 @@ public class BootApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BootApplication.class, args);
+	}
+
+	// 키값 생성용 임시 클래스
+	public static class Random {
+		public static void main(String[] args) {
+			System.out.println(RandomStringUtils.randomAlphanumeric(64));
+		}
 	}
 }

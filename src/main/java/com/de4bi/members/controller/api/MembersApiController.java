@@ -3,7 +3,7 @@ package com.de4bi.members.controller.api;
 import java.util.Map;
 
 import com.de4bi.common.annotation.RequireAdminJwt;
-import com.de4bi.common.annotation.RequireUserJwt;
+import com.de4bi.common.annotation.RequireMemberJwt;
 import com.de4bi.members.data.dto.PostMembersDto;
 import com.de4bi.members.data.dto.PutMembersDto;
 import com.de4bi.members.service.MembersService;
@@ -35,13 +35,13 @@ public class MembersApiController {
         return membersSvc.insert(postMembersDto).toString();
     }
 
-    @RequireUserJwt
+    @RequireMemberJwt
     @GetMapping("/members/{seq}")
     public String getMembers(@PathVariable long seq) {
         return membersSvc.rawSelect(seq).toString();
     }
 
-    @RequireUserJwt
+    @RequireMemberJwt
     @PutMapping("/members/{seq}")
     public String putMembers(
         @PathVariable long seq,

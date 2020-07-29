@@ -1,21 +1,29 @@
 package com.de4bi.members.aop;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.de4bi.common.annotation.RequireAdminJwt;
+import com.de4bi.common.annotation.RequireMemberJwt;
 import com.de4bi.common.data.ThreadStorage;
 import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.exception.ControllerException;
 import com.de4bi.common.exception.MapperException;
 import com.de4bi.common.exception.ServiceException;
+import com.de4bi.members.service.JwtService;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -23,6 +31,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @Aspect
 @Component
 public class ControllerAop {
@@ -32,6 +43,9 @@ public class ControllerAop {
     // 상수
     public static final String CTR_TID      = "CTR_TID";
     public static final String CTR_REQ_TIME = "REQ_TIME";
+
+    // 서비스
+    private JwtService jwtSvc;
 
     /**
      * Controller전/후를 감싸는 AOP입니다. Controller메서드 호출 및 응답, 예외상황을 핸들링합니다.
@@ -55,19 +69,31 @@ public class ControllerAop {
         final HttpServletRequest httpSvlReq = svlReqAttrs.getRequest();
         final HttpServletResponse httpSvlRes = svlReqAttrs.getResponse();
         final String reqInfo = ">> " + httpSvlReq.getMethod() + " " + httpSvlReq.getRequestURI() + " " + httpSvlReq.getProtocol();
-        final Signature sign = pjp.getSignature();
+        final MethodSignature sign = (MethodSignature) pjp.getSignature();
+        final Method method = sign.getMethod();
         final String reqFunc = ">> " + sign.getDeclaringTypeName() + "." + sign.getName() + "()";
 
         logger.info("=== API Controller begin! ===");
         logger.info(reqInfo);
         logger.info(reqFunc);
 
-        // 컨트롤러 수행
         Object ctrResult = null;
-
         try {
-            // @RequireJWT를 읽는 부분을 추가해야 합니다. @@ 여기부터 시작하면 될 듯?
-            // 일단 각 메서드별 어노테이션을 읽어와 보자... @@
+            // 사용자 정의 어노테이션 검사 수행
+            try {
+                if (method.getAnnotation(RequireMemberJwt.class) != null) {
+                    jwtSvc.validateMemberJwt(httpSvlReq.getHeader("member_jwt"));
+                }
+
+                if (method.getAnnotation(RequireAdminJwt.class) != null) {
+                    jwtSvc.validateAdminJwt(httpSvlReq.getHeader("member_jwt"));
+                }
+            }
+            catch (NullPointerException e) {
+                throw new ApiException("로그인이 필요합니다.");
+            }
+
+            // 컨트롤러 수행
             ctrResult = pjp.proceed();
 
             if (ctrResult == null) {

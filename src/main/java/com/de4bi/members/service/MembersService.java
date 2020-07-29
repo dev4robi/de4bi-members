@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.exception.ApiException;
-import com.de4bi.common.util.CipherUtil;
+import com.de4bi.common.util.SecurityUtil;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.data.dto.PostMembersDto;
@@ -15,7 +15,6 @@ import com.de4bi.members.data.dto.PutMembersDto;
 import com.de4bi.members.db.mapper.MembersMapper;
 import com.de4bi.members.spring.SecureProperties;
 
-import org.apache.tomcat.util.buf.HexUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -47,7 +46,7 @@ public class MembersService {
 
         final MembersDao insertedMembersDao = MembersDao.builder()
             .id(postMembersDto.getId())
-            .password(passwordSecureHashing(postMembersDto.getPassword(), secureProps.getMemberPasswordSalt()))
+            .password(SecurityUtil.passwordSecureHashing(postMembersDto.getPassword(), secureProps.getMemberPasswordSalt()))
             .nickname(postMembersDto.getNickname())
             .name(postMembersDto.getName())
             .authority(MembersCode.MEMBERS_AUTHORITY_BASIC.getSeq())
@@ -125,7 +124,7 @@ public class MembersService {
         final String newPassword = 
             Objects.isNull(putMembersDto.getPassword()) ?
                 seletedMembersDao.getPassword() :
-                passwordSecureHashing(putMembersDto.getPassword(), secureProps.getMemberPasswordSalt());
+                SecurityUtil.passwordSecureHashing(putMembersDto.getPassword(), secureProps.getMemberPasswordSalt());
         final String newNickname = Optional.ofNullable(putMembersDto.getNickname()).orElse(seletedMembersDao.getNickname());
         final String newName = Optional.ofNullable(putMembersDto.getName()).orElse(seletedMembersDao.getName());
 
@@ -155,21 +154,5 @@ public class MembersService {
     public ApiResult<?> rawDelete(final long seq) {
         membersMpr.delete(seq);
         return ApiResult.of(true);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // private methods
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * {@code password + salt} SHA256 해싱된 비밀번호를 16진수로 반환합니다.
-     * @param password - 해싱되기 전 비밀번호.
-     * @param salt - SALT 문자열. (nullable)
-     * @return 해싱된 64자리의 16진수 비밀번호를 반환합니다.
-     */
-    private String passwordSecureHashing(final String password, final String salt) {
-        Objects.requireNonNull(password, "'password' is null!");
-        final String saltedPassword = (salt == null ? password : password + salt);
-        return HexUtils.toHexString(CipherUtil.hashing(CipherUtil.SHA256, saltedPassword));
     }
 }
