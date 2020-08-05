@@ -1,10 +1,14 @@
 package com.de4bi.members.data.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
-@Data
+@Getter
 public class PostMembersDto {
     
     private String id;

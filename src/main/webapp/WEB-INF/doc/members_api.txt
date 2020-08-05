@@ -1,0 +1,25 @@
+-- Service: de4bi-members
+-- Last Modified: 2020.08.05
+-- Version: 1.0.0
+
++------------------------------------------------------------------------------------------------------------------------------+
+> API ID  : members.signin
+> CTR ID  : signinNewMember()
+> Version : 1.0.0
+> Name    : 회원 가입
+> URL     : /api/members
+> Method  : POST
+> ReqHead : -
+> ReqBody : {
+  "auth_agency":"{agency}",
+  "auth_token":"{code}",
+  "id":"{id}",
+  "password":"{password}",
+  "nickname":{nickname}",
+  "name":"{name}"
+}
+
+> ResHead :
+> ResBody :
+> ETC     : 
++------------------------------------------------------------------------------------------------------------------------------+

@@ -18,9 +18,11 @@ public class BootApplication {
 	}
 
 	// 키값 생성용 임시 클래스
+	/*
 	public static class Random {
 		public static void main(String[] args) {
 			System.out.println(RandomStringUtils.randomAlphanumeric(64));
 		}
 	}
+	*/
 }
