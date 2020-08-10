@@ -38,4 +38,8 @@ public class SecureProperties {
 
     @Value("${custom.secure.keys.member-jwt-secret")
     private String memberJwtSecret;
+
+    // custom.oauth
+    @Value("${custom.oauth.google.redirection-sign-key")
+    private String googleOauthRedirectionSignKey;
 }

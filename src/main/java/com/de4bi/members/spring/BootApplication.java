@@ -13,6 +13,8 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 public class BootApplication {
 
+	public static final boolean IS_LOCAL_TEST = true;
+
 	public static void main(String[] args) {
 		SpringApplication.run(BootApplication.class, args);
 	}
