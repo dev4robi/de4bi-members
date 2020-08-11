@@ -13,12 +13,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class CipherUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(CipherUtil.class);
 
     // CipherType
     private static final String TF_AES_CBC_PKCS5 = "AES/CBC/PKCS5Padding";

@@ -9,8 +9,6 @@ import java.util.Objects;
 import com.de4bi.common.exception.ApiException;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -30,8 +28,6 @@ import lombok.Builder;
 import lombok.Data;
 
 public class UserJwtUtil {
-    
-    private static final Logger logger = LoggerFactory.getLogger(UserJwtUtil.class);
 
     ////////////////////////////////////////////////////////////////
     // public static
