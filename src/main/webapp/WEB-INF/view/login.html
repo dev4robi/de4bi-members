@@ -13,6 +13,7 @@
 	<link rel="stylesheet" href="/lib/bootstrap-4.5.0/css/bootstrap-colorex.min.css">
 	<script type="text/javascript" src="/lib/bootstrap-4.5.0/js/bootstrap.bundle.min.js"></script>
 	<!-- js & css-->
+	<script type="text/javascript" src="/view/js/login.js"></script>
 	<link rel="stylesheet" href="/view/css/login.css">
 </head>
 <body>
@@ -45,6 +46,10 @@
 							</div>
 						</div>
 						<div class="d-flex pt-3 justify-content-end align-items-center">
+							<input type="hidden" id="google_login_url" th:value="${google_login_url}">
+							<input type="hidden" id="naver_login_url" th:value="${naver_login_url}">
+							<input type="hidden" id="kakao_login_url" th:value="${kakao_login_url}">
+							<input type="hidden" id="de4bi_login_url" th:value="${de4bi_login_url}">
 							<img src="/img/icon-google.png" alt="G" class="join-icon">
 							<img src="/img/icon-naver.png" alt="N" class="join-icon">
 							<img src="/img/icon-kakao.png" alt="K" class="join-icon">

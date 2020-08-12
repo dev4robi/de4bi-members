@@ -36,10 +36,13 @@ public class SecureProperties {
     @Value("${custom.secure.keys.member-password-salt}")
     private String memberPasswordSalt;
 
-    @Value("${custom.secure.keys.member-jwt-secret")
+    @Value("${custom.secure.keys.member-jwt-secret}")
     private String memberJwtSecret;
 
     // custom.oauth
-    @Value("${custom.oauth.google.redirection-sign-key")
+    @Value("${custom.oauth.google.redirection-sign-key}")
     private String googleOauthRedirectionSignKey;
+
+    @Value("${custom.oauth.google.client-secret}")
+    private String googleOauthClientSecret;
 }

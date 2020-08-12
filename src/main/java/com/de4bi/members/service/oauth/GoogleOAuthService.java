@@ -1,5 +1,9 @@
 package com.de4bi.members.service.oauth;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,12 +12,16 @@ import java.util.concurrent.ConcurrentMap;
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.CipherUtil;
+import com.de4bi.common.util.RestHttpUtil;
 import com.de4bi.members.spring.BootApplication;
 import com.de4bi.members.spring.SecureProperties;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.tomcat.util.buf.HexUtils;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
@@ -24,16 +32,27 @@ import lombok.NonNull;
 
 /**
  * Google OAuth를 사용한 회원 가입을 수행합니다.
+ * 
+ * 사용자 구글 로그인 -> 사용자의 code획득 -> code를 서버로 전달 -> google로부터 code검증 -> token및 사용자 정보 획득
+ * (브라우저)            (브라우저)           (인증서버)            (구글서버)               (인증서버)
+ * 
  */
 @AllArgsConstructor
 @Service
 public class GoogleOAuthService implements IOAuthService {
+    // 공개 상수
+    public  static final String OAUTH_CODE_RECIRECT_URI  = 
+        BootApplication.IS_LOCAL_TEST ? "http://localhost:30000/oauth/google/code" : "https://members.de4bi.com/oauth/google/code";
+    public  static final String OAUTH_TOKEN_REDIRECT_URI = 
+        BootApplication.IS_LOCAL_TEST ? "http://localhost:30000/oauth/google/token" : "https://members.de4bi.com/oauth/google/token";
 
-    private static final String OAUTH_RECIRECT_URI  =
-        BootApplication.IS_LOCAL_TEST ? "http://localhost:30000/oauth/google" : "https://members.de4bi.com/oauth/google";
-    private static final String OAUTH_API_URL       = "https://accounts.google.com/o/oauth2/v2/auth";
+    // 내부 상수
+    private static final String OAUTH_CODE_URL      = "https://accounts.google.com/o/oauth2/v2/auth";
+    private static final String OAUTH_TOKEN_URL     = "https://oauth2.googleapis.com/token";
     private static final String OAUTH_CLIENT_ID     = "497284575180-0ottstk5ehodlic3siv6srf4usietg9v.apps.googleusercontent.com";
+    private static       String OAUTH_CLIENT_SECRET;
 
+    // 설정
     private final SecureProperties secureProperties;
 
     /**
@@ -47,14 +66,14 @@ public class GoogleOAuthService implements IOAuthService {
         final String nonce = RandomStringUtils.randomAlphanumeric(32);
         final String state = makeStateForRedirectionSign(nonce);
 
-        rtSb.append(OAUTH_API_URL)
+        rtSb.append(OAUTH_CODE_URL)
             .append("?client_id=").append(OAUTH_CLIENT_ID)
             .append("&response_type=code")
             .append("&scope=email%20name") // 이메일과 이름 요청
             .append("&nonce=").append(nonce) // 중복요청 방지용 nonce
             .append("&prompt=none")
             .append("&state=").append(state) // 리다이렉션 URL에서 검사할 서명값
-            .append("&redirect_uri=").append(OAUTH_RECIRECT_URI);
+            .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI);
 
         return ApiResult.of(true, null, rtSb.toString());
     }
@@ -68,10 +87,28 @@ public class GoogleOAuthService implements IOAuthService {
      */
     public ApiResult<String> requestIdTokenUsingAuthCode(String code, Object extObj) {
         Objects.requireNonNull(code, "'code' is null!");
-        
-        
 
+        // 요청 바디 생성
+        final StringBuilder reqBodySb = new StringBuilder(256);
+        reqBodySb.append("code=").append(code)
+                 .append("&client_id=").append(OAUTH_CLIENT_ID)
+                 .append("&client_secret=").append(secureProperties.getGoogleOauthClientSecret())
+                 .append("&redirection_uri=").append(OAUTH_TOKEN_REDIRECT_URI)
+                 .append("&grant_type=authorization_code");
+        String reqBodyStr = null;        
+        try {
+            reqBodyStr = URLEncoder.encode(reqBodySb.toString(), "utf-8"); 
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Server can't support the charset 'utf-8'!", e); // 자바 명세에 따르면 도달할 수 없는 코드
+        }
         
+        // 구글로 token요청 전송
+        final List<String> resBodyList = new ArrayList<>();
+        RestHttpUtil.httpPost(OAUTH_TOKEN_URL, MediaType.APPLICATION_FORM_URLENCODED, null, reqBodyStr, null, resBodyList);
+
+        final String res = resBodyList.get(0);
+        System.out.println("google_response: " + res);
 
         return null;
     }
@@ -84,7 +121,7 @@ public class GoogleOAuthService implements IOAuthService {
      * @return 생성된 state문자열을 반환합니다.
      */
     private String makeStateForRedirectionSign(String nonce) {
-        return new String(
+        return HexUtils.toHexString(
             CipherUtil.hashing(CipherUtil.SHA256, nonce + secureProperties.getGoogleOauthRedirectionSignKey()));
     }
 }
