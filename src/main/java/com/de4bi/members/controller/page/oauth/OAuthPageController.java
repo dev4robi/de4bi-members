@@ -16,7 +16,12 @@ public class OAuthPageController {
     private final GoogleOAuthService googleOauthSvc;
 
     @RequestMapping("/oauth/google/code")
-    public ModelAndView googleAuthCodePage(@RequestParam("code") String code) {
+    public ModelAndView googleAuthCodePage(
+        @RequestParam(required = false, name = "code") String code,
+        @RequestParam(required = false, name = "state") String state,
+        @RequestParam(required = false, name = "error_subtype") String errorSubtype,
+        @RequestParam(required = false, name = "error") String error
+    ) {
         googleOauthSvc.requestIdTokenUsingAuthCode(code, null);
         return new ModelAndView();
     }

@@ -24,9 +24,6 @@ public class MainPageController {
         modelMap.put("naver_login_url", "#");
         modelMap.put("kakao_login_url", "#");
         modelMap.put("de4bi_login_url", "#");
-        // @ 로그인페이지 연동부터 시작 (자바스크립트 버튼연동 login.js)
-        // @@ 한 단계씩 만들어야해서 좀 지겹지만...
-        // @@@ 가장 빠른 방법임...
         return new ModelAndView("login", modelMap);
     }
 }
