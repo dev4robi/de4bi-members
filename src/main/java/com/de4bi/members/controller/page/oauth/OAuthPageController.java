@@ -25,4 +25,9 @@ public class OAuthPageController {
         googleOauthSvc.requestIdTokenUsingAuthCode(code, null);
         return new ModelAndView();
     }
+
+    @RequestMapping("/oauth/google/token")
+    public String googleAuthTokenPage() {
+        return "success";
+    }
 }
