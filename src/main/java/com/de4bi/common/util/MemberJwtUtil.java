@@ -27,7 +27,7 @@ import io.jsonwebtoken.security.SignatureException;
 import lombok.Builder;
 import lombok.Data;
 
-public class UserJwtUtil {
+public class MemberJwtUtil {
 
     ////////////////////////////////////////////////////////////////
     // public static
@@ -114,15 +114,15 @@ public class UserJwtUtil {
     /**
      * 발급된 UserJwt를 검증합니다.
      * 
-     * @param userJwt - 검증할 JWT. (not null)
+     * @param memberJwt - 검증할 JWT. (not null)
      * @param secret - 검증할 JWT의 해시키 보안값. (not null)
      * @param reqClaims - Claims에 필수적으로 요구되는 값. null일 시 필수값 없음.
      * @return 성공 시 {@code Jws<Claims>}객체, 실패 시 null.
      * @throws JwtException JWT검증 중 포멧, 유효기간, 필수값, 서명등의 오류가 발생한 경우.
      */
-    public static Jws<Claims> validate(final String userJwt, final String secret, final JwtClaims reqClaims) {
+    public static Jws<Claims> validate(final String memberJwt, final String secret, final JwtClaims reqClaims) {
         // 파라미터 검사
-        Objects.requireNonNull(userJwt, "'userJwt' is null!");
+        Objects.requireNonNull(memberJwt, "'memberJwt' is null!");
         Objects.requireNonNull(secret, "'secret' is null!");
 
         // 필수Claims를 가진 파서 생성
@@ -138,7 +138,7 @@ public class UserJwtUtil {
         final JwtParser parser = builder.build();
         Jws<Claims> rtClaims = null;
         try {
-            rtClaims = parser.parseClaimsJws(userJwt);
+            rtClaims = parser.parseClaimsJws(memberJwt);
         }
         catch (IllegalArgumentException e) {
             // JWT가 null이거나 길이가 0이거나, SigningKey가 빌더에 등록되지 않은 경우

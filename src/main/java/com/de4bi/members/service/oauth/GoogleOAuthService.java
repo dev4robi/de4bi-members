@@ -1,15 +1,12 @@
 package com.de4bi.members.service.oauth;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URLEncoder;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,7 +17,7 @@ import com.de4bi.common.util.CipherUtil;
 import com.de4bi.common.util.JsonUtil;
 import com.de4bi.common.util.JwtUtil;
 import com.de4bi.common.util.RestHttpUtil;
-import com.de4bi.common.util.UserJwtUtil;
+import com.de4bi.common.util.StringUtil;
 import com.de4bi.members.spring.BootApplication;
 import com.de4bi.members.spring.SecureProperties;
 
@@ -32,32 +29,31 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.IncorrectClaimException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.JwtParserBuilder;
-import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.MissingClaimException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.AllArgsConstructor;
 
 /**
  * Google OAuth를 사용한 회원 가입을 수행합니다.
  * 
- * 사용자 구글 로그인 -> 사용자의 code획득 -> code를 서버로 전달 -> google로부터 code검증 -> token및 사용자
- * 정보 획득 (브라우저) (브라우저) (인증서버) (구글서버) (인증서버)
+ * 1. 사용자 Google로그인 (브라우저)
+ * 2. 사용자의 code획득 및 서버로 전달 (브라우저->멤버서버)
+ * 3. Google로부터 code검증하여 idToken획득 (구글서버->멤버서버)
+ * 4. idToken검증 및 사용자 정보 획득 (멤버서버)
+ * 5. 가입 이력이 있을 경우 MemberJwt발급, 신규 가입의 경우 DB작업 수행 (멤버서버)
  * 
  */
 @AllArgsConstructor
 @Service
 public class GoogleOAuthService implements IOAuthService {
+    ////////////////////////////////////////////////////////////////
+    // class fields
+    ////////////////////////////////////////////////////////////////
+
     // 공개 상수
     public static final String OAUTH_CODE_RECIRECT_URI = BootApplication.IS_LOCAL_TEST
             ? "http://localhost:30000/oauth/google/code"
@@ -67,8 +63,8 @@ public class GoogleOAuthService implements IOAuthService {
             : "https://members.de4bi.com/oauth/google/token";
 
     // 내부 상수
-    private static final String OAUTH_CODE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-    private static final String OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
+    private static final String OAUTH_CODE_URL      = "https://accounts.google.com/o/oauth2/v2/auth";
+    private static final String OAUTH_TOKEN_URL     = "https://oauth2.googleapis.com/token";
     private static final String OAUTH_TOKEN_KEY_URL = "https://www.googleapis.com/oauth2/v3/certs";
 
     // 내부 변수
@@ -77,128 +73,9 @@ public class GoogleOAuthService implements IOAuthService {
     // 설정
     private final SecureProperties secureProperties;
 
-    /**
-     * <p>
-     * 사용자가 구글 로그인(OAuth2)으로 인증코드(Authorization Code)를 획득하기 위한 URL을 생성합니다.
-     * </p>
-     * 
-     * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
-     * @return 성공 시, OAuth수행을 위한 URL을 문자열로 반환합니다.
-     * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#authenticationuriparameters
-     * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#sendauthrequest
-     */
-    public ApiResult<String> makeLoginUrlForAuthCode(Object extObj) {
-        final StringBuilder rtSb = new StringBuilder(256);
-        final String nonce = RandomStringUtils.randomAlphanumeric(32);
-        final String state = makeStateForRedirectionSign(nonce);
-
-        rtSb.append(OAUTH_CODE_URL).append("?client_id=").append(secureProperties.getGoogleOauthClientId())
-                .append("&response_type=code").append("&scope=email%20profile") // 이메일과 프로필 요청
-                .append("&nonce=").append(nonce) // 중복요청 방지용 nonce
-                .append("&prompt=consent").append("&state=").append(state) // 리다이렉션 URL에서 검사할 서명값
-                .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI); // Code값을 리다이렉션할 URI
-
-        return ApiResult.of(true, null, rtSb.toString());
-    }
-
-    /**
-     * <p>
-     * 사용자에게 전달받은 인증코드(Authorization Code)를 구글에 검증요청하여 idToken을 획득합니다.
-     * </p>
-     * 
-     * @param code   : 구글로부터 사용자에게 내려준 인증코드값.
-     * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
-     * @return 성공 시, 구글로부터 응답받은 문자열을 담은 ApiResult를 반환합니다.
-     * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#exchangecode
-     */
-    public ApiResult<String> requestIdTokenUsingAuthCode(String code, Object extObj) {
-        Objects.requireNonNull(code, "'code' is null!");
-
-        // state 검사 무조건 만들어야 할 듯
-        // 다른 사이트에서 만든 코드를 재활용 할지도 모른다...! @@
-
-        // 요청 바디 생성
-        final StringBuilder reqBodySb = new StringBuilder(256);
-        reqBodySb.append("code=").append(code).append("&client_id=").append(secureProperties.getGoogleOauthClientId())
-                .append("&client_secret=").append(secureProperties.getGoogleOauthClientSecret())
-                .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI) // Code를 획득한 리다이렉션 URI
-                .append("&grant_type=authorization_code");
-
-        // 구글로 token요청 전송
-        final String reqBodyStr = reqBodySb.toString();
-        final List<String> resBodyList = new ArrayList<>();
-        RestHttpUtil.httpPost(OAUTH_TOKEN_URL, MediaType.APPLICATION_FORM_URLENCODED, null, reqBodyStr, null,
-                resBodyList);
-
-        // 응답 파싱
-        final Map<String, Object> googleResMap = JsonUtil.fromJsonStr(resBodyList.get(0));
-        final String idToken = googleResMap.get("id_token").toString();
-        boolean isFirstTry = true;
-
-        Map<String, Object> idTokenMap = null;
-        try {
-            // 최초 파싱시 JWT서명 검사용 공개키 생성
-            synchronized (this) {
-                if (ID_TOKEN_SIGNING_PUBLIC_KEY == null) {
-                    updatePublicKeyForIdTokenSigning(idToken);
-                    isFirstTry = false;
-                }
-            }
-
-            // idToken파싱 결과(Claims)를 Map으로 획득
-            idTokenMap = JwtUtil.parseJwt(idToken, null, ID_TOKEN_SIGNING_PUBLIC_KEY);
-        }
-        catch (IllegalArgumentException e) {
-            // JWT가 null이거나 길이가 0이거나, SigningKey가 빌더에 등록되지 않은 경우
-            throw e;
-        }
-        catch (UnsupportedJwtException e) {
-            // JWT파싱중 오류 발생
-            throw new ApiException("토큰 분석에 실패했습니다.", e.getCause());
-        }
-        catch (MalformedJwtException e) {
-            // JWT토큰 포멧이 아닌경우
-            throw new ApiException("'올바르지 않은 토큰 포멧입니다.'", e.getCause());
-        }
-        catch (ExpiredJwtException e) {
-            // 토큰 유효기간이 만료된 경우
-            throw new ApiException("만료된 토큰입니다. 다시 로그인 해주세요.", e.getCause());
-        }
-        catch (SignatureException e) {
-            // 서명검사 오류가 발생한 경우.
-            // 첫 번째 시도에는 키를 새로 갱신 / 두 번째 시도에는 예외 생성.
-            synchronized (this) {
-                if (isFirstTry == false) {
-                    throw new ApiException("변조된 토큰입니다. 다시 로그인 해주세요.", e.getCause());
-                }
-
-                updatePublicKeyForIdTokenSigning(idToken);
-                isFirstTry = false;
-            }
-        }
-        catch (MissingClaimException e) {
-            // jwtRequried의 key값이 Claims에 존재하지 않는 경우
-            throw new ApiException("토큰에 필수 정보가 존재하지 않습니다.", e.getCause());
-        }
-        catch (IncorrectClaimException e) {
-            // jwtRequried의 key값에 해당하는 value가 불일치하는 경우
-            throw new ApiException("토큰 필수값이 일치하지 않습니다.", e.getCause());
-        }
-
-        // 결과 획득
-        System.out.println(idTokenMap.toString());
-
-        String email = idTokenMap.get("email");
-        String name = idTokenMap.get("name");
-
-        // @@ 여기부터 시작. email,name에 잘 담겨있다.
-        // 사실 이 함수는 2개로 분리되어야 맞다. (idToken획득하는 함수와, 그 이후 개인정보 획득 함수)
-        // 아래부분 잘라내서 새로운 함수로 이동시키자.
-
-        return null;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////
+    // private methods
+    ////////////////////////////////////////////////////////////////
 
     /**
      * <p>
@@ -284,5 +161,156 @@ public class GoogleOAuthService implements IOAuthService {
         catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
             throw new IllegalStateException("Fail to generate public key for JWT sign validation!", e);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////
+    // public methods
+    ////////////////////////////////////////////////////////////////
+
+    /**
+     * <p>사용자가 구글 로그인(OAuth2)으로 인증코드(Authorization Code)를 획득하기 위한 URL을 생성합니다.</p>
+     * 
+     * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
+     * @return 성공 시, OAuth수행을 위한 URL을 문자열로 반환합니다.
+     * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#authenticationuriparameters
+     * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#sendauthrequest
+     */
+    @Override public ApiResult<String> makeLoginUrlForAuthCode(Object extObj) {
+        final StringBuilder rtSb = new StringBuilder(256);
+        final String nonce = RandomStringUtils.randomAlphanumeric(32);
+        final String state = makeStateForRedirectionSign(nonce);
+
+        rtSb.append(OAUTH_CODE_URL).append("?client_id=").append(secureProperties.getGoogleOauthClientId())
+                .append("&response_type=code").append("&scope=email%20profile") // 이메일과 프로필 요청
+                .append("&nonce=").append(nonce) // 중복요청 방지용 nonce
+                .append("&prompt=consent").append("&state=").append(state) // 리다이렉션 URL에서 검사할 서명값
+                .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI); // Code값을 리다이렉션할 URI
+
+        return ApiResult.of(true, null, rtSb.toString());
+    }
+
+    /**
+     * <p>사용자에게 전달받은 인증코드(Authorization Code)를 구글에 검증요청하여 idToken을 획득합니다.</p>
+     * 
+     * @param code   : 구글로부터 사용자에게 내려준 인증코드값.
+     * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
+     * @return 성공 시, 구글로부터 응답받은 문자열(idToken)을 담은 ApiResult를 반환합니다.
+     * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#exchangecode
+     */
+    @Override public ApiResult<String> requestIdTokenUsingAuthCode(String code, Object extObj) {
+        Objects.requireNonNull(code, "'code' is null!");
+
+        // state 검사 무조건 만들어야 할 듯
+        // 다른 사이트에서 만든 코드를 재활용 할지도 모른다...! @@
+
+        // 요청 바디 생성
+        final StringBuilder reqBodySb = new StringBuilder(256);
+        reqBodySb.append("code=").append(code).append("&client_id=").append(secureProperties.getGoogleOauthClientId())
+                .append("&client_secret=").append(secureProperties.getGoogleOauthClientSecret())
+                .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI) // Code를 획득한 리다이렉션 URI
+                .append("&grant_type=authorization_code");
+
+        // 구글로 token요청 전송
+        final String reqBodyStr = reqBodySb.toString();
+        final List<String> resBodyList = new ArrayList<>();
+        RestHttpUtil.httpPost(OAUTH_TOKEN_URL, MediaType.APPLICATION_FORM_URLENCODED, null, reqBodyStr, null,
+                resBodyList);
+
+        // 응답 파싱
+        final Map<String, Object> googleResMap = JsonUtil.fromJsonStr(resBodyList.get(0));
+        final String idToken = googleResMap.get("id_token").toString();
+
+        return ApiResult.of(true, null, idToken);
+    }
+
+    /**
+     * <p>구글로부터 받은 idToken을 처리하여 클라이언트의 정보를 획득합니다.</p>
+     * @param idToken : 구글로부터 전달받은 토큰값.
+     * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
+     * @return 성공 시, {@link ApiResult}<{@link OAuthDto}>를 반환합니다.
+     * @apiNote 내부적으로 최적화 병렬 처리를 위해 synchronized구문을 사용합니다.
+     */
+    @Override public ApiResult<OAuthDto> getMemberInfoFromIdToken(String idToken, Object extObj) {
+        Objects.requireNonNull(idToken, "'idToken' is null!");
+
+        boolean isFirstTry = true;
+        Map<String, Object> idTokenMap = null;
+        try {
+            // 최초 파싱시 JWT서명 검사용 공개키 생성
+            synchronized (this) {
+                if (ID_TOKEN_SIGNING_PUBLIC_KEY == null) {
+                    updatePublicKeyForIdTokenSigning(idToken);
+                    isFirstTry = false;
+                }
+            }
+
+            // idToken파싱 결과(Claims)를 Map으로 획득
+            idTokenMap = JwtUtil.parseJwt(idToken, null, ID_TOKEN_SIGNING_PUBLIC_KEY);
+        }
+        catch (IllegalArgumentException e) {
+            // JWT가 null이거나 길이가 0이거나, SigningKey가 빌더에 등록되지 않은 경우
+            throw e;
+        }
+        catch (UnsupportedJwtException e) {
+            // JWT파싱중 오류 발생
+            throw new ApiException("토큰 분석에 실패했습니다.", e.getCause());
+        }
+        catch (MalformedJwtException e) {
+            // JWT토큰 포멧이 아닌경우
+            throw new ApiException("'올바르지 않은 토큰 포멧입니다.'", e.getCause());
+        }
+        catch (ExpiredJwtException e) {
+            // 토큰 유효기간이 만료된 경우
+            throw new ApiException("만료된 토큰입니다. 다시 로그인 해주세요.", e.getCause());
+        }
+        catch (SignatureException e) {
+            // 서명검사 오류가 발생한 경우.
+            // 첫 번째 시도에는 키를 새로 갱신 / 두 번째 시도에는 예외 생성.
+            synchronized (this) {
+                if (isFirstTry == false) {
+                    throw new ApiException("변조된 토큰입니다. 다시 로그인 해주세요.", e.getCause());
+                }
+
+                updatePublicKeyForIdTokenSigning(idToken);
+                isFirstTry = false;
+            }
+        }
+        catch (MissingClaimException e) {
+            // jwtRequried의 key값이 Claims에 존재하지 않는 경우
+            throw new ApiException("토큰에 필수 정보가 존재하지 않습니다.", e.getCause());
+        }
+        catch (IncorrectClaimException e) {
+            // jwtRequried의 key값에 해당하는 value가 불일치하는 경우
+            throw new ApiException("토큰 필수값이 일치하지 않습니다.", e.getCause());
+        }
+
+        final String email = idTokenMap.getOrDefault("email", "").toString();
+        final String name = idTokenMap.getOrDefault("name", "").toString();
+
+        if (StringUtil.isEmpty(email)) {
+            throw new IllegalStateException("Fail to get 'email' from google OAuth!");
+        }
+
+        if (StringUtil.isEmpty(name)) {
+            throw new IllegalStateException("Fail to get 'name' from google OAuth!");
+        }
+
+        final OAuthDto rtOAuthDto = OAuthDto.builder().email(email).name(name).build();
+        return ApiResult.of(true, rtOAuthDto);
+    }
+
+    /**
+     * <p>구글 OAuth를 사용하여 회원 정보를 획득합니다.</p>
+     * <strong>※ 일반적인 경우 이 메서드만 사용하면 됩니다.</strong>
+     * @param code : 플랫폼으로부터 클라이언트에게 내려준 인증코드값.
+     * @param extObj : 플랫폼 종속 파라미터를 전달할 객체입니다. (nullable)
+     * @return 성공 시, {@link ApiResult}<{@link OAuthDto}>를 반환합니다.
+     * @apiNote 내부적으로 {@link IOAuthService}인터페이스의 메서드인
+     * {@code requestIdTokenUsingAuthCode()}, {@code getMemberInfoFromIdToken}를 호출합니다.
+     */
+    @Override public ApiResult<OAuthDto> getMemberInfoWithOAuth(String code, Object extObj) {
+        final String idToken = requestIdTokenUsingAuthCode(code, null).getData();
+        final OAuthDto oauthDto = getMemberInfoFromIdToken(idToken, extObj).getData();
+        return ApiResult.of(true, oauthDto);
     }
 }

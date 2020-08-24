@@ -17,6 +17,7 @@ public class MainPageController {
 
     private final GoogleOAuthService googleOAuthSvc;
 
+    // 메인&로그인 페이지
     @RequestMapping(value = {"", "/login"})
     public ModelAndView loginPage() {
         final Map<String, String> modelMap = new HashMap<>();
@@ -25,5 +26,11 @@ public class MainPageController {
         modelMap.put("kakao_login_url", "#");
         modelMap.put("de4bi_login_url", "#");
         return new ModelAndView("login", modelMap);
+    }
+
+    // 회원가입 페이지
+    @RequestMapping(value = "/signup")
+    public ModelAndView signupPage() {
+        return null;
     }
 }

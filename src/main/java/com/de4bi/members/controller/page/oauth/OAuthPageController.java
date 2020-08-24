@@ -1,5 +1,6 @@
 package com.de4bi.members.controller.page.oauth;
 
+import com.de4bi.members.service.MembersService;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
 import org.springframework.stereotype.Controller;
@@ -13,7 +14,8 @@ import lombok.AllArgsConstructor;
 @Controller
 public class OAuthPageController {
     
-    private final GoogleOAuthService googleOauthSvc;
+    private final GoogleOAuthService googleOAuthService;
+    private final MembersService membersService;
 
     @RequestMapping("/oauth/google/code")
     public ModelAndView googleAuthCodePage(
@@ -22,12 +24,8 @@ public class OAuthPageController {
         @RequestParam(required = false, name = "error_subtype") String errorSubtype,
         @RequestParam(required = false, name = "error") String error
     ) {
-        googleOauthSvc.requestIdTokenUsingAuthCode(code, null);
-        return new ModelAndView();
-    }
+        membersService. googleOAuthService.getMemberInfoWithOAuth(code, null);
 
-    @RequestMapping("/oauth/google/token")
-    public String googleAuthTokenPage() {
-        return "success";
+        return new ModelAndView();
     }
 }

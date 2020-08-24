@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.SecurityUtil;
+import com.de4bi.common.util.StringUtil;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.data.dto.PostMembersDto;
@@ -36,7 +37,25 @@ public class MembersService {
     private final SecureProperties secureProps;
 
     /**
-     * <p>신규 멤버를 추가합니다.</p>
+     * <p>회원가입을 수행합니다.</p>
+     * @param postMembersDto : 회원가입 정보.
+     * @return 성공 시, {@link ApiResult}에 MembersJwt문자열을 담아서 응답합니다.
+     */
+    public ApiResult<String> signin(final PostMembersDto postMembersDto) {
+        Objects.requireNonNull(postMembersDto, "'postMembersDto' is null!");
+
+        if (this.rawSelect(postMembersDto.getId()).getResult()) {
+            throw new ApiException(StringUtil.quote(postMembersDto.getId()) + "는 이미 가입된 이메일입니다.");
+        }
+
+        // @@ 여기부터 계속!!
+        // 중복가입 확인v
+        // 회원정보 인서트
+        // 토큰발급의 순서로 진행!
+    }
+
+    /**
+     * <p>신규 멤버를 DB에 추가합니다.</p>
      * <p>password는 {@code passwordSecureHashing()}를 통해 해싱되어 저장됩니다.</p>
      * @param postMembersDto - 새로 추가될 멤버 정보
      * @return {@link ApiResult}를 반환합니다.
@@ -61,7 +80,7 @@ public class MembersService {
     }
 
     /**
-     * <p><strong>[RAW API]</strong> 멤버를 추가합니다.</p>
+     * <p><strong>[RAW API]</strong> 멤버를 DB에 추가합니다.</p>
      * @param membersDao - 추가될 멤버 정보.
      * @return {@link ApiResult}를 반환합니다.
      */
@@ -72,7 +91,7 @@ public class MembersService {
     }
 
     /**
-     * <p><strong>[RAW API]</strong> 멤버를 조회합니다.</p>
+     * <p><strong>[RAW API]</strong> 멤버를 DB에서 조회합니다.</p>
      * @param seq - 조회할 멤버의 시퀀스 번호.
      * @return {@link ApiResult}<{@link MembersDao}>를 반환합니다.
      */
@@ -85,7 +104,7 @@ public class MembersService {
     }
 
     /**
-     * <p><strong>[RAW API]</strong> 멤버를 조회합니다.</p>
+     * <p><strong>[RAW API]</strong> 멤버를 DB에서 조회합니다.</p>
      * @param id - 조회할 멤버의 아이디.
      * @return {@link ApiResult}<{@link MembersDao}>를 반환합니다.
      */
@@ -96,7 +115,7 @@ public class MembersService {
     }
 
     /**
-     * <p>멤버 존재 여부와 닉네임 중복검사를 수행 후 멤버 정보를 수정합니다.</p>
+     * <p>멤버 존재 여부와 닉네임 중복검사를 수행 후 멤버 정보를 DB에서 수정합니다.</p>
      * {@code putMembersDto}내부 값 중, null을 전달받은 값은 기존 정보와 동일하게 수정합니다.
      * @param seq - 수정할 멤버의 seq값.
      * @param putMembersDto - 수정할 멤버 정보.
@@ -136,7 +155,7 @@ public class MembersService {
     }
 
     /**
-     * <p>[RAW API] 멤버 정보를 수정합니다.
+     * <p>[RAW API] 멤버 정보를 DB에서 수정합니다.
      * @param membersDao - 수정할 멤버 정보.
      * @return {@link ApiResult}를 반환합니다.
      */
@@ -147,7 +166,7 @@ public class MembersService {
     }
 
     /**
-     * <p>[RAW API] 멤버를 삭제합니다.</p>
+     * <p>[RAW API] 멤버를 DB에서 삭제합니다.</p>
      * @param seq - 삭제할 멤버의 seq값.
      * @return {@link ApiResult}를 반환합니다.
      */

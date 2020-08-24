@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.SecurityUtil;
-import com.de4bi.common.util.UserJwtUtil;
+import com.de4bi.common.util.MemberJwtUtil;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.spring.SecureProperties;
@@ -43,7 +43,7 @@ public class JwtService {
         Objects.requireNonNull(memberJwt, "'memberJwt' is null!");
 
         // JWT 검사
-        final Jws<Claims> jws = UserJwtUtil.validate(memberJwt, secureProps.getMemberJwtSecret(), null);
+        final Jws<Claims> jws = MemberJwtUtil.validate(memberJwt, secureProps.getMemberJwtSecret(), null);
 
         // Member 검사
         final MembersDao selectedMembersDao = membersSvc.rawSelect(jws.getBody().getId()).getData();
@@ -69,7 +69,7 @@ public class JwtService {
         Objects.requireNonNull(adminJwt, "'adminJwt' is null!");
 
         // JWT 검사
-        final Jws<Claims> jws = UserJwtUtil.validate(adminJwt, secureProps.getMemberJwtSecret(), null);
+        final Jws<Claims> jws = MemberJwtUtil.validate(adminJwt, secureProps.getMemberJwtSecret(), null);
 
         // Member 검사
         final MembersDao selectedMembersDao = membersSvc.rawSelect(jws.getBody().getId()).getData();
