@@ -16,7 +16,7 @@ import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.exception.ControllerException;
 import com.de4bi.common.exception.MapperException;
 import com.de4bi.common.exception.ServiceException;
-import com.de4bi.members.service.JwtService;
+import com.de4bi.members.service.MemberJwtService;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -45,7 +45,7 @@ public class ControllerAop {
     public static final String CTR_REQ_TIME = "REQ_TIME";
 
     // 서비스
-    private JwtService jwtSvc;
+    private MemberJwtService memberJwtService;
 
     /**
      * Controller전/후를 감싸는 AOP입니다. Controller메서드 호출 및 응답, 예외상황을 핸들링합니다.
@@ -82,11 +82,11 @@ public class ControllerAop {
             // 사용자 정의 어노테이션 검사 수행
             try {
                 if (method.getAnnotation(RequireMemberJwt.class) != null) {
-                    jwtSvc.validateMemberJwt(httpSvlReq.getHeader("member_jwt"));
+                    memberJwtService.validateMemberJwt(httpSvlReq.getHeader("member_jwt"));
                 }
 
                 if (method.getAnnotation(RequireAdminJwt.class) != null) {
-                    jwtSvc.validateAdminJwt(httpSvlReq.getHeader("member_jwt"));
+                    memberJwtService.validateAdminJwt(httpSvlReq.getHeader("member_jwt"));
                 }
             }
             catch (NullPointerException e) {
@@ -117,7 +117,7 @@ public class ControllerAop {
         }
         catch (ApiException e) {
             // 외부로 사용자 지정 HTTP Status와 오류 메시지 응답
-            logger.error("ApiException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
+            logger.error("ApiException! IntMsg:{} / ExtMsg:{} / Cause:{}", e.getInternalMsg(), e.getMessage(), e.getCause());
             httpSvlRes.setStatus(e.getHttpStatus().value());
             ctrResult = getErrorResultStr(tid, e.getMessage());
         }

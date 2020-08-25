@@ -6,7 +6,8 @@ public class ApiException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
     
-    protected HttpStatus httpStatus = HttpStatus.OK;
+    protected HttpStatus httpStatus = HttpStatus.OK; // HTTP Status
+    protected String internalMsg = null; // 내부 로깅용 메시지
 
     public ApiException() {
         super();
@@ -18,6 +19,11 @@ public class ApiException extends RuntimeException {
 
     public ApiException(String msg) {
         super(msg);
+    }
+
+    public ApiException(String msg, String internalMsg) {
+        super(msg);
+        this.internalMsg = internalMsg;
     }
 
     public ApiException(Throwable t) {
@@ -33,12 +39,27 @@ public class ApiException extends RuntimeException {
         super(msg, t);
     }
 
+    public ApiException(String msg, String internalMsg, Throwable t) {
+        super(msg, t);
+        this.internalMsg = internalMsg;
+    }
+
     public ApiException(HttpStatus httpStatus, String msg, Throwable t) {
         super(msg, t);
         this.httpStatus = httpStatus;
     }
 
+    public ApiException(HttpStatus httpStatus, String msg, String internalMsg, Throwable t) {
+        super(msg, t);
+        this.httpStatus = httpStatus;
+        this.internalMsg = internalMsg;
+    }
+
     public HttpStatus getHttpStatus() {
         return this.httpStatus;
+    }
+
+    public String getInternalMsg() {
+        return this.internalMsg;
     }
 }

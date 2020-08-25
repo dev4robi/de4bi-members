@@ -1,6 +1,6 @@
 -- Service: de4bi-members
--- Last Modified: 2020.07.20
--- Version: 1.0.0
+-- Last Modified: 2020.08.25
+-- Version: 1.0.1
 -- name : db_members
 
 CREATE DATABASE db_members;
@@ -29,30 +29,37 @@ INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(102,'M
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(103,'MEMBERS_STATUS','ST02','정지');
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(104,'MEMBERS_STATUS','ST03','탈퇴');
 
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(10001,'MEMBERS_AUTHAGENCY','DE4BI','자체');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(10002,'MEMBERS_AUTHAGENCY','GOOGLE','구글');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(10003,'MEMBERS_AUTHAGENCY','KAKAO','카카오');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(10004,'MEMBERS_AUTHAGENCY','NAVER','네이버');
+
 -- 회원 테이블
 CREATE TABLE `db_members`.`tb_members` (
   `seq`             BIGINT NOT NULL AUTO_INCREMENT, -- 고유 시퀀스
   `id`              VARCHAR(128) NOT NULL,          -- 아이디
-  `password`        VARCHAR(64) NOT NULL,           -- 비밀번호 (SALTED + SHA-256)
+  `password`        VARCHAR(64),                    -- 비밀번호 (SALTED + SHA-256, 플랫폼으로 가입시 NULL)
   `nickname`        VARCHAR(16) NOT NULL,           -- 별명 (닉네임/유니크)
   `name`            VARCHAR(64) NOT NULL,           -- 이름
   `authority`       BIGINT NOT NULL DEFAULT '0',    -- 권한
   `status`          BIGINT NOT NULL DEFAULT '0',    -- 계정상태
-  `level`           INT NOT NULL DEFAULT '1',       -- 레벨
-  `exp`             INT NOT NULL DEFAULT '0',       -- 경험치
+  `auth_agency`     BIGINT NOT NULL DEFAULT '0',    -- 인증기관
   `join_date`       DATETIME NOT NULL,              -- 가입일자 (재가입시 갱신)
   `last_login_date` DATETIME,                       -- 마지막 로그인 일자
 
   PRIMARY KEY (`seq`),
-  UNIQUE KEY (`id`, `nickname`),
-  UNIQUE INDEX `members_uk_idx_id` (`id` ASC),
-  UNIQUE INDEX `members_uk_idx_nickname` (`nickname` ASC),
+  UNIQUE KEY (`id`),
+  UNIQUE KEY (`nickname`),
   CONSTRAINT `members_fk_authority`
     FOREIGN KEY (`authority`) REFERENCES `db_members`.`tb_codes` (`seq`)
     ON DELETE NO ACTION
     ON UPDATE CASCADE,
   CONSTRAINT `members_fk_status`
     FOREIGN KEY (`status`) REFERENCES `db_members`.`tb_codes` (`seq`)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE,
+  CONSTRAINT `members_fk_agency`
+    FOREIGN KEY (`auth_agency`) REFERENCES `db_members`.`tb_codes` (`seq`)
     ON DELETE NO ACTION
     ON UPDATE CASCADE
 );

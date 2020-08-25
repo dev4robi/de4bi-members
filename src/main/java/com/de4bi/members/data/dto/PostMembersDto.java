@@ -15,4 +15,5 @@ public class PostMembersDto {
     private String password;
     private String nickname;
     private String name;
+    private long authAgency;
 }
