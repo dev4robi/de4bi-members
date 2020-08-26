@@ -1,6 +1,7 @@
 package com.de4bi.members.service.oauth;
 
 import com.de4bi.common.data.ApiResult;
+import com.de4bi.members.data.dto.PostMembersDto;
 
 /**
  * OAuth 회원 가입을 위한 인터페이스 입니다.
@@ -37,9 +38,9 @@ public interface IOAuthService {
      * <strong>※ 일반적인 경우 이 메서드만 사용하면 됩니다.</strong>
      * @param code : 플랫폼으로부터 클라이언트에게 내려준 인증코드값.
      * @param extObj : 플랫폼 종속 파라미터를 전달할 객체입니다.
-     * @return 성공 시, {@link ApiResult}<{@link OAuthDto}>를 반환합니다.
+     * @return 성공 시, {@link ApiResult}<{@link PostMembersDto}>를 반환합니다.
      * @apiNote 내부적으로 {@link IOAuthService}인터페이스의 메서드인
      * {@code requestIdTokenUsingAuthCode()}, {@code getMemberInfoFromIdToken}를 호출할 것입니다. 
      */
-    public ApiResult<OAuthDto> getMemberInfoWithOAuth(String code, Object extObj);
+    public ApiResult<PostMembersDto> getMemberInfoWithOAuth(String code, Object extObj);
 }

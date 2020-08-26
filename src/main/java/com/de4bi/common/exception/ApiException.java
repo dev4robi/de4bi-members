@@ -59,7 +59,17 @@ public class ApiException extends RuntimeException {
         return this.httpStatus;
     }
 
+    public ApiException setHttpStatus(HttpStatus httpStatus) {
+        this.httpStatus = httpStatus;
+        return this;
+    }
+
     public String getInternalMsg() {
         return this.internalMsg;
+    }
+
+    public ApiException setInternalMsg(String msg) {
+        this.internalMsg = msg;
+        return this;
     }
 }

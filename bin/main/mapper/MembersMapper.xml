@@ -6,8 +6,8 @@
 <mapper namespace="com.de4bi.members.db.mapper.MembersMapper">
     <!-- Insert -->
     <insert id="insert" parameterType="com.de4bi.members.data.dao.MembersDao" useGeneratedKeys="true" keyProperty="seq">
-        INSERT INTO tb_members (id,password,nickname,name,authority,level,exp,status,join_date)
-        VALUES (#{id},#{password},#{nickname},#{name},#{authority},#{level},#{exp},#{status},#{joinDate});
+        INSERT INTO tb_members (id,password,nickname,name,authority,auth_agency,status,join_date)
+        VALUES (#{id},#{password},#{nickname},#{name},#{authority},#{authAgency},#{status},#{joinDate});
     </insert>
 
     <!-- Select -->
@@ -19,7 +19,7 @@
 
     <select id="selectById" parameterType="String" resultType="com.de4bi.members.data.dao.MembersDao">
         SELECT *
-        FROM tb_members;
+        FROM tb_members
         WHERE id = #{id};
     </select>
 
@@ -37,9 +37,8 @@
             nickname=#{nickname},
             name=#{name},
             authority=#{authority},
-            level=#{level},
-            exp=#{exp},
             status=#{status},
+            auth_agency=#{authAgency},
             join_date=#{joinDate},
             last_login_date=#{lastLoginDate}
         WHERE seq = #{seq};

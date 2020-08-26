@@ -3,6 +3,7 @@ package com.de4bi.members.service;
 import java.util.Objects;
 
 import com.de4bi.common.data.ApiResult;
+import com.de4bi.common.data.ThreadStorage;
 import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.SecurityUtil;
 import com.de4bi.common.util.MemberJwtUtil;
@@ -40,15 +41,8 @@ public class MemberJwtService {
         final Jws<Claims> jws = MemberJwtUtil.validate(memberJwt, secureProps.getMemberJwtSecret(), null);
 
         // Member 검사
-        final MembersDao selectedMembersDao = membersMapper.selectById(jws.getBody().getId());
-        
-        if (selectedMembersDao == null) {
-            throw new ApiException("존재하지 않는 회원입니다.");
-        }
-
-        if (selectedMembersDao.getStatus() == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
-            throw new ApiException("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.");
-        }        
+        final String id = jws.getBody().getId();
+        checkMemberLoginable(id, null);
 
         return ApiResult.of(true);
     }
@@ -66,19 +60,13 @@ public class MemberJwtService {
         final Jws<Claims> jws = MemberJwtUtil.validate(adminJwt, secureProps.getMemberJwtSecret(), null);
 
         // Member 검사
-        final MembersDao selectedMembersDao = membersMapper.selectById(jws.getBody().getId());
-        
-        if (selectedMembersDao == null) {
-            throw new ApiException("존재하지 않는 회원입니다.");
-        }
+        final String id = jws.getBody().getId();
+        final MembersDao selectedMembersDao = checkMemberLoginable(id, null);
 
-        if (selectedMembersDao.getStatus() == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
-            throw new ApiException("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.");
-        }
-
+        // 추가 검사
         if (selectedMembersDao.getAuthority() != MembersCode.MEMBERS_AUTHORITY_MANAGER.getSeq() &&
             selectedMembersDao.getAuthority() != MembersCode.MEMBERS_AUTHORITY_ADMIN.getSeq()) {
-            throw new ApiException("해당 기능을 수행할 권한이 없습니다.");
+            throw new ApiException("해당 기능을 수행할 권한이 없습니다.").setInternalMsg("Unauthorized member. (id: " + id + ")");
         }
 
         return ApiResult.of(true);
@@ -92,27 +80,54 @@ public class MemberJwtService {
      */
     public ApiResult<String> issueMemberJwt(String id, String password, long expiredIn) {
         Objects.requireNonNull(id, "'id' is null!");
-        Objects.requireNonNull(password, "'password' is null!");
 
-        // Member 검사
+        // Member 로그인 가능여부 검사
+        final MembersDao selectedMembersDao = checkMemberLoginable(id, password);
+
+        // MemberJwt 생성
+        final long curTime = System.currentTimeMillis();
+        final MemberJwtUtil.JwtClaims jwtClaims = MemberJwtUtil.JwtClaims.builder()
+            .id(ThreadStorage.getStr(ApiResult.KEY_TID))    // jid(JWT 식별자) = tid
+            .subject(selectedMembersDao.getId())            // sub : 맴버 아이디
+            .issuer("members.de4bi.com")                    // iss : 맴버서버
+            .audience("*.de4bi.com")                        // aud : 모든 de4bi 플랫폼
+            .issuedAt(curTime)                              // iat : 발급시간
+            .expiration(curTime + expiredIn)                // exp : 만료시간
+            .notBefore(curTime)                             // nbf : 시작시간
+            .build();
+
+        return ApiResult.of(true, null, MemberJwtUtil.issue(null, jwtClaims, secureProps.getMemberJwtSecret()));
+    }
+
+    ////////////////////////////////////////////////////////////////
+    // private methods
+    ////////////////////////////////////////////////////////////////
+    
+    /**
+     * <p>맴버의 로그인 가능상태를 반환합니다.</p>
+     * @param membersDao : 검사할 맴버 Dao.
+     * @param id : 맴버 아이디.
+     * @param password : 맴버 비밀번호. (nullable:비밀번호 검사를 생략합니다)
+     * @return 성공 시 해당 맴버의 정보가 담긴 {@link MembersDao}를 반환하고,
+     * 실패 시 실패 내용이 담긴 {@link ApiException}을 반환합니다.
+     * @apiNote DB에 접근하기 위해 {@link MembersMapper}의 {@code selectById()}를 사용합니다.
+     */
+    private MembersDao checkMemberLoginable(String id, String password) {
         final MembersDao selectedMembersDao = membersMapper.selectById(id);
-        
         if (selectedMembersDao == null) {
-            throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.", "Member not exist! (id: " + id + ")");
+            throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.").setInternalMsg("Member not exist! (id: " + id + ")");
         }
 
-        if (selectedMembersDao.getPassword() != SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordSalt())) {
-            throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.", "Wrong password! (id: " + id + ")");
+        if (password != null) {
+            if (selectedMembersDao.getPassword() != SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordSalt())) {
+                throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.").setInternalMsg("Wrong password! (id: " + id + ")");
+            }
         }
 
         if (selectedMembersDao.getStatus() == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
-            throw new ApiException("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.", "Banned member! (id: " + id + ")");
+            throw new ApiException("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.").setInternalMsg("Banned member! (id: " + id + ")");
         }
 
-        // 여기부터 계속... @@
-        // 이제 어떤 포멧으로 MemberJwt를 생성할지 고민해 보자.
-
-
-        return null;
+        return selectedMembersDao;
     }
 }

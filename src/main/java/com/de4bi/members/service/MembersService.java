@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.exception.ApiException;
-import com.de4bi.common.util.MemberJwtUtil;
 import com.de4bi.common.util.SecurityUtil;
 import com.de4bi.common.util.StringUtil;
 import com.de4bi.members.data.code.MembersCode;
@@ -17,20 +16,14 @@ import com.de4bi.members.data.dto.PutMembersDto;
 import com.de4bi.members.db.mapper.MembersMapper;
 import com.de4bi.members.spring.SecureProperties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import lombok.AllArgsConstructor;
 
 /**
- * @@ 일단 락 염두하지 않고 개발. 스프링 락과 DB제공 락중 무엇을 사용할지 반드시 결정할 것. @@
  * Members에 대한 서비스입니다.
  */
 @PropertySource("config.properties")
@@ -41,14 +34,14 @@ public class MembersService {
     private final MemberJwtService memberJwtService;
     private final MembersMapper membersMapper;
     private final SecureProperties secureProps;
+    private final Environment env;
 
-    @Value("${member.jwt.expired-hour}") // MemberJwt 기본 만료시간
-    private long MEMBER_JWT_EXPIRED_IN_HOUR;
+    private static final String ENVKEY_MEMBER_JWT_EXPIRED_IN_MS =
+        "member.jwt.expired-hour"; // MemberJwt 기본 로그인 만료시간
+    private static final String ENVKEY_MEMBER_JWT_EXPIRED_IN_MS_KEEPLOGGEDIN =
+        "members.jwt.expired-hour-keeploggedin"; // MemberJwt 로그인 유지옵션 시 만료시간
 
-    @Value("${members.jwt.expired-hour-keeploggedin}") // MemberJwt 로그인 유지 시 만료시간
-    private long MEMBER_JWT_EXPIRED_IN_HOUR_KEEPLOGGEDIN;
-
-    /**
+    /**360
      * <p>회원가입 및 로그인을 수행합니다.</p>
      * @param postMembersDto : 회원가입 정보.
      * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
@@ -57,14 +50,19 @@ public class MembersService {
     public ApiResult<String> signin(PostMembersDto postMembersDto) {
         Objects.requireNonNull(postMembersDto, "'postMembersDto' is null!");
 
+        // 회원정보 검색
         final String id = postMembersDto.getId();
-
-        if (this.rawSelect(id).getResult()) {
-            throw new ApiException(StringUtil.quote(id) + "는 이미 가입된 이메일입니다.");
+        if (this.rawSelect(id).getData() != null) {
+            // 가입정보가 있는 경우 소셜로그인인지 확인, 아닌 경우(자체가입) 중복가입 거부
+            if (postMembersDto.getAuthAgency() == MembersCode.MEMBERS_AUTHAGENCY_DE4BI.getSeq()) {
+                throw new ApiException(StringUtil.quote(id) + "는 이미 가입된 이메일입니다.");
+            }
         }
-
-        if (this.insert(postMembersDto).getResult()) {
-            throw new ApiException("회원 가입 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        else {
+            // 가입정보가 없는 경우 신규회원 추가
+            if (this.insert(postMembersDto).getResult() == false) {
+                throw new ApiException("회원 가입 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+            }
         }
 
         return login(id, postMembersDto.getPassword()); // 자동으로 로그인 결과 반환
@@ -79,7 +77,12 @@ public class MembersService {
      * {@code MembersService.rawSelect()}를 사용하지 않음에 유의해야 합니다.
      */
     public ApiResult<String> login(String id, String password) {
-        return memberJwtService.issueMemberJwt(id, password, MEMBER_JWT_EXPIRED_IN_HOUR);
+        // MemberJwt 발급
+        return memberJwtService.issueMemberJwt(
+            id, password, env.getProperty(ENVKEY_MEMBER_JWT_EXPIRED_IN_MS, Long.class));
+
+        // 여기에 마지막 로그인일자 업데이트 추가해야 함... @@
+         
     }
 
     /**
@@ -176,9 +179,9 @@ public class MembersService {
         // 업데이트 수행 (변경할 값으로 null을 전달받은 경우 기존값을 그대로 사용)
         final MembersDao updatedMembersDao = seletedMembersDao;
         final String newPassword = 
-            Objects.isNull(putMembersDto.getPassword()) ?
-                seletedMembersDao.getPassword() :
-                SecurityUtil.passwordSecureHashing(putMembersDto.getPassword(), secureProps.getMemberPasswordSalt());
+            Objects.isNull(putMembersDto.getPassword())
+                ? seletedMembersDao.getPassword()
+                : SecurityUtil.passwordSecureHashing(putMembersDto.getPassword(), secureProps.getMemberPasswordSalt());
         final String newNickname = Optional.ofNullable(putMembersDto.getNickname()).orElse(seletedMembersDao.getNickname());
         final String newName = Optional.ofNullable(putMembersDto.getName()).orElse(seletedMembersDao.getName());
 

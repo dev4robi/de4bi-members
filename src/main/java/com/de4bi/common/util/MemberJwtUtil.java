@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import com.de4bi.common.exception.ApiException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import io.jsonwebtoken.Claims;
@@ -56,12 +57,12 @@ public class MemberJwtUtil {
     ////////////////////////////////////////////////////////////////
 
     /**
-     * UserJwt를 발급합니다.
+     * MemberJwt를 발급합니다.
      * 
      * @param jwtHeaderMap - 헤더에 추가할 데이터입니다.
-     * @param jwtClaims - {@code UserJwtUtil.JwtClaims}로 생성할 수 있는 꾸러미입니다. (not null)
+     * @param jwtClaims - {@code MemberJwtUtil.JwtClaims}로 생성할 수 있는 꾸러미입니다. (not null)
      * @param secret - 해시키 보안을 위해 사용할 값입니다. 이 값과 {@code makeSignKey()}을 사용하여 해시키를 생성합니다. (not null, 256bit)
-     * @return 발급된 UserJwt문자열을 반환합니다.
+     * @return 발급된 MemberJwt문자열을 반환합니다.
      * @throws JwtException JWT발급 중 오류가 발생한 경우.
      */
     public static String issue(final Map<String, Object> jwtHeaderMap, final JwtClaims jwtClaims, final String secret) throws JwtException {
@@ -112,7 +113,7 @@ public class MemberJwtUtil {
     }
 
     /**
-     * 발급된 UserJwt를 검증합니다.
+     * 발급된 MemberJwt를 검증합니다.
      * 
      * @param memberJwt - 검증할 JWT. (not null)
      * @param secret - 검증할 JWT의 해시키 보안값. (not null)
@@ -177,11 +178,11 @@ public class MemberJwtUtil {
     ////////////////////////////////////////////////////////////////
 
     /**
-     * JWT검증을 위해 사용할 비밀 SignKey를 생성합니다.
+     * <p>JWT검증을 위해 사용할 비밀 SignKey를 생성합니다.
      * 키는 32byte의 0x00배열에 {@code secret.getBytes("utf-8")}
      * 을 xor 수행시킨 결과를 사용하여 생성합니다.
-     * 
-     * @param secret - 서버 내부에서 사용할 기본 secret값입니다. (not null, 256bit)
+     * 만약 {@code secret}의 값이 32byte보다 크다면, 32byte단위로 중첩 xor하여 사용합니다.</p>
+     * @param secret - 서버 내부에서 사용할 기본 secret값입니다.
      * @return 생성된 HMAC-SHA {@code Key}를 반환합니다.
      */
     private static Key makeSignKey(final String secret) {
@@ -189,7 +190,7 @@ public class MemberJwtUtil {
         Objects.requireNonNull(secret, "'secret' is null!");
 
         // 키 바이트배열 생성
-        final byte[] keyByteAry = new byte[32]; // 32byte미만인 경우 WeakKeyException 발생
+        final byte[] keyByteAry = new byte[32]; // 32byte(256bit)미만인 경우 WeakKeyException발생
         byte[] secretByteAry = null;
         
         try {
@@ -202,9 +203,10 @@ public class MemberJwtUtil {
             secretByteAry = secret.getBytes();
         }
 
-        final int iLimit = Math.min(keyByteAry.length, secretByteAry.length);
+        // 32byte(256bit)보다 긴 길이의 키가 들어오는 경우, 32byte이후의 부분을 다시 인덱스의 0부터 xor시킨다
+        final int iLimit = Math.max(keyByteAry.length, secretByteAry.length);
         for (int i = 0; i < iLimit; ++i) {
-            keyByteAry[i] = secretByteAry[i]; // secret copy
+            keyByteAry[i % keyByteAry.length] ^= secretByteAry[i]; // secret xor copy
         }
 
         // SignKey 생성

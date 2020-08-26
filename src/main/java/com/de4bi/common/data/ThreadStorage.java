@@ -46,7 +46,7 @@ public class ThreadStorage {
      */
     public static String getStr(String key) {
         final Object tempObj = getThreadLocalMap().get(key);
-        return Objects.nonNull(tempObj) ? tempObj.toString() : null;
+        return Objects.nonNull(tempObj) ? tempObj.toString() : "null";
     }
 
     /**

@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,8 @@ import com.de4bi.common.util.JsonUtil;
 import com.de4bi.common.util.JwtUtil;
 import com.de4bi.common.util.RestHttpUtil;
 import com.de4bi.common.util.StringUtil;
+import com.de4bi.members.data.code.MembersCode;
+import com.de4bi.members.data.dto.PostMembersDto;
 import com.de4bi.members.spring.BootApplication;
 import com.de4bi.members.spring.SecureProperties;
 
@@ -295,8 +298,7 @@ public class GoogleOAuthService implements IOAuthService {
             throw new IllegalStateException("Fail to get 'name' from google OAuth!");
         }
 
-        final OAuthDto rtOAuthDto = OAuthDto.builder().email(email).name(name).build();
-        return ApiResult.of(true, rtOAuthDto);
+        return ApiResult.of(true, OAuthDto.builder().email(email).name(name).build());
     }
 
     /**
@@ -304,13 +306,24 @@ public class GoogleOAuthService implements IOAuthService {
      * <strong>※ 일반적인 경우 이 메서드만 사용하면 됩니다.</strong>
      * @param code : 플랫폼으로부터 클라이언트에게 내려준 인증코드값.
      * @param extObj : 플랫폼 종속 파라미터를 전달할 객체입니다. (nullable)
-     * @return 성공 시, {@link ApiResult}<{@link OAuthDto}>를 반환합니다.
+     * @return 성공 시, {@link ApiResult}<{@link PostMembersDto}>를 반환합니다.
      * @apiNote 내부적으로 {@link IOAuthService}인터페이스의 메서드인
      * {@code requestIdTokenUsingAuthCode()}, {@code getMemberInfoFromIdToken}를 호출합니다.
      */
-    @Override public ApiResult<OAuthDto> getMemberInfoWithOAuth(String code, Object extObj) {
+    @Override public ApiResult<PostMembersDto> getMemberInfoWithOAuth(String code, Object extObj) {
         final String idToken = requestIdTokenUsingAuthCode(code, null).getData();
         final OAuthDto oauthDto = getMemberInfoFromIdToken(idToken, extObj).getData();
-        return ApiResult.of(true, oauthDto);
+        // 임시 닉네임 생성: {인증기관코드}#{SUBSTR(MD5({이메일}+{이름}+{현재시간}),8)} -> cf.) GOOGLE#af32a1a0
+        final String temporalNickname = MembersCode.MEMBERS_AUTHAGENCY_GOOOLE.getValue() + "#" +
+            Hex.encodeHexString(CipherUtil.hashing(CipherUtil.MD5,
+                oauthDto.getEmail() + oauthDto.getName() + LocalTime.now().toString())).substring(0, 8);
+        final PostMembersDto rtPostMembersDto = PostMembersDto.builder()
+            .id(oauthDto.getEmail())
+            .password(null)
+            .nickname(temporalNickname)
+            .name(oauthDto.getName())
+            .authAgency(MembersCode.MEMBERS_AUTHAGENCY_GOOOLE.getSeq())
+            .build();
+        return ApiResult.of(true, rtPostMembersDto);
     }
 }
