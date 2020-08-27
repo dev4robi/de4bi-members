@@ -4,7 +4,7 @@ const login_js = {
     
     // 페이지 초기화
     initPage : function() {
-        // 이벤트: 플랫폼 로그인 버튼 클릭
+        // 이벤트 부착: 플랫폼 로그인 버튼 클릭
         const platforms = ['google', 'naver', 'kakao', 'de4bi'];
         for (i = 0; i < platforms.length; ++i) {
             $('#btn_' + platforms[i] + '_login').click(function(){

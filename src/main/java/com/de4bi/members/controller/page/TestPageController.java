@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.de4bi.common.exception.ApiException;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -14,6 +16,15 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @Controller
 public class TestPageController {
+
+    @RequestMapping(value = "/error")
+    public ModelAndView getError() {
+        int i = 0;
+        if (i == 0) {
+            throw new ApiException("오류 발생!");
+        }
+        return new ModelAndView("error");
+    }
 
     @RequestMapping(value= {"", "/test"})
     public ModelAndView getTest() {

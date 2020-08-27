@@ -6,7 +6,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.de4bi.common.data.ApiResult;
+import com.de4bi.common.data.ThreadStorage;
 import com.de4bi.common.exception.ApiException;
+import com.de4bi.common.util.MemberJwtUtil;
 import com.de4bi.common.util.SecurityUtil;
 import com.de4bi.common.util.StringUtil;
 import com.de4bi.members.data.code.MembersCode;
@@ -21,6 +23,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import lombok.AllArgsConstructor;
 
 /**
@@ -30,8 +34,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @Service
 public class MembersService {
+
+    ////////////////////////////////////////////////////////////////
+    // class fields
+    ////////////////////////////////////////////////////////////////
     
-    private final MemberJwtService memberJwtService;
     private final MembersMapper membersMapper;
     private final SecureProperties secureProps;
     private final Environment env;
@@ -41,49 +48,9 @@ public class MembersService {
     private static final String ENVKEY_MEMBER_JWT_EXPIRED_IN_MS_KEEPLOGGEDIN =
         "members.jwt.expired-hour-keeploggedin"; // MemberJwt 로그인 유지옵션 시 만료시간
 
-    /**360
-     * <p>회원가입 및 로그인을 수행합니다.</p>
-     * @param postMembersDto : 회원가입 정보.
-     * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
-     * @apiNote 내부적으로 {@code MembersService.login()}을 호출합니다.
-     */
-    public ApiResult<String> signin(PostMembersDto postMembersDto) {
-        Objects.requireNonNull(postMembersDto, "'postMembersDto' is null!");
-
-        // 회원정보 검색
-        final String id = postMembersDto.getId();
-        if (this.rawSelect(id).getData() != null) {
-            // 가입정보가 있는 경우 소셜로그인인지 확인, 아닌 경우(자체가입) 중복가입 거부
-            if (postMembersDto.getAuthAgency() == MembersCode.MEMBERS_AUTHAGENCY_DE4BI.getSeq()) {
-                throw new ApiException(StringUtil.quote(id) + "는 이미 가입된 이메일입니다.");
-            }
-        }
-        else {
-            // 가입정보가 없는 경우 신규회원 추가
-            if (this.insert(postMembersDto).getResult() == false) {
-                throw new ApiException("회원 가입 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-            }
-        }
-
-        return login(id, postMembersDto.getPassword()); // 자동으로 로그인 결과 반환
-    }
-
-    /**
-     * <p>로그인을 수행합니다.</p>
-     * @param id : 로그인할 아이디.
-     * @param password : 비밀번호.
-     * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
-     * @apiNote 내부적으로 {@code MembersMapper.select()}를 호출합니다.
-     * {@code MembersService.rawSelect()}를 사용하지 않음에 유의해야 합니다.
-     */
-    public ApiResult<String> login(String id, String password) {
-        // MemberJwt 발급
-        return memberJwtService.issueMemberJwt(
-            id, password, env.getProperty(ENVKEY_MEMBER_JWT_EXPIRED_IN_MS, Long.class));
-
-        // 여기에 마지막 로그인일자 업데이트 추가해야 함... @@
-         
-    }
+    ////////////////////////////////////////////////////////////////
+    // public methods
+    ////////////////////////////////////////////////////////////////
 
     /**
      * <p>신규 멤버를 DB에 추가합니다.</p>
@@ -211,5 +178,153 @@ public class MembersService {
     public ApiResult<?> rawDelete(long seq) {
         membersMapper.delete(seq);
         return ApiResult.of(true);
+    }
+
+    /**360
+     * <p>회원가입 및 로그인을 수행합니다.</p>
+     * @param postMembersDto : 회원가입 정보.
+     * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
+     * @apiNote 내부적으로 {@code MembersService.login()}을 호출합니다.
+     */
+    public ApiResult<String> signin(PostMembersDto postMembersDto) {
+        Objects.requireNonNull(postMembersDto, "'postMembersDto' is null!");
+
+        // 회원정보 검색
+        final String id = postMembersDto.getId();
+        if (this.rawSelect(id).getData() != null) {
+            // 가입정보가 있는 경우 소셜로그인인지 확인, 아닌 경우(자체가입) 중복가입 거부
+            if (postMembersDto.getAuthAgency() == MembersCode.MEMBERS_AUTHAGENCY_DE4BI.getSeq()) {
+                throw new ApiException(StringUtil.quote(id) + "는 이미 가입된 이메일입니다.");
+            }
+        }
+        else {
+            // 가입정보가 없는 경우 신규회원 추가
+            if (this.insert(postMembersDto).getResult() == false) {
+                throw new ApiException("회원 가입 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+            }
+        }
+
+        return login(id, postMembersDto.getPassword()); // 자동으로 로그인 결과 반환
+    }
+
+    /**
+     * <p>로그인을 수행합니다.</p>
+     * @param id : 로그인할 아이디.
+     * @param password : 비밀번호.
+     * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
+     */
+    public ApiResult<String> login(String id, String password) {
+        // 토큰 발급
+        final ApiResult<String> rtRst =
+            issueMemberJwt(id, password, env.getProperty(ENVKEY_MEMBER_JWT_EXPIRED_IN_MS, Long.class));
+        
+        return rtRst;
+    }
+
+    /**
+     * <p>토큰이 유효한지, 토큰에서 획득한 멤버가 유효한(활동 가능한)지를 검사합니다.</p>
+     * @param memberJwt - 검사할 멤버JWT.
+     * @return {@link ApiResult}를 반환합니다.
+     * @throws 토큰 검증에 실패한 경우, {@link ApiException}을 반환합니다.
+     */
+    public ApiResult<?> validateMemberJwt(String memberJwt) {
+        Objects.requireNonNull(memberJwt, "'memberJwt' is null!");
+
+        // JWT 검사
+        final Jws<Claims> jws = MemberJwtUtil.validate(memberJwt, secureProps.getMemberJwtSecret(), null);
+
+        // Member 검사
+        final String id = jws.getBody().getId();
+        checkMemberLoginable(id, null);
+
+        return ApiResult.of(true);
+    }
+
+    /**
+     * <p>토큰이 유효한지, 토큰에서 획득한 멤버가 유효한(활동 가능한)지, 관리자인지를 검사합니다.</p>
+     * @param adminJwt - 검사할 멤버JWT.
+     * @return {@link ApiResult}를 반환합니다.
+     * @throws 토큰 검증에 실패한 경우, {@link ApiException}을 반환합니다.
+     */
+    public ApiResult<?> validateAdminJwt(String adminJwt) {
+        Objects.requireNonNull(adminJwt, "'adminJwt' is null!");
+
+        // JWT 검사
+        final Jws<Claims> jws = MemberJwtUtil.validate(adminJwt, secureProps.getMemberJwtSecret(), null);
+
+        // Member 검사
+        final String id = jws.getBody().getId();
+        final MembersDao selectedMembersDao = checkMemberLoginable(id, null);
+
+        // 추가 검사
+        if (selectedMembersDao.getAuthority() != MembersCode.MEMBERS_AUTHORITY_MANAGER.getSeq() &&
+            selectedMembersDao.getAuthority() != MembersCode.MEMBERS_AUTHORITY_ADMIN.getSeq()) {
+            throw new ApiException("해당 기능을 수행할 권한이 없습니다.").setInternalMsg("Unauthorized member. (id: " + id + ")");
+        }
+
+        return ApiResult.of(true);
+    }
+
+    /**
+     * <p>전달받은 정보로 MemberJwt를 발급하고 마지막 로그인한 시간을 갱신합니다.</p>
+     * @param id : 맴버 아이디.
+     * @param password : 맴버 비밀번호. (nullable:소셜로그인의 경우)
+     * @param expiredIn : 토큰 유지시간. (1000L -> 1초 후 만료)
+     */
+    public ApiResult<String> issueMemberJwt(String id, String password, long expiredIn) {
+        Objects.requireNonNull(id, "'id' is null!");
+
+        // Member 로그인 가능여부 검사
+        final MembersDao selectedMembersDao = checkMemberLoginable(id, password);
+
+        // MemberJwt 생성
+        final long curTime = System.currentTimeMillis();
+        final MemberJwtUtil.JwtClaims jwtClaims = MemberJwtUtil.JwtClaims.builder()
+            .id(ThreadStorage.getStr(ApiResult.KEY_TID))    // jid(JWT 식별자) = tid
+            .subject(selectedMembersDao.getId())            // sub : 맴버 아이디
+            .issuer("members.de4bi.com")                    // iss : 맴버서버
+            .audience("*.de4bi.com")                        // aud : 모든 de4bi 플랫폼
+            .issuedAt(curTime)                              // iat : 발급시간
+            .expiration(curTime + expiredIn)                // exp : 만료시간
+            .notBefore(curTime)                             // nbf : 시작시간
+            .build();
+        
+        // 마지막으로 로그인한 시간 업데이트
+        selectedMembersDao.setLastLoginDate(Date.from(Instant.now()));
+        rawUpdate(selectedMembersDao);
+
+        return ApiResult.of(true, null, MemberJwtUtil.issue(null, jwtClaims, secureProps.getMemberJwtSecret()));
+    }
+
+    ////////////////////////////////////////////////////////////////
+    // private methods
+    ////////////////////////////////////////////////////////////////
+    
+    /**
+     * <p>맴버의 로그인 가능상태를 반환합니다.</p>
+     * @param membersDao : 검사할 맴버 Dao.
+     * @param id : 맴버 아이디.
+     * @param password : 맴버 비밀번호. (nullable:비밀번호 검사를 생략합니다)
+     * @return 성공 시 해당 맴버의 정보가 담긴 {@link MembersDao}를 반환하고,
+     * 실패 시 실패 내용이 담긴 {@link ApiException}을 반환합니다.
+     * @apiNote DB에 접근하기 위해 {@link MembersMapper}의 {@code selectById()}를 사용합니다.
+     */
+    private MembersDao checkMemberLoginable(String id, String password) {
+        final MembersDao selectedMembersDao = membersMapper.selectById(id);
+        if (selectedMembersDao == null) {
+            throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.").setInternalMsg("Member not exist! (id: " + id + ")");
+        }
+
+        if (password != null) {
+            if (selectedMembersDao.getPassword() != SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordSalt())) {
+                throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.").setInternalMsg("Wrong password! (id: " + id + ")");
+            }
+        }
+
+        if (selectedMembersDao.getStatus() == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
+            throw new ApiException("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.").setInternalMsg("Banned member! (id: " + id + ")");
+        }
+
+        return selectedMembersDao;
     }
 }
