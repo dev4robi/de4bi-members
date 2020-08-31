@@ -53,7 +53,7 @@ public class ControllerAop {
      * @return ...
      */
     @Around("execution(* com.de4bi.members.controller.page..*.*(..))")
-    public ModelAndView aroundPageController(ProceedingJoinPoint pjp) {
+    public Object aroundPageController(ProceedingJoinPoint pjp) {
         // 초기화
         final long bgnTime = System.currentTimeMillis();
         final String tid = RandomStringUtils.randomAlphanumeric(16);
@@ -77,7 +77,7 @@ public class ControllerAop {
         logger.info(reqFunc);
 
         boolean errorPageFlag = false;
-        ModelAndView ctrResult = null; // @@여기부터 시작 - RedirectView를 반환할때 오류가 생긴다...
+        Object ctrResult = null;
         final Map<String, Object> ctrMap = new HashMap<>();
         try {
             // 사용자 정의 어노테이션 검사 수행
@@ -98,7 +98,7 @@ public class ControllerAop {
             ctrResult = (ModelAndView) pjp.proceed();
 
             if (ctrResult == null) {
-                ctrResult = new ModelAndView("error");
+                errorPageFlag = true;
             }
         }
         catch (ControllerException e) {
@@ -133,6 +133,7 @@ public class ControllerAop {
         }
 
         if (errorPageFlag) {
+            ctrMap.put("tid", tid);
             ctrResult = new ModelAndView("error").addAllObjects(ctrMap);
         }
 

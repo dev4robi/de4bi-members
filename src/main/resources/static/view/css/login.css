@@ -144,6 +144,16 @@ label {
     color: #ff0000;
 }
 
+.error-tid {
+    width: 60%;
+    font-size: small;
+    text-align: center;
+}
+
+.main-button {
+    width: 65%;
+}
+
 .join-icon {
     width: 32px;
     height: 32px;

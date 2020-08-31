@@ -81,10 +81,7 @@ public class GoogleOAuthService implements IOAuthService {
     ////////////////////////////////////////////////////////////////
 
     /**
-     * <p>
-     * 리다이렉션 페이지에서 해시서명 검사용으로 사용할 state값을 생성합니다.
-     * </p>
-     * 
+     * <p>리다이렉션 페이지에서 해시서명 검사용으로 사용할 state값을 생성합니다.</p>
      * @param nonce : 리다이렉션 페이지에서 전달받거나, 최초 시작 페이지에서 무작위로 생성된 문자열.
      * @return 생성된 state문자열을 반환합니다.
      */
@@ -94,12 +91,9 @@ public class GoogleOAuthService implements IOAuthService {
     }
 
     /**
-     * <p>
-     * {@code ID_TOKEN_SIGNING_PUBLIC_KEY}를 갱신합니다.
-     * </p>
-     * idToken(JWT)의 해시서명 검사를 위한 공개키를 구글로부터 획득합니다. non-thread-safe한 메서드 이므로 동기화 블럭을
-     * 사용하여 호출하도록 해야 합니다.
-     * 
+     * <p>{@code ID_TOKEN_SIGNING_PUBLIC_KEY}를 갱신합니다.</p>
+     * idToken(JWT)의 해시서명 검사를 위한 공개키를 구글로부터 획득합니다.
+     * <strong>{@code non-thread-safe}한 메서드</strong> 이므로 동기화 블럭을 사용하여 호출하도록 해야 합니다.
      * @param idToken : 응답 idToken(JWT)값.
      */
     private void updatePublicKeyForIdTokenSigning(String idToken) {
@@ -172,7 +166,6 @@ public class GoogleOAuthService implements IOAuthService {
 
     /**
      * <p>사용자가 구글 로그인(OAuth2)으로 인증코드(Authorization Code)를 획득하기 위한 URL을 생성합니다.</p>
-     * 
      * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
      * @return 성공 시, OAuth수행을 위한 URL을 문자열로 반환합니다.
      * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#authenticationuriparameters
@@ -194,7 +187,6 @@ public class GoogleOAuthService implements IOAuthService {
 
     /**
      * <p>사용자에게 전달받은 인증코드(Authorization Code)를 구글에 검증요청하여 idToken을 획득합니다.</p>
-     * 
      * @param code   : 구글로부터 사용자에게 내려준 인증코드값.
      * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
      * @return 성공 시, 구글로부터 응답받은 문자열(idToken)을 담은 ApiResult를 반환합니다.
@@ -203,24 +195,22 @@ public class GoogleOAuthService implements IOAuthService {
     @Override public ApiResult<String> requestIdTokenUsingAuthCode(String code, Object extObj) {
         Objects.requireNonNull(code, "'code' is null!");
 
-        // state 검사 무조건 만들어야 할 듯
-        // 다른 사이트에서 만든 코드를 재활용 할지도 모른다...! @@
-
         // 요청 바디 생성
         final StringBuilder reqBodySb = new StringBuilder(256);
         reqBodySb.append("code=").append(code).append("&client_id=").append(secureProperties.getGoogleOauthClientId())
-                .append("&client_secret=").append(secureProperties.getGoogleOauthClientSecret())
-                .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI) // Code를 획득한 리다이렉션 URI
-                .append("&grant_type=authorization_code");
+                 .append("&client_secret=").append(secureProperties.getGoogleOauthClientSecret())
+                 .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI) // Code를 획득한 리다이렉션 URI
+                 .append("&grant_type=authorization_code");
 
         // 구글로 token요청 전송
         final String reqBodyStr = reqBodySb.toString();
         final List<String> resBodyList = new ArrayList<>();
-        RestHttpUtil.httpPost(OAUTH_TOKEN_URL, MediaType.APPLICATION_FORM_URLENCODED, null, reqBodyStr, null,
-                resBodyList);
+        RestHttpUtil.httpPost(OAUTH_TOKEN_URL, MediaType.APPLICATION_FORM_URLENCODED, null, reqBodyStr, null, resBodyList);
 
         // 응답 파싱
         final Map<String, Object> googleResMap = JsonUtil.fromJsonStr(resBodyList.get(0));
+
+        // id_token 반환
         final String idToken = googleResMap.get("id_token").toString();
 
         return ApiResult.of(true, null, idToken);
@@ -229,11 +219,12 @@ public class GoogleOAuthService implements IOAuthService {
     /**
      * <p>구글로부터 받은 idToken을 처리하여 클라이언트의 정보를 획득합니다.</p>
      * @param idToken : 구글로부터 전달받은 토큰값.
+     * @param state : 플랫폼에 Code를위한 URL생성 시 넘겨주었던 고유 식별값.
      * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
      * @return 성공 시, {@link ApiResult}<{@link OAuthDto}>를 반환합니다.
      * @apiNote 내부적으로 최적화 병렬 처리를 위해 synchronized구문을 사용합니다.
      */
-    @Override public ApiResult<OAuthDto> getMemberInfoFromIdToken(String idToken, Object extObj) {
+    @Override public ApiResult<OAuthDto> getMemberInfoFromIdToken(String idToken, String state, Object extObj) {
         Objects.requireNonNull(idToken, "'idToken' is null!");
 
         boolean isFirstTry = true;
@@ -287,6 +278,13 @@ public class GoogleOAuthService implements IOAuthService {
             throw new ApiException("토큰 필수값이 일치하지 않습니다.", e.getCause());
         }
 
+        // state검사 (DB를 사용했다면 code를 획득하자 마자 할 수 있었겠지만, 별도의 DB사용을 하지 않으므로 이곳에서라도 검사 수행)
+        final String resState = makeStateForRedirectionSign(idTokenMap.getOrDefault("nonce", "").toString());
+        if (state.equals(resState) == false) {
+            throw new ApiException("잘못된 접근입니다. 다시 로그인 해주세요.")
+                .setInternalMsg("Invailed 'state'! (resState: " + resState + ", state: " + state + ")");
+        }
+
         final String email = idTokenMap.getOrDefault("email", "").toString();
         final String name = idTokenMap.getOrDefault("name", "").toString();
 
@@ -305,14 +303,16 @@ public class GoogleOAuthService implements IOAuthService {
      * <p>구글 OAuth를 사용하여 회원 정보를 획득합니다.</p>
      * <strong>※ 일반적인 경우 이 메서드만 사용하면 됩니다.</strong>
      * @param code : 플랫폼으로부터 클라이언트에게 내려준 인증코드값.
+     * @param state : 플랫폼에 Code를위한 URL생성 시 넘겨주었던 고유 식별값.
      * @param extObj : 플랫폼 종속 파라미터를 전달할 객체입니다. (nullable)
      * @return 성공 시, {@link ApiResult}<{@link PostMembersDto}>를 반환합니다.
      * @apiNote 내부적으로 {@link IOAuthService}인터페이스의 메서드인
      * {@code requestIdTokenUsingAuthCode()}, {@code getMemberInfoFromIdToken}를 호출합니다.
      */
-    @Override public ApiResult<PostMembersDto> getMemberInfoWithOAuth(String code, Object extObj) {
+    @Override public ApiResult<PostMembersDto> getMemberInfoWithOAuth(String code, String state, Object extObj) {
+        System.out.println("state: " + state);
         final String idToken = requestIdTokenUsingAuthCode(code, null).getData();
-        final OAuthDto oauthDto = getMemberInfoFromIdToken(idToken, extObj).getData();
+        final OAuthDto oauthDto = getMemberInfoFromIdToken(idToken, state, extObj).getData();
         // 임시 닉네임 생성: {인증기관코드}#{SUBSTR(MD5({이메일}+{이름}+{현재시간}),8)} -> cf.) GOOGLE#af32a1a0
         final String temporalNickname = MembersCode.MEMBERS_AUTHAGENCY_GOOOLE.getValue() + "#" +
             Hex.encodeHexString(CipherUtil.hashing(CipherUtil.MD5,
