@@ -46,7 +46,7 @@ public class MembersService {
     private static final String ENVKEY_MEMBER_JWT_EXPIRED_IN_MS =
         "member.jwt.expired-hour"; // MemberJwt 기본 로그인 만료시간
     private static final String ENVKEY_MEMBER_JWT_EXPIRED_IN_MS_KEEPLOGGEDIN =
-        "members.jwt.expired-hour-keeploggedin"; // MemberJwt 로그인 유지옵션 시 만료시간
+        "member.jwt.expired-hour-keeploggedin"; // MemberJwt 로그인 유지옵션 시 만료시간
 
     ////////////////////////////////////////////////////////////////
     // public methods
@@ -204,21 +204,22 @@ public class MembersService {
             }
         }
 
-        return login(id, postMembersDto.getPassword()); // 자동으로 로그인 결과 반환
+        return login(id, postMembersDto.getPassword(), false); // 자동으로 로그인 결과 반환
     }
 
     /**
      * <p>로그인을 수행합니다.</p>
      * @param id : 로그인할 아이디.
      * @param password : 비밀번호.
+     * @param isKeepLoggedIn : 로그인 유지여부.
      * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
      */
-    public ApiResult<String> login(String id, String password) {
+    public ApiResult<String> login(String id, String password, boolean isKeepLoggedIn) {
         // 토큰 발급
-        final ApiResult<String> rtRst =
-            issueMemberJwt(id, password, env.getProperty(ENVKEY_MEMBER_JWT_EXPIRED_IN_MS, Long.class));
-        
-        return rtRst;
+        return issueMemberJwt(
+            id, password,
+            env.getProperty(isKeepLoggedIn ? ENVKEY_MEMBER_JWT_EXPIRED_IN_MS_KEEPLOGGEDIN : ENVKEY_MEMBER_JWT_EXPIRED_IN_MS, Long.class)
+        );
     }
 
     /**

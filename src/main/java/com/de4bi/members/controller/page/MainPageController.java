@@ -6,7 +6,11 @@ import java.util.Map;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import lombok.AllArgsConstructor;
@@ -26,6 +30,12 @@ public class MainPageController {
         modelMap.put("kakao_login_url", "#");
         modelMap.put("de4bi_login_url", "#");
         return new ModelAndView("login", modelMap);
+    }
+
+    // 임시 페이지
+    @RequestMapping(value = "/replace")
+    public ModelAndView replacePage(@RequestParam Map<String, Object> paramMap) {
+        return new ModelAndView("replace", paramMap);
     }
 
     // 회원가입 페이지

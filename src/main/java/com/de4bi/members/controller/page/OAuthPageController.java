@@ -1,4 +1,7 @@
-package com.de4bi.members.controller.page.oauth;
+package com.de4bi.members.controller.page;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import com.de4bi.members.service.MembersService;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
@@ -25,6 +28,8 @@ public class OAuthPageController {
         @RequestParam(required = false, name = "error"          ) String error
     ) {
         final String memberJwt = membersService.signin(googleOAuthService.getMemberInfoWithOAuth(code, state, null).getData()).getData();
-        return new ModelAndView("redirect:/login?member_jwt=" + memberJwt);
+        final Map<String, Object> modelMap = new HashMap<>();
+        modelMap.put("redirect_url", "/login?member_jwt=" + memberJwt);
+        return new ModelAndView("redirect:/replace", modelMap);
     }
 }

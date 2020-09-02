@@ -23,4 +23,4 @@ const error_js = {
 }
 
 // 페이지 초기화
-$(document).ready(function(){error_js.initPage()});
+$(document).ready(function(){try{error_js.initPage()}catch(e){console.log(e);alert('페이지 로딩 중 오류가 발생했습니다. 새로고침(F5)해주세요.')}});
