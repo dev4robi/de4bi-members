@@ -26,7 +26,7 @@ const login_js = {
             }
         }
 
-        // 이벤트 부착: 플랫폼 로그인 버튼 클릭
+        // 이벤트 부착: 소셜 로그인 버튼 클릭
         const platforms = ['google', 'naver', 'kakao', 'de4bi'];
         for (i = 0; i < platforms.length; ++i) {
             $('#btn_' + platforms[i] + '_login').click(function(){
@@ -35,7 +35,7 @@ const login_js = {
         }
     },
 
-    // 플랫폼으로 로그인하기 클릭
+    // 소셜 로그인하기 클릭
     onclick_oauth_login : function(oauthUrl) {
         if (!oauthUrl || oauthUrl == '#') {
             alert('Comming Soon!');

@@ -11,6 +11,7 @@ import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.MemberJwtUtil;
 import com.de4bi.common.util.SecurityUtil;
 import com.de4bi.common.util.StringUtil;
+import com.de4bi.members.aop.ControllerAop;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.data.dto.PostMembersDto;
@@ -53,6 +54,49 @@ public class MembersService {
     ////////////////////////////////////////////////////////////////
 
     /**
+     * <p><strong>[RAW API]</strong> 멤버를 DB에 추가합니다.</p>
+     * @param membersDao - 추가될 멤버 정보.
+     * @return {@link ApiResult}를 반환합니다.
+     */
+    public ApiResult<?> rawInsert(MembersDao membersDao) {
+        Objects.requireNonNull(membersDao, "'membersDao' is null!");
+        membersMapper.insert(membersDao);
+        return ApiResult.of(true);
+    }
+
+    /**
+     * <p><strong>[RAW API]</strong> 멤버를 DB에서 조회합니다.</p>
+     * @param id - 조회할 멤버의 아이디.
+     * @return {@link ApiResult}<{@link MembersDao}>를 반환합니다.
+     */
+    public ApiResult<MembersDao> rawSelect(String id) {
+        Objects.requireNonNull(id, "'id' is null!");
+        final MembersDao selectedMembersDao = membersMapper.selectById(id);
+        return ApiResult.of(true, selectedMembersDao);
+    }
+
+    /**
+     * <p>[RAW API] 멤버 정보를 DB에서 수정합니다.
+     * @param membersDao - 수정할 멤버 정보.
+     * @return {@link ApiResult}를 반환합니다.
+     */
+    public ApiResult<?> rawUpdate(MembersDao membersDao) {
+        Objects.requireNonNull(membersDao, "'membersDao' is null!");
+        membersMapper.update(membersDao);
+        return ApiResult.of(true);
+    }
+
+    /**
+     * <p>[RAW API] 멤버를 DB에서 삭제합니다.</p>
+     * @param seq - 삭제할 멤버의 seq값.
+     * @return {@link ApiResult}를 반환합니다.
+     */
+    public ApiResult<?> rawDelete(long seq) {
+        membersMapper.delete(seq);
+        return ApiResult.of(true);
+    }
+
+    /**
      * <p>신규 멤버를 DB에 추가합니다.</p>
      * <p>소셜로그인을 사용한 경우 비밀번호는 null로 저장됩니다.</p>
      * <p>de4bi자체 회원가입시, password는 {@code passwordSecureHashing()}를 통해 해싱되어 저장됩니다.</p>
@@ -85,17 +129,6 @@ public class MembersService {
     }
 
     /**
-     * <p><strong>[RAW API]</strong> 멤버를 DB에 추가합니다.</p>
-     * @param membersDao - 추가될 멤버 정보.
-     * @return {@link ApiResult}를 반환합니다.
-     */
-    public ApiResult<?> rawInsert(MembersDao membersDao) {
-        Objects.requireNonNull(membersDao, "'membersDao' is null!");
-        membersMapper.insert(membersDao);
-        return ApiResult.of(true);
-    }
-
-    /**
      * <p><strong>[RAW API]</strong> 멤버를 DB에서 조회합니다.</p>
      * @param seq - 조회할 멤버의 시퀀스 번호.
      * @return {@link ApiResult}<{@link MembersDao}>를 반환합니다.
@@ -109,30 +142,24 @@ public class MembersService {
     }
 
     /**
-     * <p><strong>[RAW API]</strong> 멤버를 DB에서 조회합니다.</p>
-     * @param id - 조회할 멤버의 아이디.
-     * @return {@link ApiResult}<{@link MembersDao}>를 반환합니다.
-     */
-    public ApiResult<MembersDao> rawSelect(String id) {
-        Objects.requireNonNull(id, "'id' is null!");
-        final MembersDao selectedMembersDao = membersMapper.selectById(id);
-        return ApiResult.of(true, selectedMembersDao);
-    }
-
-    /**
-     * <p>멤버 존재 여부와 닉네임 중복검사를 수행 후 멤버 정보를 DB에서 수정합니다.</p>
+     * <p>멤버 존재 여부, 권한, 닉네임 중복검사를 수행 후 멤버 정보를 DB에서 수정합니다.</p>
      * {@code putMembersDto}내부 값 중, null을 전달받은 값은 기존 정보와 동일하게 수정합니다.
      * @param seq - 수정할 멤버의 seq값.
      * @param putMembersDto - 수정할 멤버 정보.
      * @return {@link ApiResult}를 반환합니다.
      */
-    public ApiResult<?> update(long seq, PutMembersDto putMembersDto) {
+    public ApiResult<?> updateMemberInfo(long seq, PutMembersDto putMembersDto) {
         Objects.requireNonNull(putMembersDto, "'putMembersDto' is null!");
 
         // 존재여부 검사
         final MembersDao seletedMembersDao = rawSelect(seq).getData();
         if (seletedMembersDao == null) {
             throw new ApiException(HttpStatus.ACCEPTED, "존재하지 않는 회원입니다.");
+        }
+
+        // 권한 검사 (본인이 아닌 경우 매니저권한 이상 필요)
+        if (seq != seletedMembersDao.getSeq()) {
+            checkMemberAuthority(seletedMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER);
         }
 
         // 닉네임 중복검사
@@ -160,33 +187,13 @@ public class MembersService {
     }
 
     /**
-     * <p>[RAW API] 멤버 정보를 DB에서 수정합니다.
-     * @param membersDao - 수정할 멤버 정보.
-     * @return {@link ApiResult}를 반환합니다.
-     */
-    public ApiResult<?> rawUpdate(MembersDao membersDao) {
-        Objects.requireNonNull(membersDao, "'membersDao' is null!");
-        membersMapper.update(membersDao);
-        return ApiResult.of(true);
-    }
-
-    /**
-     * <p>[RAW API] 멤버를 DB에서 삭제합니다.</p>
-     * @param seq - 삭제할 멤버의 seq값.
-     * @return {@link ApiResult}를 반환합니다.
-     */
-    public ApiResult<?> rawDelete(long seq) {
-        membersMapper.delete(seq);
-        return ApiResult.of(true);
-    }
-
-    /**360
      * <p>회원가입 및 로그인을 수행합니다.</p>
      * @param postMembersDto : 회원가입 정보.
+     * @param isSocialLogin : 소셜로 회원가입 여부.
      * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
      * @apiNote 내부적으로 {@code MembersService.login()}을 호출합니다.
      */
-    public ApiResult<String> signin(PostMembersDto postMembersDto) {
+    public ApiResult<String> signin(PostMembersDto postMembersDto, boolean isSocialSignin) {
         Objects.requireNonNull(postMembersDto, "'postMembersDto' is null!");
 
         // 회원정보 검색
@@ -204,7 +211,7 @@ public class MembersService {
             }
         }
 
-        return login(id, postMembersDto.getPassword(), false); // 자동으로 로그인 결과 반환
+        return login(id, postMembersDto.getPassword(), false, isSocialSignin); // 자동으로 로그인 결과 반환
     }
 
     /**
@@ -212,14 +219,30 @@ public class MembersService {
      * @param id : 로그인할 아이디.
      * @param password : 비밀번호.
      * @param isKeepLoggedIn : 로그인 유지여부.
+     * @param isSocialLogin : 소셜 로그인 여부.
      * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
      */
-    public ApiResult<String> login(String id, String password, boolean isKeepLoggedIn) {
+    public ApiResult<String> login(String id, String password, boolean isKeepLoggedIn, boolean isSocialLogin) {
+        Objects.requireNonNull(id, "'id' is null!");
+        
+        // 맴버 조회
+        final MembersDao selectedMembersDao = rawSelect(id).getData();
+
+        // 로그인 가능여부 검사 (소셜 로그인시 생략)
+        if (isSocialLogin == false) {
+            checkMemberLoginable(selectedMembersDao, password);
+        }
+        
         // 토큰 발급
-        return issueMemberJwt(
-            id, password,
-            env.getProperty(isKeepLoggedIn ? ENVKEY_MEMBER_JWT_EXPIRED_IN_MS_KEEPLOGGEDIN : ENVKEY_MEMBER_JWT_EXPIRED_IN_MS, Long.class)
-        );
+        final String rtMemberJwt = issueMemberJwt(id, env.getProperty(
+            isKeepLoggedIn ? ENVKEY_MEMBER_JWT_EXPIRED_IN_MS_KEEPLOGGEDIN : ENVKEY_MEMBER_JWT_EXPIRED_IN_MS, Long.class)
+        ).getData();
+
+        // 마지막으로 로그인한 시간 업데이트
+        selectedMembersDao.setLastLoginDate(Date.from(Instant.now()));
+        rawUpdate(selectedMembersDao);
+
+        return ApiResult.of(true, null, rtMemberJwt);
     }
 
     /**
@@ -234,9 +257,10 @@ public class MembersService {
         // JWT 검사
         final Jws<Claims> jws = MemberJwtUtil.validate(memberJwt, secureProps.getMemberJwtSecret(), null);
 
-        // Member 검사
-        final String id = jws.getBody().getId();
-        checkMemberLoginable(id, null);
+        // 맴버 조회
+        final String id = jws.getBody().getSubject();
+        final MembersDao selectedMembersDao = rawSelect(id).getData();
+        checkMemberLoginable(selectedMembersDao, null);
 
         return ApiResult.of(true);
     }
@@ -253,9 +277,9 @@ public class MembersService {
         // JWT 검사
         final Jws<Claims> jws = MemberJwtUtil.validate(adminJwt, secureProps.getMemberJwtSecret(), null);
 
-        // Member 검사
+        // 맴버 조회
         final String id = jws.getBody().getId();
-        final MembersDao selectedMembersDao = checkMemberLoginable(id, null);
+        final MembersDao selectedMembersDao = rawSelect(id).getData();
 
         // 추가 검사
         if (selectedMembersDao.getAuthority() != MembersCode.MEMBERS_AUTHORITY_MANAGER.getSeq() &&
@@ -269,30 +293,22 @@ public class MembersService {
     /**
      * <p>전달받은 정보로 MemberJwt를 발급하고 마지막 로그인한 시간을 갱신합니다.</p>
      * @param id : 맴버 아이디.
-     * @param password : 맴버 비밀번호. (nullable:소셜로그인의 경우)
-     * @param expiredIn : 토큰 유지시간. (1000L -> 1초 후 만료)
+     * @param expiredIn : 토큰 유지시간. (1000L -> 1초 후 만료, 초 단위로 입력)
      */
-    public ApiResult<String> issueMemberJwt(String id, String password, long expiredIn) {
+    public ApiResult<String> issueMemberJwt(String id, long expiredIn) {
         Objects.requireNonNull(id, "'id' is null!");
 
-        // Member 로그인 가능여부 검사
-        final MembersDao selectedMembersDao = checkMemberLoginable(id, password);
-
         // MemberJwt 생성
-        final long curTime = System.currentTimeMillis();
+        final long curTime = System.currentTimeMillis() / 1000L;
         final MemberJwtUtil.JwtClaims jwtClaims = MemberJwtUtil.JwtClaims.builder()
-            .id(ThreadStorage.getStr(ApiResult.KEY_TID))    // jid(JWT 식별자) = tid
-            .subject(selectedMembersDao.getId())            // sub : 맴버 아이디
-            .issuer("members.de4bi.com")                    // iss : 맴버서버
-            .audience("*.de4bi.com")                        // aud : 모든 de4bi 플랫폼
-            .issuedAt(curTime)                              // iat : 발급시간
-            .expiration(curTime + expiredIn)                // exp : 만료시간
-            .notBefore(curTime)                             // nbf : 시작시간
+            .id(ThreadStorage.getStr(ControllerAop.CTR_TID))    // jid(JWT 식별자) = tid
+            .subject(id)                                        // sub : 맴버 아이디
+            .issuer("members.de4bi.com")                        // iss : 맴버서버
+            .audience("*.de4bi.com")                            // aud : 모든 de4bi 플랫폼
+            .issuedAt(curTime)                                  // iat : 발급시간(초 단위)
+            .expiration(curTime + (expiredIn / 1000L))          // exp : 만료시간(초 단위)
+            .notBefore(curTime)                                 // nbf : 시작시간(초 단위)
             .build();
-        
-        // 마지막으로 로그인한 시간 업데이트
-        selectedMembersDao.setLastLoginDate(Date.from(Instant.now()));
-        rawUpdate(selectedMembersDao);
 
         return ApiResult.of(true, null, MemberJwtUtil.issue(null, jwtClaims, secureProps.getMemberJwtSecret()));
     }
@@ -303,29 +319,49 @@ public class MembersService {
     
     /**
      * <p>맴버의 로그인 가능상태를 반환합니다.</p>
-     * @param membersDao : 검사할 맴버 Dao.
-     * @param id : 맴버 아이디.
-     * @param password : 맴버 비밀번호. (nullable:비밀번호 검사를 생략합니다)
-     * @return 성공 시 해당 맴버의 정보가 담긴 {@link MembersDao}를 반환하고,
-     * 실패 시 실패 내용이 담긴 {@link ApiException}을 반환합니다.
-     * @apiNote DB에 접근하기 위해 {@link MembersMapper}의 {@code selectById()}를 사용합니다.
+     * @param selectedMembersDao : 선택된 맴버.
+     * @param inputPassword : 입력한 비밀번호. (nullable)
+     * @return 성공 시 true, 실패 시 실패 내용이 담긴 {@link ApiException}을 반환합니다.
+     * @apiNote ※주의! 비밀번호에 null을 전달할 경우, 비밀번호 검사를 하지 않습니다. (member_jwt검증에 사용)
      */
-    private MembersDao checkMemberLoginable(String id, String password) {
-        final MembersDao selectedMembersDao = membersMapper.selectById(id);
+    private boolean checkMemberLoginable(MembersDao selectedMembersDao, String inputPassword) {
         if (selectedMembersDao == null) {
-            throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.").setInternalMsg("Member not exist! (id: " + id + ")");
+            throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.")
+                .setInternalMsg("'selectedMembersDao' is null!");
         }
 
-        if (password != null) {
-            if (selectedMembersDao.getPassword() != SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordSalt())) {
-                throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.").setInternalMsg("Wrong password! (id: " + id + ")");
+        if (inputPassword != null) {
+            final String securePassword = SecurityUtil.passwordSecureHashing(inputPassword, secureProps.getMemberPasswordSalt());
+            if (selectedMembersDao.getPassword().equals(securePassword) == false) {
+                throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.")
+                            .setInternalMsg("Wrong password! (id: " + selectedMembersDao.getId() + ")");
             }
         }
 
         if (selectedMembersDao.getStatus() == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
-            throw new ApiException("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.").setInternalMsg("Banned member! (id: " + id + ")");
+            throw new ApiException("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.")
+                        .setInternalMsg("Banned member! (id: " + selectedMembersDao.getId() + ")");
         }
 
-        return selectedMembersDao;
+        return true;
+    }
+
+    /**
+     * <p>기능 수행을 위한 맴버의 권한을 검사합니다.</p>
+     * @param selectedMembersDao : 선택된 맴버.
+     * @param requiredAuthOver : 최소로 필요한 권한.
+     * @return 성공 시 true, 실패 시 실패 내용이 담긴 {@link ApiException}을 반환합니다.
+     */
+    private boolean checkMemberAuthority(MembersDao selectedMembersDao, MembersCode requiredAuthOver) {
+        Objects.requireNonNull(selectedMembersDao, "'selectedMemberDao' is null!");
+        Objects.requireNonNull(requiredAuthOver, "'requiredAuthOver' is null!");
+
+        if (selectedMembersDao.getAuthority() < requiredAuthOver.getSeq()) {
+            throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
+                        .setInternalMsg("No permission! (memberAuthority: " +
+                            selectedMembersDao.getAuthority() + ", required: " + requiredAuthOver.getSeq() + ")");
+        }
+
+        return true;
     }
 }

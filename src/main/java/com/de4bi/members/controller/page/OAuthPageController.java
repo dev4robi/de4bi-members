@@ -27,7 +27,7 @@ public class OAuthPageController {
         @RequestParam(required = false, name = "error_subtype"  ) String errorSubtype,
         @RequestParam(required = false, name = "error"          ) String error
     ) {
-        final String memberJwt = membersService.signin(googleOAuthService.getMemberInfoWithOAuth(code, state, null).getData()).getData();
+        final String memberJwt = membersService.signin(googleOAuthService.getMemberInfoWithOAuth(code, state, null).getData(), true).getData();
         final Map<String, Object> modelMap = new HashMap<>();
         modelMap.put("redirect_url", "/login?member_jwt=" + memberJwt);
         return new ModelAndView("redirect:/replace", modelMap);

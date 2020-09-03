@@ -8,7 +8,6 @@ import java.util.Objects;
 
 import com.de4bi.common.exception.ApiException;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import io.jsonwebtoken.Claims;
@@ -21,6 +20,7 @@ import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.MissingClaimException;
+import io.jsonwebtoken.PrematureJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
@@ -47,9 +47,9 @@ public class MemberJwtUtil {
         protected String subject;       // 제목
         protected String issuer;        // 발급자
         protected String audience;      // 사용자
-        protected long issuedAt;        // 발급시간
-        protected long expiration;      // 만료시간
-        protected long notBefore;       // 시작시간
+        protected long issuedAt;        // 발급시간(sec)
+        protected long expiration;      // 만료시간(sec)
+        protected long notBefore;       // 시작시간(sec)
     }
 
     ////////////////////////////////////////////////////////////////
@@ -151,7 +151,7 @@ public class MemberJwtUtil {
         }
         catch (MalformedJwtException e) {
             // JWT토큰 포멧이 아닌경우
-            throw new ApiException("'올바르지 않은 토큰 포멧입니다.'", e.getCause());
+            throw new ApiException("올바르지 않은 토큰 포멧입니다.", e.getCause());
         }
         catch (ExpiredJwtException e) {
             // 토큰 유효기간이 만료된 경우
@@ -168,6 +168,10 @@ public class MemberJwtUtil {
         catch (IncorrectClaimException e) {
             // jwtRequried의 key값에 해당하는 value가 불일치하는 경우
             throw new ApiException("토큰 필수값이 일치하지 않습니다.", e.getCause());
+        }
+        catch (PrematureJwtException e) {
+            // not before 보다 이른 시간에 사용하려 한 경우
+            throw new ApiException("아직 사용할 수 없는 토큰입니다.", e.getCause());
         }
 
         return rtClaims;

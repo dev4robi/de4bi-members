@@ -19,11 +19,6 @@ const login_js = {
             if (true) {
                 // 만료안됨
                 // ...
-                // @@ 로그인 유지 보관방법,
-                // @@ 로그인 후 member_jwt 전달 방법
-                // 1. 리디렉션
-                // 2. js_call
-                // 어떻게 인터페이스로 제공할건지 고민해 볼 것. @@
             }
             else {
                 // 만료됨
@@ -31,7 +26,7 @@ const login_js = {
             }
         }
 
-        // 이벤트 부착: 플랫폼 로그인 버튼 클릭
+        // 이벤트 부착: 소셜 로그인 버튼 클릭
         const platforms = ['google', 'naver', 'kakao', 'de4bi'];
         for (i = 0; i < platforms.length; ++i) {
             $('#btn_' + platforms[i] + '_login').click(function(){
@@ -40,7 +35,7 @@ const login_js = {
         }
     },
 
-    // 플랫폼으로 로그인하기 클릭
+    // 소셜 로그인하기 클릭
     onclick_oauth_login : function(oauthUrl) {
         if (!oauthUrl || oauthUrl == '#') {
             alert('Comming Soon!');
