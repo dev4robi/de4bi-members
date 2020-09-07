@@ -1,7 +1,21 @@
 package com.de4bi.common.util;
 
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.Objects;
+
 public class StringUtil {
     
+    /**
+     * <p>입력된 date값을 'yyyy-MM-dd HH:mm:ss'포멧으로 변환합니다.</p>
+     * @param date - {@code java.util.Date}시간 값.
+     * @return 입력된 date를 변환한 {@code yyyy-MM-dd HH:mm:ss}포멧 문자열.
+     */
+    public static String format(Date date) {
+        Objects.requireNonNull(date, "'date' is null!");
+        return date.toInstant().truncatedTo(ChronoUnit.SECONDS).toString().replaceAll("[TZ]", " ").trim();
+    }
+
     /**
      * <p>문자열이 비었는지 검사합니다.</p>
      * @param str : 검사할 문자열.

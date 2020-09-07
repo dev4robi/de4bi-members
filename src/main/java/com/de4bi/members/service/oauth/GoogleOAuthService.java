@@ -19,8 +19,8 @@ import com.de4bi.common.util.JsonUtil;
 import com.de4bi.common.util.JwtUtil;
 import com.de4bi.common.util.RestHttpUtil;
 import com.de4bi.common.util.StringUtil;
+import com.de4bi.members.controller.dto.PostMembersDto;
 import com.de4bi.members.data.code.MembersCode;
-import com.de4bi.members.data.dto.PostMembersDto;
 import com.de4bi.members.spring.BootApplication;
 import com.de4bi.members.spring.SecureProperties;
 

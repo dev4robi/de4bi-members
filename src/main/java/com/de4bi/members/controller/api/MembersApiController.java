@@ -1,15 +1,12 @@
 package com.de4bi.members.controller.api;
 
-import java.util.Map;
 
 import com.de4bi.common.annotation.RequireAdminJwt;
 import com.de4bi.common.annotation.RequireMemberJwt;
-import com.de4bi.members.data.dto.PostMembersDto;
-import com.de4bi.members.data.dto.PutMembersDto;
+import com.de4bi.members.controller.dto.PostMembersDto;
+import com.de4bi.members.controller.dto.PutMembersDto;
 import com.de4bi.members.service.MembersService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +27,7 @@ public class MembersApiController {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @RequireAdminJwt
     @PostMapping("/members")
     public String postMembers(@RequestBody PostMembersDto postMembersDto) {
         return membersSvc.insert(postMembersDto).toString();
@@ -37,8 +35,8 @@ public class MembersApiController {
 
     @RequireMemberJwt
     @GetMapping("/members/{seq}")
-    public String getMembers(@PathVariable long seq) {
-        return membersSvc.rawSelect(seq).toString();
+    public String getMemberBasicInfo(@PathVariable long seq) {
+        return membersSvc.selectMemberInfo(seq).toString();
     }
 
     @RequireMemberJwt

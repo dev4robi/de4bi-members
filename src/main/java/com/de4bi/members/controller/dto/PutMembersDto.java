@@ -1,4 +1,4 @@
-package com.de4bi.members.data.dto;
+package com.de4bi.members.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,7 +1,7 @@
 package com.de4bi.members.service.oauth;
 
 import com.de4bi.common.data.ApiResult;
-import com.de4bi.members.data.dto.PostMembersDto;
+import com.de4bi.members.controller.dto.PostMembersDto;
 
 /**
  * OAuth 회원 가입을 위한 인터페이스 입니다.
