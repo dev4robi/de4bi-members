@@ -58,12 +58,13 @@ public class GoogleOAuthService implements IOAuthService {
     ////////////////////////////////////////////////////////////////
 
     // 공개 상수
-    public static final String OAUTH_CODE_RECIRECT_URI = BootApplication.IS_LOCAL_TEST
-            ? "http://localhost:30000/oauth/google/code"
-            : "https://members.de4bi.com/oauth/google/code";
-    public static final String OAUTH_TOKEN_REDIRECT_URI = BootApplication.IS_LOCAL_TEST
-            ? "http://localhost:30000/oauth/google/token"
-            : "https://members.de4bi.com/oauth/google/token";
+    // 로그인 후 code값을 받을 페이지 주소로, 구글 개발자 콘솔에 등록이 되어있어야 합니다
+    public static final String OAUTH_CODE_REDIRECT_URI = BootApplication.IS_LOCAL_TEST
+        ? "http://localhost:30000/oauth/google/code"
+        : "https://members.de4bi.com/oauth/google/code";
+
+    // code값을 받은 페이지에서 수행할 JS Callback Function의 이름입니다
+    public static final String OAUTH_CODE_REDIRECT_JS_FUNC = "login_js.oauthResult";
 
     // 내부 상수
     private static final String OAUTH_CODE_URL      = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -180,7 +181,7 @@ public class GoogleOAuthService implements IOAuthService {
                 .append("&response_type=code").append("&scope=email%20profile") // 이메일과 프로필 요청
                 .append("&nonce=").append(nonce) // 중복요청 방지용 nonce
                 .append("&prompt=consent").append("&state=").append(state) // 리다이렉션 URL에서 검사할 서명값
-                .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI); // Code값을 리다이렉션할 URI
+                .append("&redirect_uri=").append(OAUTH_CODE_REDIRECT_URI); // Code값을 리다이렉션할 URI
 
         return ApiResult.of(true, null, rtSb.toString());
     }
@@ -199,7 +200,7 @@ public class GoogleOAuthService implements IOAuthService {
         final StringBuilder reqBodySb = new StringBuilder(256);
         reqBodySb.append("code=").append(code).append("&client_id=").append(secureProperties.getGoogleOauthClientId())
                  .append("&client_secret=").append(secureProperties.getGoogleOauthClientSecret())
-                 .append("&redirect_uri=").append(OAUTH_CODE_RECIRECT_URI) // Code를 획득한 리다이렉션 URI
+                 .append("&redirect_uri=").append(OAUTH_CODE_REDIRECT_URI) // Code를 획득한 리다이렉션 URI
                  .append("&grant_type=authorization_code");
 
         // 구글로 token요청 전송
@@ -310,7 +311,6 @@ public class GoogleOAuthService implements IOAuthService {
      * {@code requestIdTokenUsingAuthCode()}, {@code getMemberInfoFromIdToken}를 호출합니다.
      */
     @Override public ApiResult<PostMembersDto> getMemberInfoWithOAuth(String code, String state, Object extObj) {
-        System.out.println("state: " + state);
         final String idToken = requestIdTokenUsingAuthCode(code, null).getData();
         final OAuthDto oauthDto = getMemberInfoFromIdToken(idToken, state, extObj).getData();
         // 임시 닉네임 생성: {인증기관코드}#{SUBSTR(MD5({이메일}+{이름}+{현재시간}),8)} -> cf.) GOOGLE#af32a1a0

@@ -11,7 +11,6 @@ import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.MemberJwtUtil;
 import com.de4bi.common.util.SecurityUtil;
 import com.de4bi.common.util.StringUtil;
-import com.de4bi.members.aop.ControllerAop;
 import com.de4bi.members.controller.dto.PostMembersDto;
 import com.de4bi.members.controller.dto.PutMembersDto;
 import com.de4bi.members.controller.dto.SelectMemberInfoResDto;
