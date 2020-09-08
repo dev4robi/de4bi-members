@@ -22,7 +22,7 @@ INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(1,'MEM
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(2,'MEMBERS_AUTHORITY','AU01','정회원');
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(3,'MEMBERS_AUTHORITY','AU02','프리미엄');
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(4,'MEMBERS_AUTHORITY','AU98','운영진');
-INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(4,'MEMBERS_AUTHORITY','AU99','관리자');
+INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(5,'MEMBERS_AUTHORITY','AU99','관리자');
 
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(101,'MEMBERS_STATUS','ST00','일반');
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(102,'MEMBERS_STATUS','ST01','휴면');

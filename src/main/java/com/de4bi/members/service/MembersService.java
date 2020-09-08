@@ -226,7 +226,7 @@ public class MembersService {
             throw new ApiException(extMsg)
             .setInternalMsg("'selectedMemberDao' is null! (seq: " + seq + ")");
         }
-
+        
         if (jwtMembersDao.getSeq() != selectedMemberDao.getSeq() && checkManagerAuthority(jwtMembersDao) == false) {
             // 관리자 권한이 아니면서, 타인의 정보를 조회하려고 할 경우
             throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
