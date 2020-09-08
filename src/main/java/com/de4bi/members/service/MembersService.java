@@ -226,7 +226,7 @@ public class MembersService {
             throw new ApiException(extMsg)
             .setInternalMsg("'selectedMemberDao' is null! (seq: " + seq + ")");
         }
-        
+
         if (jwtMembersDao.getSeq() != selectedMemberDao.getSeq() && checkManagerAuthority(jwtMembersDao) == false) {
             // 관리자 권한이 아니면서, 타인의 정보를 조회하려고 할 경우
             throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
@@ -416,13 +416,13 @@ public class MembersService {
         // MemberJwt 생성
         final long curTime = System.currentTimeMillis() / 1000L;
         final MemberJwtUtil.JwtClaims jwtClaims = MemberJwtUtil.JwtClaims.builder()
-            .id(ThreadStorage.getStr(ControllerAop.CTR_TID))    // jid(JWT 식별자) = tid
-            .subject(id)                                        // sub : 멤버 아이디
-            .issuer("members.de4bi.com")                        // iss : 멤버서버
-            .audience("*.de4bi.com")                            // aud : 모든 de4bi 플랫폼
-            .issuedAt(curTime)                                  // iat : 발급시간(초 단위)
-            .expiration(curTime + (expiredIn / 1000L))          // exp : 만료시간(초 단위)
-            .notBefore(curTime)                                 // nbf : 시작시간(초 단위)
+            .id(ThreadStorage.getStr(ApiResult.KEY_TID))    // jid(JWT 식별자) = tid
+            .subject(id)                                    // sub : 멤버 아이디
+            .issuer("members.de4bi.com")                    // iss : 멤버서버
+            .audience("*.de4bi.com")                        // aud : 모든 de4bi 플랫폼
+            .issuedAt(curTime)                              // iat : 발급시간(초 단위)
+            .expiration(curTime + (expiredIn / 1000L))      // exp : 만료시간(초 단위)
+            .notBefore(curTime)                             // nbf : 시작시간(초 단위)
             .build();
 
         return ApiResult.of(true, null, MemberJwtUtil.issue(null, jwtClaims, secureProps.getMemberJwtSecret()));

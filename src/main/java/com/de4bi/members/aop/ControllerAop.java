@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.de4bi.common.annotation.RequireAdminJwt;
 import com.de4bi.common.annotation.RequireMemberJwt;
+import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.data.ThreadStorage;
 import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.exception.ControllerException;
@@ -40,7 +41,6 @@ public class ControllerAop {
     private static final Logger logger = LoggerFactory.getLogger(ControllerAop.class);
 
     // 상수
-    public static final String CTR_TID      = "CTR_TID";
     public static final String CTR_REQ_TIME = "REQ_TIME";
 
     // 서비스
@@ -59,7 +59,7 @@ public class ControllerAop {
         final String oldLayer = MDC.get("layer");
         MDC.put("layer", "CTR");
         MDC.put("tid", tid);
-        ThreadStorage.put(CTR_TID, tid); // 스레드 스토리지에 'tid'를 꼭 넣어줘야 합니다
+        ThreadStorage.put(ApiResult.KEY_TID, tid); // 스레드 스토리지에 'tid'를 꼭 넣어줘야 합니다
         ThreadStorage.put(CTR_REQ_TIME, bgnTime);
 
         // 접근 로깅
@@ -158,7 +158,7 @@ public class ControllerAop {
         final String oldLayer = MDC.get("layer");
         MDC.put("layer", "CTR");
         MDC.put("tid", tid);
-        ThreadStorage.put(CTR_TID, tid); // 스레드 스토리지에 'tid'를 꼭 넣어줘야 합니다
+        ThreadStorage.put(ApiResult.KEY_TID, tid); // 스레드 스토리지에 'tid'를 꼭 넣어줘야 합니다
         ThreadStorage.put(CTR_REQ_TIME, bgnTime);
 
         // 접근 로깅
