@@ -3,6 +3,8 @@ package com.de4bi.members.controller.page;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.de4bi.members.service.MembersService;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
@@ -22,15 +24,16 @@ public class OAuthPageController {
 
     @RequestMapping("/oauth/google/code")
     public ModelAndView googleAuthCodePage(
-        @RequestParam(required = false, name = "code"           ) String code,
-        @RequestParam(required = false, name = "state"          ) String state,
+        @RequestParam(required = true, name = "code"            ) String code,
+        @RequestParam(required = true, name = "state"           ) String state,
         @RequestParam(required = false, name = "error_subtype"  ) String errorSubtype,
         @RequestParam(required = false, name = "error"          ) String error
     ) {
         final String memberJwt = membersService.signin(
             googleOAuthService.getMemberInfoWithOAuth(code, state, null).getData(), true).getData();
-        final Map<String, Object> modelMap = new HashMap<>();
-        modelMap.put("redirect_url", "/login?member_jwt=" + memberJwt);
-        return new ModelAndView("redirect:/replace", modelMap);
+        final String frameType = state.substring(beginIndex)
+
+        final String urlParam = ("?member_jwt=" + memberJwt + "&frame_type=" +frameType + "&return_url=");
+        return new ModelAndView("redirect:/login" + urlParam);
     }
 }

@@ -3,6 +3,9 @@ package com.de4bi.members.controller.page;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
 import org.springframework.stereotype.Controller;
@@ -21,16 +24,33 @@ public class MainPageController {
     // 메인&로그인 페이지
     @RequestMapping(value = {"", "/login"})
     public ModelAndView loginPage(
-        @RequestParam(required = false, name = "after_url") String afterUrl,    // 로그인 후 이동할 URL
-        @RequestParam(required = false, name = "user_param") String userParam   // 로그인 후 이동할 URL에 전달할 파라미터 
+        // 서블릿 기본
+        HttpServletResponse response,
+        // 로그인창 종류(page, popup, iframe)
+        @RequestParam(required = false, name = "frame_type", defaultValue = "page") String frameType,
+        // 로그인 후 이동할 페이지 URL
+        @RequestParam(required = false, name = "return_url") String returnUrl,   
+        // 로그인 후 이동할 페이지에서 수행할 JS함수명
+        @RequestParam(required = false, name = "return_func") String returnFunc,
+        // 로그인 후 이동할 페이지에 전달할 파라미터
+        @RequestParam(required = false, name = "return_param") String returnParam,
+        // 로그인 완료한 경우 전달받은 member_jwt
+        @RequestParam(required = false, name = "member_jwt") String memberJwt
+
     ) {
         final Map<String, String> modelMap = new HashMap<>();
-        modelMap.put("google_login_url", googleOAuthSvc.makeLoginUrlForAuthCode(null).getData());
+        // Cookie
+        response.addCookie(new Cookie("member_jwt", memberJwt));
+        // Datapart
+        modelMap.put("frame_type", frameType);
+        modelMap.put("return_url", returnUrl);
+        modelMap.put("return_func", returnFunc);
+        modelMap.put("return_param", returnParam);
+        // OAuth URL
+        modelMap.put("google_login_url", googleOAuthSvc.makeLoginUrlForAuthCode(modelMap).getData());
         modelMap.put("naver_login_url", "#");
         modelMap.put("kakao_login_url", "#");
         modelMap.put("de4bi_login_url", "#");
-        modelMap.put("after_url", afterUrl);
-        modelMap.put("user_param", userParam);
         return new ModelAndView("login", modelMap);
     }
 

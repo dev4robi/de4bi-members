@@ -24,8 +24,10 @@ import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.spring.BootApplication;
 import com.de4bi.members.spring.SecureProperties;
 
+import org.apache.catalina.util.URLEncoder;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.tomcat.util.buf.HexUtils;
 
 import org.springframework.http.MediaType;
@@ -53,6 +55,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @Service
 public class GoogleOAuthService implements IOAuthService {
+
     ////////////////////////////////////////////////////////////////
     // class fields
     ////////////////////////////////////////////////////////////////
@@ -63,30 +66,27 @@ public class GoogleOAuthService implements IOAuthService {
         ? "http://localhost:30000/oauth/google/code"
         : "https://members.de4bi.com/oauth/google/code";
 
-    // code값을 받은 페이지에서 수행할 JS Callback Function의 이름입니다
-    public static final String OAUTH_CODE_REDIRECT_JS_FUNC = "login_js.oauthResult";
-
     // 내부 상수
-    private static final String OAUTH_CODE_URL      = "https://accounts.google.com/o/oauth2/v2/auth";
-    private static final String OAUTH_TOKEN_URL     = "https://oauth2.googleapis.com/token";
-    private static final String OAUTH_TOKEN_KEY_URL = "https://www.googleapis.com/oauth2/v3/certs";
+    private static final String OAUTH_CODE_URL      = "https://accounts.google.com/o/oauth2/v2/auth";   // google-login -> code
+    private static final String OAUTH_TOKEN_URL     = "https://oauth2.googleapis.com/token";            // code -> idToken
+    private static final String OAUTH_TOKEN_KEY_URL = "https://www.googleapis.com/oauth2/v3/certs";     // idToken -> JWT (URL for JWT sign validation)
 
     // 내부 변수
-    private static PublicKey ID_TOKEN_SIGNING_PUBLIC_KEY;
+    private static PublicKey ID_TOKEN_SIGNING_PUBLIC_KEY; // idToken서명 검증용 공개키
 
     // 설정
-    private final SecureProperties secureProperties;
+    private final SecureProperties secureProperties; // 보안 민감한 값을 담은 프로퍼티
 
     ////////////////////////////////////////////////////////////////
     // private methods
     ////////////////////////////////////////////////////////////////
 
     /**
-     * <p>리다이렉션 페이지에서 해시서명 검사용으로 사용할 state값을 생성합니다.</p>
+     * <p>리다이렉션 페이지에서 전달받은 state값을 검증하기 위한 해시서명 값을 생성합니다.</p>
      * @param nonce : 리다이렉션 페이지에서 전달받거나, 최초 시작 페이지에서 무작위로 생성된 문자열.
      * @return 생성된 state문자열을 반환합니다.
      */
-    private String makeStateForRedirectionSign(String nonce) {
+    private String makeStateSignForRedirectionPageStateValidation(String nonce) {
         return HexUtils.toHexString(
                 CipherUtil.hashing(CipherUtil.SHA256, nonce + secureProperties.getGoogleOauthRedirectionSignKey()));
     }
@@ -175,7 +175,21 @@ public class GoogleOAuthService implements IOAuthService {
     @Override public ApiResult<String> makeLoginUrlForAuthCode(Object extObj) {
         final StringBuilder rtSb = new StringBuilder(256);
         final String nonce = RandomStringUtils.randomAlphanumeric(32);
-        final String state = makeStateForRedirectionSign(nonce);
+
+        if (extObj != null) {
+            // [Note] 의도적인 SuppressWarnings이다. 정상적인 경우라면
+            // extObj객체는 Map<String, String>로 형변환될 수 있어야 한다.
+            @SuppressWarnings("unchecked")
+            final Map<String, String> extMap = (Map<String, String>) extObj;
+            extMap.get()
+            // @@ 여기부터 시작: db사용 대신, 구글에 넘기는 state값에 4가지 파라미터를 같이 넘기고
+            // 해당 값을 증명하기 위한 sign을 state뒤에 붙여서 넘기기로 함.
+            // ...&state=k1=v1.k2=v2.k3=v3.k4=v4:{sign}&... 과 같은 포멧이 될 듯?
+            // k1,v1모두 URLEncoding한 후 넘기자.
+            // 4가지 파라미터는 loginPage() 에서 확인할 수 있다.
+        }
+
+        final String state = "" + ":" + makeStateSignForRedirectionPageStateValidation(nonce);
 
         rtSb.append(OAUTH_CODE_URL).append("?client_id=").append(secureProperties.getGoogleOauthClientId())
                 .append("&response_type=code").append("&scope=email%20profile") // 이메일과 프로필 요청
@@ -280,7 +294,7 @@ public class GoogleOAuthService implements IOAuthService {
         }
 
         // state검사 (DB를 사용했다면 code를 획득하자 마자 할 수 있었겠지만, 별도의 DB사용을 하지 않으므로 이곳에서라도 검사 수행)
-        final String resState = makeStateForRedirectionSign(idTokenMap.getOrDefault("nonce", "").toString());
+        final String resState = makeStateSignForRedirectionPageStateValidation(idTokenMap.getOrDefault("nonce", "").toString());
         if (state.equals(resState) == false) {
             throw new ApiException("잘못된 접근입니다. 다시 로그인 해주세요.")
                 .setInternalMsg("Invailed 'state'! (resState: " + resState + ", state: " + state + ")");
