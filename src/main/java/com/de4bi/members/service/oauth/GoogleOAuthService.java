@@ -8,6 +8,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -172,24 +173,10 @@ public class GoogleOAuthService implements IOAuthService {
      * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#authenticationuriparameters
      * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#sendauthrequest
      */
-    @Override public ApiResult<String> makeLoginUrlForAuthCode(Object extObj) {
+    @Override public ApiResult<String> makeLoginUrlForAuthCode(String returnParam, Object extObj) {
         final StringBuilder rtSb = new StringBuilder(256);
         final String nonce = RandomStringUtils.randomAlphanumeric(32);
-
-        if (extObj != null) {
-            // [Note] 의도적인 SuppressWarnings이다. 정상적인 경우라면
-            // extObj객체는 Map<String, String>로 형변환될 수 있어야 한다.
-            @SuppressWarnings("unchecked")
-            final Map<String, String> extMap = (Map<String, String>) extObj;
-            extMap.get()
-            // @@ 여기부터 시작: db사용 대신, 구글에 넘기는 state값에 4가지 파라미터를 같이 넘기고
-            // 해당 값을 증명하기 위한 sign을 state뒤에 붙여서 넘기기로 함.
-            // ...&state=k1=v1.k2=v2.k3=v3.k4=v4:{sign}&... 과 같은 포멧이 될 듯?
-            // k1,v1모두 URLEncoding한 후 넘기자.
-            // 4가지 파라미터는 loginPage() 에서 확인할 수 있다.
-        }
-
-        final String state = "" + ":" + makeStateSignForRedirectionPageStateValidation(nonce);
+        final String state = (returnParam + ":" + makeStateSignForRedirectionPageStateValidation(nonce)); // {returnParam}:{sign}
 
         rtSb.append(OAUTH_CODE_URL).append("?client_id=").append(secureProperties.getGoogleOauthClientId())
                 .append("&response_type=code").append("&scope=email%20profile") // 이메일과 프로필 요청
@@ -295,6 +282,7 @@ public class GoogleOAuthService implements IOAuthService {
 
         // state검사 (DB를 사용했다면 code를 획득하자 마자 할 수 있었겠지만, 별도의 DB사용을 하지 않으므로 이곳에서라도 검사 수행)
         final String resState = makeStateSignForRedirectionPageStateValidation(idTokenMap.getOrDefault("nonce", "").toString());
+        state = state.substring(state.lastIndexOf(":") + 1); // {returnParam}:{sign}에서 {sign}부분을 획득
         if (state.equals(resState) == false) {
             throw new ApiException("잘못된 접근입니다. 다시 로그인 해주세요.")
                 .setInternalMsg("Invailed 'state'! (resState: " + resState + ", state: " + state + ")");

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.de4bi.common.util.UrlUtil;
 import com.de4bi.members.service.MembersService;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
@@ -31,8 +32,13 @@ public class OAuthPageController {
     ) {
         final String memberJwt = membersService.signin(
             googleOAuthService.getMemberInfoWithOAuth(code, state, null).getData(), true).getData();
-        final String frameType = state.substring(beginIndex)
+        final Map<String, Object> rtParamMap = UrlUtil.parseUrlParam(state.substring(state.lastIndexOf(":" + 1)), "`");
 
+        // @@여기부터 시작
+        // state생성시 :가 들어가는데, 위 코드에서 분리하는건 좀 무리수같다...
+        // getMemberInfoWithOauth에서 리턴파람을 같이 응답주는건 어떨까??
+
+        final String frameType = rtParamMap.getOrDefault("frame_type", "").toString();
         final String urlParam = ("?member_jwt=" + memberJwt + "&frame_type=" +frameType + "&return_url=");
         return new ModelAndView("redirect:/login" + urlParam);
     }

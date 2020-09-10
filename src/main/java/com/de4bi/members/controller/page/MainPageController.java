@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
+import com.de4bi.common.util.UrlUtil;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
 import org.springframework.stereotype.Controller;
@@ -33,7 +34,7 @@ public class MainPageController {
         // 로그인 후 이동할 페이지에서 수행할 JS함수명
         @RequestParam(required = false, name = "return_func") String returnFunc,
         // 로그인 후 이동할 페이지에 전달할 파라미터
-        @RequestParam(required = false, name = "return_param") String returnParam,
+        @RequestParam(required = false, name = "return_data") String returnData,
         // 로그인 완료한 경우 전달받은 member_jwt
         @RequestParam(required = false, name = "member_jwt") String memberJwt
 
@@ -45,9 +46,10 @@ public class MainPageController {
         modelMap.put("frame_type", frameType);
         modelMap.put("return_url", returnUrl);
         modelMap.put("return_func", returnFunc);
-        modelMap.put("return_param", returnParam);
+        modelMap.put("return_data", returnData);
         // OAuth URL
-        modelMap.put("google_login_url", googleOAuthSvc.makeLoginUrlForAuthCode(modelMap).getData());
+        final Map<String, Object> rtParamMap = new HashMap<>(modelMap);
+        modelMap.put("google_login_url", googleOAuthSvc.makeLoginUrlForAuthCode(UrlUtil.makeUrlParam(rtParamMap, "`"), null).getData());
         modelMap.put("naver_login_url", "#");
         modelMap.put("kakao_login_url", "#");
         modelMap.put("de4bi_login_url", "#");

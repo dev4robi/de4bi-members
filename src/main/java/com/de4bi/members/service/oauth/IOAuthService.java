@@ -4,16 +4,17 @@ import com.de4bi.common.data.ApiResult;
 import com.de4bi.members.controller.dto.PostMembersDto;
 
 /**
- * OAuth 회원 가입을 위한 인터페이스 입니다.
+ * OAuth로 멤버 정보를 획득하기 위한 인터페이스 입니다.
  */
 public interface IOAuthService {
 
     /**
      * <p>클라이언트가 플랫폼의 OAuth를 수행하기 위해 호출해야 할 로그인 URL을 생성합니다.</p>
-     * @param extObj : 플랫폼 종속 파라미터를 전달할 객체입니다.
+     * @param returnParam : 로그인 후 이동할 페이지에 전달할 고유 데이터입니다.
+     * @param extObj : 그 외 플랫폼 종속 파라미터를 전달할 객체입니다.
      * @return 성공 시, OAuth수행을 위한 URL을 문자열로 반환합니다.
      */    
-    public ApiResult<String> makeLoginUrlForAuthCode(Object extObj);
+    public ApiResult<String> makeLoginUrlForAuthCode(String returnParam, Object extObj);
 
     /**
      * <p>클라이언트에게 전달받은 코드값을 플랫폼으로부터 검증합니다.</p>
