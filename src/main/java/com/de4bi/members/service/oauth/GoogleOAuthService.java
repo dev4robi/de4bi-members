@@ -167,6 +167,32 @@ public class GoogleOAuthService implements IOAuthService {
     ////////////////////////////////////////////////////////////////
 
     /**
+     * <p>구글에 넘길 state값을 생성합니다.</p>
+     * @param returnParam : code페이지에서 되돌려받을 <code>key1=val1`keyN=valN</code>형태로 URLEncoding된 문자열.
+     * @param nonce : sign생성을 위한 nonce 문자열.
+     * @return Google OAuth2.0 'state'에 사용할 문자열을 반환합니다.
+     * @apiNote 포멧은 다음과 같습니다.
+     * <p><code>{UTF-8 URLEncoded(key1=val1`key2=val2`keyN=valN)}:::{sign}</code></p>
+     */
+    public ApiResult<String> makeState(String returnParam, String nonce) {
+        if (returnParam != null && returnParam.contains(":::")) {
+            throw new ApiException("The string \":::\" not allowed for URL!");
+        }
+        Objects.requireNonNull(nonce, "'nonce' is null!");
+        return ApiResult.of(true, null, returnParam + ":::" + makeStateSignForRedirectionPageStateValidation(nonce));
+    }
+
+    /**
+     * <p>state를 <code>returnParam</code>와 <code>sign</code>로 분리합니다.
+     * @param state : 전달받은 state값.
+     * @return <code>String[0] = returnParam</code>, <code>String[1] = sign</code>을 반환합니다.
+     */
+    public ApiResult<String[]> parseState(String state) {
+        Objects.requireNonNull(state, "'state' is null!");
+        return ApiResult.of(true, state.split(":::"));
+    }
+
+    /**
      * <p>사용자가 구글 로그인(OAuth2)으로 인증코드(Authorization Code)를 획득하기 위한 URL을 생성합니다.</p>
      * @param extObj : 사용하지 않는 추가 파라미터. (nullable)
      * @return 성공 시, OAuth수행을 위한 URL을 문자열로 반환합니다.
@@ -176,7 +202,7 @@ public class GoogleOAuthService implements IOAuthService {
     @Override public ApiResult<String> makeLoginUrlForAuthCode(String returnParam, Object extObj) {
         final StringBuilder rtSb = new StringBuilder(256);
         final String nonce = RandomStringUtils.randomAlphanumeric(32);
-        final String state = (returnParam + ":" + makeStateSignForRedirectionPageStateValidation(nonce)); // {returnParam}:{sign}
+        final String state = makeState(returnParam, nonce).getData(); // {returnParam}:{sign}
 
         rtSb.append(OAUTH_CODE_URL).append("?client_id=").append(secureProperties.getGoogleOauthClientId())
                 .append("&response_type=code").append("&scope=email%20profile") // 이메일과 프로필 요청
@@ -228,6 +254,7 @@ public class GoogleOAuthService implements IOAuthService {
      */
     @Override public ApiResult<OAuthDto> getMemberInfoFromIdToken(String idToken, String state, Object extObj) {
         Objects.requireNonNull(idToken, "'idToken' is null!");
+        Objects.requireNonNull(state, "'state' is null!");
 
         boolean isFirstTry = true;
         Map<String, Object> idTokenMap = null;
@@ -282,7 +309,7 @@ public class GoogleOAuthService implements IOAuthService {
 
         // state검사 (DB를 사용했다면 code를 획득하자 마자 할 수 있었겠지만, 별도의 DB사용을 하지 않으므로 이곳에서라도 검사 수행)
         final String resState = makeStateSignForRedirectionPageStateValidation(idTokenMap.getOrDefault("nonce", "").toString());
-        state = state.substring(state.lastIndexOf(":") + 1); // {returnParam}:{sign}에서 {sign}부분을 획득
+        state = parseState(state).getData()[1]; // {returnParam}:{sign}에서 {sign}부분을 획득
         if (state.equals(resState) == false) {
             throw new ApiException("잘못된 접근입니다. 다시 로그인 해주세요.")
                 .setInternalMsg("Invailed 'state'! (resState: " + resState + ", state: " + state + ")");

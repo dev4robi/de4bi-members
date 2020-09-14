@@ -4,6 +4,7 @@ const login_js = {
     
     // 페이지 초기화
     initPage : function() {
+        alert('hj!');
         // URL에서 member_jwt획득 시도
         const passed_member_jwt = new URLSearchParams(location.search).get('member_jwt');
         if (!!passed_member_jwt) {
@@ -14,32 +15,49 @@ const login_js = {
         history.replaceState({}, document.title, "." + location.pathname);
 
         // member_jwt쿠키 존재 시
-        const member_jwt = $.cookie('mebmer_jwt');
+        const member_jwt = $.cookie('member_jwt');
         if (!!member_jwt) {
-            // 리다이렉션 시도
-            const after_url = $.cookie('after_url');
-            if (!!after_url) {
-                const user_param = $.cookie('user_param');
-                const redirect_url = (!!user_param ? after_url : (after_url + '?user_param=' + user_param));
-                location.replace(redirect_url);
-            }
-            else {
-                console.log('Wrong "after_url"! (after_url: ' + after_url + ')');
-            }
-
-            // @@ 고민해볼 사항!
-            // 최초 요청 시 쿠키에 저장
-            // -> 로그인 완료전 다른 사이트에서 로그인 시도, 그 사이트에서 after_url전달을 안하면?
-            // 토큰이 다른 서비스를 제공하는 사이트로 전송될 수 있음...?!
-            // 세션이나 DB를 사용해야 할까...? 조금 더 고민해보자.
-
-            // 리다이렉션 실패 시 토큰정보조회 수행
-            if (true) {
-                // 토근정보조회 성공
-            }
-            else {
-                // 토큰정보조회 실패
-                $.removeCookie('member_jwt');
+            alert('member_jwt: ' + member_jwt);
+            // frame_type에 따라 분기
+            const frame_type = $("#dp_frame_type").val();
+            var return_url = $('#dp_return_url').val();
+            var return_data = $('#dp_return_data').val();
+            var return_func = $('#dp_return_func').val();
+            switch (frame_type) {
+                default:
+                case 'page': {
+                    alert('page! 리다이렉션 수행! (' + return_url + ')');
+                    if (!!return_url) {
+                        return_url += ('?member_jwt=' + member_jwt);
+                        if (!!return_data) {
+                            return_url += ('&return_data=' + return_data);
+                        }
+                        location.replace(return_url); // @@리다이렉션 완료... 근데 그놈의 뒤로가기가 문제... 다시 재현해보고 어떻게 할지 고민!
+                    }
+                    console.log('Fail to redirect! (return_url: ' + return_url + ')');
+                    break;
+                }
+                case 'popup': {
+                    alert('popup! 오프너 함수 수행! (' + return_func + ')');
+                    if (!!return_func) {
+                        window.opener.return_func(member_jwt, return_data);
+                    }
+                    else {
+                        console.log('Fail to find opener\'s function! (return_func: ' + return_func + ')');
+                    }
+                    window.close();
+                    break;
+                }
+                case 'iframe': {
+                    alert('iframe! 부모창 함수 수행! (' + return_func + ')');
+                    if (!!return_func) {
+                        window.parnet.return_func(member_jwt, return_data);
+                    }
+                    else {
+                        console.log('Fail to find parent\'s function! (return_func: ' + return_func + ')');
+                    }
+                    break;
+                }
             }
         }
 

@@ -128,6 +128,7 @@ public class ControllerAop {
         catch (Throwable e) {
             logger.error("UnhandledException!", e);
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+            ctrMap.put("msg", "요청 처리중 미정의된 오류가 발생했습니다.");
             errorPageFlag = true;
         }
 

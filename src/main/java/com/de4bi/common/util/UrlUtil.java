@@ -82,7 +82,9 @@ public class UrlUtil {
             urlParamStr = UrlDecoding(urlParamStr, "UTF-8");
             for (String keyVal : urlParamStr.split(delimiter)) { // key=val
                 final String[] keyAndValue = keyVal.split("="); // [0]:key, [1]:value
-                rtMap.put(keyAndValue[0], keyAndValue[1]);
+                if (keyAndValue.length == 2) {
+                    rtMap.put(keyAndValue[0], keyAndValue[1]);
+                }
             }
         }
         return rtMap;

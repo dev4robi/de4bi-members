@@ -57,4 +57,31 @@ public class StringUtil {
     public static String quote(String str, String quoteStr) {
         return quoteStr + str + quoteStr;
     }
+
+    /**
+     * <p>문자열을 <code>Snake_Case</code>로 변환하여 반환합니다.</p>
+     * @param str : 원본 문자열.
+     * @return SnakeCase로 변환된 문자열.
+     * @apiNote <code>ThisIsSnakeCase -> this_is_snake_case</code>
+     */
+    public static String toSnakeCase(String str) {
+        if (str == null) return null;
+
+        final StringBuilder rtSb = new StringBuilder(str.length());
+        final char[] strChAry = str.toCharArray();
+        for (int i = 0; i < strChAry.length; ++i) {
+            char ch = strChAry[i];
+            if (ch > '@' && ch < '[') { // A(65) ~ Z(90) (UpperCase)
+                if (i > 0) {
+                    rtSb.append('_');
+                }
+
+                ch += 32; // A(65) -> a(97)
+            }
+            
+            rtSb.append(ch);
+        }
+
+        return rtSb.toString();
+    }
 }
