@@ -30,9 +30,7 @@ public class MainPageController {
         // 로그인창 종류(page, popup, iframe)
         @RequestParam(required = false, name = "frame_type", defaultValue = "page") String frameType,
         // 로그인 후 이동할 페이지 URL
-        @RequestParam(required = false, name = "return_url") String returnUrl,   
-        // 로그인 후 이동할 페이지에서 수행할 JS함수명
-        @RequestParam(required = false, name = "return_func") String returnFunc,
+        @RequestParam(required = false, name = "return_url") String returnUrl,
         // 로그인 후 이동할 페이지에 전달할 파라미터
         @RequestParam(required = false, name = "return_data") String returnData,
         // 로그인 완료한 경우 전달받은 member_jwt
@@ -45,7 +43,6 @@ public class MainPageController {
         // Datapart
         modelMap.put("frame_type", frameType);
         modelMap.put("return_url", returnUrl);
-        modelMap.put("return_func", returnFunc);
         modelMap.put("return_data", returnData);
         // OAuth URL
         final Map<String, Object> rtParamMap = new HashMap<>(modelMap);
@@ -57,7 +54,7 @@ public class MainPageController {
     }
 
     // 임시 페이지
-    @RequestMapping(value = "/replace")
+    @RequestMapping(value = "/replace") 
     public ModelAndView replacePage(@RequestParam Map<String, Object> paramMap) {
         return new ModelAndView("replace", paramMap);
     }

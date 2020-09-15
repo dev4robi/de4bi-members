@@ -21,7 +21,6 @@
 <!-- Datapart -->
 <input type="hidden" id="dp_frame_type" th:value=${frame_type}>
 <input type="hidden" id="dp_return_url" th:value=${return_url}>
-<input type="hidden" id="dp_return_func" th:value=${return_func}>
 <input type="hidden" id="dp_return_data" th:value=${return_data}>
 <!-- Viewpart -->
 <div class="fixed-top bg-purple top-n-bottom"></div>
@@ -45,7 +44,7 @@
 						</div>
 						<div class="row row-keep-login border-danger">
 							<div class="col-6 login-bottom text-left border-success">
-								<input type="checkbox" aria-label="checkbox_keep_login">
+								<input type="checkbox" id="input_keep_login" aria-label="checkbox_keep_login">
 								<small><span class="keep-login-text">Keep login</span></small>
 							</div>
 							<div class="col-6 login-bottom text-right border-success">

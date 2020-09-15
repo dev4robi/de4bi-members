@@ -296,17 +296,16 @@ public class MembersService {
      * <p>회원가입 및 로그인을 수행합니다.</p>
      * @param postMembersDto : 회원가입 정보.
      * @param isSocialLogin : 소셜로 회원가입 여부.
-     * @return 성공 시, {@link ApiResult}에 MemberJwt문자열을 담아서 응답합니다.
-     * @apiNote 내부적으로 {@code MembersService.login()}을 호출합니다.
+     * @return 성공 시, {@link ApiResult}.getResult() == true를 반환합니다.
      */
-    public ApiResult<String> signin(PostMembersDto postMembersDto, boolean isSocialSignin) {
+    public ApiResult<?> signin(PostMembersDto postMembersDto, boolean isSocialSignin) {
         Objects.requireNonNull(postMembersDto, "'postMembersDto' is null!");
 
         // 회원정보 검색
         final String id = postMembersDto.getId();
         if (this.rawSelect(id).getData() != null) {
             // 가입정보가 있는 경우 소셜로그인인지 확인, 아닌 경우(자체가입) 중복가입 거부
-            if (postMembersDto.getAuthAgency() == MembersCode.MEMBERS_AUTHAGENCY_DE4BI.getSeq()) {
+            if (isSocialSignin == false) {
                 throw new ApiException(StringUtil.quote(id) + "는 이미 가입된 이메일입니다.");
             }
         }
@@ -317,7 +316,7 @@ public class MembersService {
             }
         }
 
-        return login(id, postMembersDto.getPassword(), false, isSocialSignin); // 자동으로 로그인 결과 반환
+        return ApiResult.of(true);
     }
 
     /**

@@ -1,12 +1,11 @@
 package com.de4bi.members.controller.page;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
+import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.StringUtil;
 import com.de4bi.common.util.UrlUtil;
+import com.de4bi.members.controller.dto.PostMembersDto;
 import com.de4bi.members.service.MembersService;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
@@ -31,9 +30,18 @@ public class OAuthPageController {
         @RequestParam(required = false, name = "error_subtype"  ) String errorSubtype,
         @RequestParam(required = false, name = "error"          ) String error
     ) {
-        final String memberJwt = membersService.signin(
-            googleOAuthService.getMemberInfoWithOAuth(code, state, null).getData(), true).getData();
+        // 구글로부터 전달받은 정보 파싱
         final Map<String, Object> rtParamMap = UrlUtil.parseUrlParam(googleOAuthService.parseState(state).getData()[0], "`");
+        final PostMembersDto newMembersDto = googleOAuthService.getMemberInfoWithOAuth(code, state, null).getData();
+        
+        // 회원가입 수행
+        membersService.signin(newMembersDto, true).getResult();
+
+        // 자동 로그인 수행
+        final boolean isKeepLoggedIn = rtParamMap.getOrDefault("keep_logged_in", "").toString().equals("true") ? true : false;
+        final String memberJwt = membersService.login(newMembersDto.getId(), newMembersDto.getPassword(), isKeepLoggedIn, true).getData();
+
+        // 로그인페이지로 파라미터 전달하면서 이동
         final StringBuilder paramSb = new StringBuilder(128);
         for (String key : rtParamMap.keySet()) {
             paramSb.append('&').append(StringUtil.toSnakeCase(key)).append('=').append(rtParamMap.getOrDefault(key, "").toString());
