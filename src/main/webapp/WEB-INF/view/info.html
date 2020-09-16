@@ -14,51 +14,55 @@
 	<link rel="stylesheet" href="/lib/bootstrap-4.5.0/css/bootstrap-colorex.min.css">
 	<script type="text/javascript" src="/lib/bootstrap-4.5.0/js/bootstrap.bundle.min.js"></script>
 	<!-- js & css-->
-	<script type="text/javascript" src="/view/js/login.js"></script>
+	<script type="text/javascript" src="/view/js/info.js"></script>
 	<link rel="stylesheet" href="/view/css/de4bi-skin.css">
 </head>
 <body>
-<!-- Datapart -->
-<input type="hidden" id="dp_frame_type" th:value=${frame_type}>
-<input type="hidden" id="dp_return_url" th:value=${return_url}>
-<input type="hidden" id="dp_return_data" th:value=${return_data}>
 <!-- Viewpart -->
 <div class="fixed-top bg-purple top-n-bottom"></div>
 <div class="container h-100">
 	<div class="row h-100 justify-content-center align-items-center border-danger">
-		<!-- Login Box -->
-		<div class="col-sm-8 main-box">
+		<!-- Info Box -->
+		<div class="col-sm-8 main-box border-danger">
 			<!-- Title -->
 			<div class="row pt-2 pb-1 justify-content-center align-items-center">
-				<div class="col-sm-8 p-2 main-box-title no-drag">de4bi</div>
+				<div class="col-sm-8 p-2 main-box-title no-drag">Member Info</div>
 			</div>
-			<!-- Login Form -->
+			<!-- Loading -->
+			<div class="row justify-content-center align-items-center border-danger">
+				<!-- ... -->
+			</div>
+			<!-- Info -->
 			<div class="row justify-content-center align-items-center border-danger">
 				<div class="col-sm-8 main-box-form border-warning">
-					<form>
-						<div class="form-group">
+					<div class="row justify-content-center align-items-center border-danger">
+						<div class="col-sm-4">
 							<label class="form-control-label no-drag">ID</label>
-							<input type="text" class="form-control" placeholder="(Email)">
+							<input type="text" class="form-control" placeholder="(Email)" readonly value="robi9202@gmail.com">
 						</div>
-						<div class="form-group">
-							<label class="form-control-label no-drag">PASSWORD</label>
-							<input type="password" class="form-control">
-						</div>
+						<!-- 여기부터 시작 @@ 또 프론트와의 전쟁... -->
+					</div>
+
+					<label class="form-control-label no-drag">OLD PASSWORD</label>
+					<input type="password" class="form-control">
+					<label class="form-control-label no-drag">NEW PASSWORD</label>
+					<input type="password" class="form-control">				
+	
 						<div class="row row-keep-login border-danger">
 							<div class="col-6 login-bottom text-left border-success">
-								<input type="checkbox" id="input_keep_login" aria-label="checkbox_keep_login" class="no-drag">
-								<small><span class="keep-login-text no-drag">Keep login</span></small>
+								<input type="checkbox" id="input_keep_login" aria-label="checkbox_keep_login">
+								<small><span class="keep-login-text">Keep login</span></small>
 							</div>
 							<div class="col-6 login-bottom text-right border-success">
-								<small><a class="no-drag" href="#">Forget info?</a></small>
+								<small><a href="#">Forget info?</a></small>
 							</div>
 						</div>
 						<div class="d-flex pt-3 justify-content-end align-items-center">
-							<a><img id="btn_google_login" src="/img/icon-google.png" alt="GG" class="join-icon no-drag" th:url="${google_login_url}"></a>
-							<a><img id="btn_naver_login" src="/img/icon-naver.png" alt="NV" class="join-icon no-drag" th:url="${naver_login_url}"></a>
-							<a><img id="btn_kakao_login" src="/img/icon-kakao.png" alt="KK" class="join-icon no-drag" th:url="${kakao_login_url}"></a>
-							<a><img id="btn_de4bi_login" src="/img/icon-de4bi.png" alt="D4" class="join-icon no-drag" th:url="${de4bi_login_url}"></a>
-							<button type="submit" id="button_login" class="btn btn-outline-primary login-button">LOGIN</button>
+							<a><img id="btn_google_login" src="/img/icon-google.png" alt="GG" class="join-icon" th:url="${google_login_url}"></a>
+							<a><img id="btn_naver_login" src="/img/icon-naver.png" alt="NV" class="join-icon" th:url="${naver_login_url}"></a>
+							<a><img id="btn_kakao_login" src="/img/icon-kakao.png" alt="KK" class="join-icon" th:url="${kakao_login_url}"></a>
+							<a><img id="btn_de4bi_login" src="/img/icon-de4bi.png" alt="D4" class="join-icon" th:url="${de4bi_login_url}"></a>
+							<button type="submit" id="button_login" class="btn btn-outline-primary login-button">CHANGE</button>
 						</div>
 					</form>
 				</div>

@@ -3,9 +3,6 @@ package com.de4bi.members.controller.page;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-
 import com.de4bi.common.util.UrlUtil;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
@@ -25,10 +22,8 @@ public class MainPageController {
     // 메인&로그인 페이지
     @RequestMapping(value = {"", "/login"})
     public ModelAndView loginPage(
-        // 서블릿 기본
-        HttpServletResponse response,
         // 로그인창 종류(page, popup, iframe)
-        @RequestParam(required = false, name = "frame_type", defaultValue = "page") String frameType,
+        @RequestParam(required = false, name = "frame_type", defaultValue = "info") String frameType,
         // 로그인 후 이동할 페이지 URL
         @RequestParam(required = false, name = "return_url") String returnUrl,
         // 로그인 후 이동할 페이지에 전달할 파라미터
@@ -38,8 +33,6 @@ public class MainPageController {
 
     ) {
         final Map<String, String> modelMap = new HashMap<>();
-        // Cookie
-        response.addCookie(new Cookie("member_jwt", memberJwt));
         // Datapart
         modelMap.put("frame_type", frameType);
         modelMap.put("return_url", returnUrl);
@@ -53,10 +46,10 @@ public class MainPageController {
         return new ModelAndView("login", modelMap);
     }
 
-    // 임시 페이지
-    @RequestMapping(value = "/replace") 
-    public ModelAndView replacePage(@RequestParam Map<String, Object> paramMap) {
-        return new ModelAndView("replace", paramMap);
+    // 회원정보 페이지
+    @RequestMapping(value = "/info")
+    public ModelAndView infoPage() {
+        return new ModelAndView("info");
     }
 
     // 회원가입 페이지

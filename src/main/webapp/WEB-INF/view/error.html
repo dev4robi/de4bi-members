@@ -16,21 +16,21 @@
 	<!-- js & css-->
 	<script type="text/javascript" src="/view/js/common.js"></script>
 	<script type="text/javascript" src="/view/js/error.js"></script>
-	<link rel="stylesheet" href="/view/css/login.css">
+	<link rel="stylesheet" href="/view/css/de4bi-skin.css">
 </head>
 <body>
 <div class="fixed-top bg-purple top-n-bottom"></div>
 <div class="container h-100">
 	<div class="row h-100 justify-content-center align-items-center border-danger">
 		<!-- Error Box -->
-		<div class="col-sm-8 login-box">
+		<div class="col-sm-8 main-box">
 			<div class="row pt-2 pb-1 justify-content-center align-items-center">
-				<div class="col-sm-8 p-2 login-title">ERROR</div>
+				<div class="col-sm-8 p-2 main-box-title">ERROR</div>
 				<div class="col-sm-8 p-2"><img class="error-img" src="/img/icon-de4bi.png" alt="D4"></div>
 				<input type="text" class="error-tid" id="input_error_tid" th:value="|TID:${tid}|" disabled>
 			</div>
 			<div class="row justify-content-center align-items-center border-danger">
-				<div class="col-sm-8 login-form border-warning">
+				<div class="col-sm-8 main-box-form border-warning">
 					<div>
 						<input type="hidden" id="input_error_msg" th:value="${msg}" disabled>
 					</div>

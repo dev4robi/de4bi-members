@@ -2,6 +2,7 @@ const login_js = {
     // 페이지 초기화
     initPage : function() {
         console.log('login_js: Begin PageInit...');
+
         // URL에서 member_jwt획득 시도
         const member_jwt = new URLSearchParams(location.search).get('member_jwt');
 
@@ -18,6 +19,9 @@ const login_js = {
                 // [Note] 초기에는 page, popup, iframe방식에 따라 다른 제어를 하려고 했지만, (JS callback등)
                 // 각종 브라우저 보안 제약사항 (CROSS-ORIGIN, X-FRAME-OPTIONS등...)으로 인해 
                 // 모든 방식을 페이지 redirection후 사용자 페이지에서 전달받은 파라미터로 남은 처리를 완료하도록 통일했다.
+                case 'info': {
+                    return_url = (location.origin + '/info');
+                }
                 default: case 'page': case 'popup': case 'iframe': {
                     console.log(frame_type + ' Trying redirection! (' + return_url + ')');
                     if (!!return_url) {

@@ -1,6 +1,5 @@
 package com.de4bi.members.controller.api;
 
-
 import com.de4bi.common.annotation.RequireAdminJwt;
 import com.de4bi.common.annotation.RequireMemberJwt;
 import com.de4bi.members.controller.dto.PostMembersDto;

@@ -8,18 +8,22 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
+.no-drag {
+    -ms-user-select: none; -moz-user-select: -moz-none; -webkit-user-select: none; -khtml-user-select: none; user-select:none;
+}
+
 .top-n-bottom {
     height: 1rem;
 }
 
-.login-box {
+.main-box {
     height: auto;
     background: #1A2226;
     text-align: center;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 }
 
-.login-title {
+.main-box-title {
     text-align: center;
     font-size: 30px;
     letter-spacing: 2px;
@@ -27,7 +31,7 @@ body {
     color: #ECF0F5;
 }
 
-.login-form {
+.main-box-form {
     width: 80%;
     text-align: left;
 }
@@ -75,6 +79,16 @@ input[type=password] {
     outline: 0;
     background-color: #1A2226;
     color: #ECF0F5;
+}
+
+.form-control:read-only {
+    border-color: inherit;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border-bottom: 2px solid #0a7f99;
+    outline: 0;
+    background-color: #1A2226;
+    color: #6C6C6C;
 }
 
 input:focus {
