@@ -31,6 +31,14 @@ body {
     color: #ECF0F5;
 }
 
+.main-box-sub-title {
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: bold;
+    color: #ECF0F5;
+}
+
 .main-box-form {
     width: 80%;
     text-align: left;
@@ -91,6 +99,14 @@ input[type=password] {
     color: #6C6C6C;
 }
 
+.form-agency-icon {
+    display: block;
+    width: 30px;
+    height: 30px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
 input:focus {
     outline: none;
     box-shadow: 0 0 0;
@@ -107,6 +123,14 @@ label {
     letter-spacing: 1px;
 }
 
+.form-control-error {
+    padding-top: -8px;
+    font-size: 8px;
+    color: #ff0000;
+    letter-spacing: 1px;
+    padding-top: -12px;
+}
+
 .btn-outline-primary {
     border-color: #0DB8DE;
     color: #0DB8DE;
@@ -121,6 +145,20 @@ label {
     right: 0px;
 }
 
+.btn-outline-warning {
+    border-color: #dedb0d;
+    color: #dedb0d;
+    border-radius: 0px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.btn-outline-warning:hover {
+    background-color: #dedb0d;
+    right: 0px;
+}
+
 .btn-outline-danger {
     border-color: #ff0000;
     color: #ff0000;
@@ -128,6 +166,11 @@ label {
     font-weight: bold;
     letter-spacing: 1px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.btn-outline-danger:hover {
+    border-color: #ff0000;
+    right: 0px;
 }
 
 .error-img {
@@ -174,6 +217,6 @@ label {
     margin: 2px;
 }
 
-.login-button {
+.accept-button {
     margin-left: 7px;
 }

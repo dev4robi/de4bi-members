@@ -25,8 +25,8 @@
 		<!-- Info Box -->
 		<div class="col-sm-8 main-box border-danger">
 			<!-- Title -->
-			<div class="row pt-2 pb-1 justify-content-center align-items-center">
-				<div class="col-sm-8 p-2 main-box-title no-drag">Member Info</div>
+			<div class="row pt-4 pb-1 justify-content-center align-items-center">
+				<div class="col-sm-8 p-2 main-box-title no-drag">MEMBER INFO</div>
 			</div>
 			<!-- Loading -->
 			<div class="row justify-content-center align-items-center border-danger">
@@ -35,36 +35,80 @@
 			<!-- Info -->
 			<div class="row justify-content-center align-items-center border-danger">
 				<div class="col-sm-8 main-box-form border-warning">
+					<!-- ID -->
+					<label class="form-control-label no-drag">ID</label>
+					<input type="text" class="form-control" placeholder="(Email)" readonly value="robi9202@gmail.com">
+					<!-- State & Authority & Agency -->
 					<div class="row justify-content-center align-items-center border-danger">
 						<div class="col-sm-4">
-							<label class="form-control-label no-drag">ID</label>
-							<input type="text" class="form-control" placeholder="(Email)" readonly value="robi9202@gmail.com">
+							<label class="form-control-label no-drag">MEMBER STATE</label>
+							<input type="text" class="form-control" value="정상" readonly>
 						</div>
-						<!-- 여기부터 시작 @@ 또 프론트와의 전쟁... -->
+						<div class="col-sm-4">
+							<label class="form-control-label no-drag">MEMBERSHIP</label>
+							<input type="text" class="form-control" value="일반 회원" readonly>
+						</div>
+						<div class="col-sm-4">
+							<label class="form-control-label no-drag">CERT AGENCY</label>
+							<img src="/img/icon-google.png" alt="GG" class="form-agency-icon no-drag">
+						</div>
 					</div>
-
-					<label class="form-control-label no-drag">OLD PASSWORD</label>
-					<input type="password" class="form-control">
-					<label class="form-control-label no-drag">NEW PASSWORD</label>
-					<input type="password" class="form-control">				
-	
-						<div class="row row-keep-login border-danger">
-							<div class="col-6 login-bottom text-left border-success">
-								<input type="checkbox" id="input_keep_login" aria-label="checkbox_keep_login">
-								<small><span class="keep-login-text">Keep login</span></small>
-							</div>
-							<div class="col-6 login-bottom text-right border-success">
-								<small><a href="#">Forget info?</a></small>
-							</div>
+					<!-- Dates -->
+					<div class="row justify-content-center align-items-center border-danger">
+						<div class="col-sm-6">
+							<label class="form-control-label no-drag">JOIN DATE</label>
+							<input type="text" class="form-control" value="2020-09-13 13:33:22" readonly>
 						</div>
-						<div class="d-flex pt-3 justify-content-end align-items-center">
-							<a><img id="btn_google_login" src="/img/icon-google.png" alt="GG" class="join-icon" th:url="${google_login_url}"></a>
-							<a><img id="btn_naver_login" src="/img/icon-naver.png" alt="NV" class="join-icon" th:url="${naver_login_url}"></a>
-							<a><img id="btn_kakao_login" src="/img/icon-kakao.png" alt="KK" class="join-icon" th:url="${kakao_login_url}"></a>
-							<a><img id="btn_de4bi_login" src="/img/icon-de4bi.png" alt="D4" class="join-icon" th:url="${de4bi_login_url}"></a>
-							<button type="submit" id="button_login" class="btn btn-outline-primary login-button">CHANGE</button>
+						<div class="col-sm-6">
+							<label class="form-control-label no-drag">LAST LOGIN DATE</label>
+							<input type="text" class="form-control" value="2020-09-13 13:33:22" readonly>
 						</div>
-					</form>
+					</div>
+					<!-- Sub-Title (Changeable info) -->
+					<div class="row justify-content-center align-items-center border-danger pt-4 pb-3">
+						<div class="col-sm-8 p-2 main-box-sub-title no-drag">CHANGEABLE INFO</div>
+					</div>
+					<!-- Name & Nickname -->
+					<div class="row justify-content-center align-items-center border-danger">
+						<div class="col-sm-6">
+							<label class="form-control-label no-drag">NAME</label>
+							<label class="form-control-error no-drag"></label>
+							<input id="input_name" type="text" class="form-control" value="TAE HOON LEE">
+						</div>
+						<div class="col-sm-6">
+							<label class="form-control-label no-drag">NICKNAME</label>
+							<label class="form-control-error no-drag"></label>
+							<input id="input_nickname" type="text" class="form-control" value="GOOGLE#235NDKE">
+						</div>
+					</div>
+					<!-- Passwords -->
+					<div class="row justify-content-center align-items-center border-danger">
+						<div class="col-sm-6">
+							<label class="form-control-label no-drag">OLD PASSWORD</label>
+							<label class="form-control-error no-drag"></label>
+							<input id="input_old_password" type="password" class="form-control">
+						</div>
+						<div class="col-sm-6">
+							<label class="form-control-label no-drag">NEW PASSWORD</label>
+							<label class="form-control-error no-drag"></label>
+							<input id="input_new_password" type="password" class="form-control">
+						</div>
+					</div>
+					<!-- Main & Change Button -->
+					<div class="d-flex pt-3 justify-content-end align-items-center">
+						<button id="button_main" class="btn btn-outline-primary accept-button">MAIN</button>
+						<button id="button_change" class="w-50 btn btn-outline-warning accept-button">CHANGE</button>
+					</div>
+					<!-- Sub-Title (Danger) -->
+					<div class="row justify-content-center align-items-center border-danger pt-5">
+						<div class="col-sm-8 p-2 main-box-sub-title no-drag">DANGER</div>
+					</div>
+					<!-- Delete Account Button -->
+					<div class="d-flex pt-3 justify-content-end align-items-center">
+						<button id="button_delete_account" class="w-100 btn btn-outline-danger accept-button">DELETE ACCOUNT</button>
+					</div>
+					<!-- Bottom -->
+					<div class="row justify-content-center align-items-center border-danger pb-4"></div>
 				</div>
 			</div>
 			<div class="row pt-1 pb-2 justify-content-center align-items-center"></div>
