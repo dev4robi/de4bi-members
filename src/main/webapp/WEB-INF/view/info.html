@@ -14,6 +14,7 @@
 	<link rel="stylesheet" href="/lib/bootstrap-4.5.0/css/bootstrap-colorex.min.css">
 	<script type="text/javascript" src="/lib/bootstrap-4.5.0/js/bootstrap.bundle.min.js"></script>
 	<!-- js & css-->
+	<script type="text/javascript" src="/view/js/common.js"></script>
 	<script type="text/javascript" src="/view/js/info.js"></script>
 	<link rel="stylesheet" href="/view/css/de4bi-skin.css">
 </head>
@@ -30,7 +31,9 @@
 			</div>
 			<!-- Loading -->
 			<div class="row justify-content-center align-items-center border-danger">
-				<!-- ... -->
+				<div class="col-sm-8 main-box-form text-center border-warning">
+					<div class="loading-spinner-grow no-drag"></div>
+				</div>
 			</div>
 			<!-- Info -->
 			<div class="row justify-content-center align-items-center border-danger">
@@ -94,9 +97,8 @@
 							<input id="input_new_password" type="password" class="form-control">
 						</div>
 					</div>
-					<!-- Main & Change Button -->
+					<!-- Info Change Button -->
 					<div class="d-flex pt-3 justify-content-end align-items-center">
-						<button id="button_main" class="btn btn-outline-primary accept-button">MAIN</button>
 						<button id="button_change" class="w-50 btn btn-outline-warning accept-button">CHANGE</button>
 					</div>
 					<!-- Sub-Title (Danger) -->
@@ -106,6 +108,13 @@
 					<!-- Delete Account Button -->
 					<div class="d-flex pt-3 justify-content-end align-items-center">
 						<button id="button_delete_account" class="w-100 btn btn-outline-danger accept-button">DELETE ACCOUNT</button>
+					</div>
+					<!-- Sub-Title (Back) -->
+					<div class="row justify-content-center align-items-center border-danger pt-5">
+						<div class="col-sm-8 p-2 main-box-sub-title no-drag">BACK</div>
+					</div>
+					<div class="d-flex pt-3 pb-3 justify-content-end align-items-center">
+						<button id="button_main" class="w-100 btn btn-outline-primary accept-button">BACK TO MAIN</button>
 					</div>
 					<!-- Bottom -->
 					<div class="row justify-content-center align-items-center border-danger pb-4"></div>

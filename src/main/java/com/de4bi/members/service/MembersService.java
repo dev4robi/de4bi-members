@@ -211,40 +211,49 @@ public class MembersService {
 
     /**
      * <p>멤버 정보를 조회하여 반환합니다.</p>
-     * @param seq : 정보를 조회할 멤버의 고유 시퀀스
+     * @param tgtMembersDao : 조회 대상 멤버의 DAO.
      * @return 성공 시 {@link ApiResult}<{@link SelectMemberInfoResDto}>를 반환합니다.
      */
-    public ApiResult<SelectMemberInfoResDto> selectMemberInfo(long seq) {
+    public ApiResult<SelectMemberInfoResDto> selectMemberInfo(MembersDao tgtMembersDao) {
         final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO);
-        final MembersDao selectedMemberDao = rawSelect(seq).getData();
+        Objects.requireNonNull(jwtMembersDao, "'jwtMembersDao' is null!");
 
-        if (selectedMemberDao == null) {
+        if (tgtMembersDao == null) {
             final String extMsg = checkManagerAuthority(jwtMembersDao)
                 ? "존재하지 않는 회원입니다."
                 : "해당 기능을 수행할 권한이 없습니다.";
-            throw new ApiException(extMsg)
-            .setInternalMsg("'selectedMemberDao' is null! (seq: " + seq + ")");
+            throw new ApiException(extMsg).setInternalMsg("'tgtMembersDao' is null!");
         }
 
-        if (jwtMembersDao.getSeq() != selectedMemberDao.getSeq() && checkManagerAuthority(jwtMembersDao) == false) {
+        if (jwtMembersDao.getSeq() != tgtMembersDao.getSeq() && checkManagerAuthority(jwtMembersDao) == false) {
             // 관리자 권한이 아니면서, 타인의 정보를 조회하려고 할 경우
             throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
                 .setInternalMsg("No permission! (jwtMembersDao.authority: " +
                                 jwtMembersDao.getAuthority() + ", jwtMembersDao.seq: " +
-                                jwtMembersDao.getSeq() + "selectedMemberDao.seq: " + selectedMemberDao + ")");
+                                jwtMembersDao.getSeq() + "tgtMembersDao.seq: " + tgtMembersDao + ")");
         }
 
         final SelectMemberInfoResDto rtDto = SelectMemberInfoResDto.builder()
-            .id(selectedMemberDao.getId())
-            .name(selectedMemberDao.getName())
-            .nickname(selectedMemberDao.getNickname())
-            .status(MembersCode.getNameFromSeq(selectedMemberDao.getStatus()))
-            .authority(MembersCode.getNameFromSeq(selectedMemberDao.getAuthority()))
-            .joinDate(StringUtil.format(selectedMemberDao.getJoinDate()))
-            .lastLoginDate(StringUtil.format(selectedMemberDao.getLastLoginDate()))
+            .id(tgtMembersDao.getId())
+            .name(tgtMembersDao.getName())
+            .nickname(tgtMembersDao.getNickname())
+            .status(MembersCode.getNameFromSeq(tgtMembersDao.getStatus()))
+            .authority(MembersCode.getNameFromSeq(tgtMembersDao.getAuthority()))
+            .joinDate(StringUtil.format(tgtMembersDao.getJoinDate()))
+            .lastLoginDate(StringUtil.format(tgtMembersDao.getLastLoginDate()))
             .build();
 
         return ApiResult.of(true, rtDto);
+    }
+
+    /**
+     * <p>멤버 정보를 조회하여 반환합니다.</p>
+     * @param seq : 정보를 조회할 멤버의 고유 시퀀스
+     * @return 성공 시 {@link ApiResult}<{@link SelectMemberInfoResDto}>를 반환합니다.
+     */
+    public ApiResult<SelectMemberInfoResDto> selectMemberInfo(long seq) {
+        final MembersDao selectedMemberDao = rawSelect(seq).getData();
+        return selectMemberInfo(selectedMemberDao);
     }
 
     /**

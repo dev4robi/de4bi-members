@@ -1,12 +1,12 @@
 -- Service: de4bi-members
--- Last Modified: 2020.08.05
+-- Last Modified: 2020.09.21
 -- Version: 1.0.0
 
 +------------------------------------------------------------------------------------------------------------------------------+
-> API ID  : members.signin
-> CTR ID  : signinNewMember()ㅇ
-> Version : 1.0.0
 > Name    : 회원 가입
+> API ID  : members.signin
+> CTR ID  : signinNewMember()
+> Version : 1.0.0
 > URL     : /api/members
 > Method  : POST
 > ReqHead : -
@@ -18,8 +18,32 @@
   "nickname":{nickname}",
   "name":"{name}"
 }
-
 > ResHead :
 > ResBody :
+> ETC     : 
++------------------------------------------------------------------------------------------------------------------------------+
+> Name    : 회원정보 조회
+> API ID  : members.info
+> CTR ID  : 
+> Version : 1.0.0
+> URL     : /api/members
+> Method  : GET
+> ReqHead : "member_jwt":"{member_jwt}"
+> ReqBody : -
+> ResHead : 
+> ResBody : {
+  "tid",
+  "result",
+  "message",
+  "data": {
+    "id",
+    "name",
+    "nickname",
+    "status",
+    "authority",
+    "join_date":"yyyy-MM-dd HH:mm:ss",
+    "last_login_date":"yyyy-MM-dd HH:mm:ss"
+  }
+}
 > ETC     : 
 +------------------------------------------------------------------------------------------------------------------------------+

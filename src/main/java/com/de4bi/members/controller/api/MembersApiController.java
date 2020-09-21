@@ -2,8 +2,10 @@ package com.de4bi.members.controller.api;
 
 import com.de4bi.common.annotation.RequireAdminJwt;
 import com.de4bi.common.annotation.RequireMemberJwt;
+import com.de4bi.common.data.ThreadStorage;
 import com.de4bi.members.controller.dto.PostMembersDto;
 import com.de4bi.members.controller.dto.PutMembersDto;
+import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.service.MembersService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,6 +38,13 @@ public class MembersApiController {
     @GetMapping("/members/{seq}")
     public String getMemberBasicInfo(@PathVariable long seq) {
         return membersSvc.selectMemberInfo(seq).toString();
+    }
+
+    @RequireMemberJwt
+    @GetMapping("/members")
+    public String getMemberBasicInfo() {
+        return membersSvc.selectMemberInfo(
+            (MembersDao) ThreadStorage.get(MembersService.TSKEY_JWT_MEMBERS_DAO)).toString();
     }
 
     @RequireMemberJwt

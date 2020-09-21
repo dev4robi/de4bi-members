@@ -1,7 +1,9 @@
 const login_js = {
+    page_js_name : "login_js",
+
     // 페이지 초기화
     initPage : function() {
-        console.log('login_js: Begin PageInit...');
+        console.log(this.page_js_name + ': Begin PageInit...');
 
         // URL에서 member_jwt획득 시도
         const member_jwt = new URLSearchParams(location.search).get('member_jwt');
@@ -45,7 +47,7 @@ const login_js = {
             });
         }
 
-        console.log('login_js: PageInit done.');
+        console.log(this.page_js_name + ': End PageInit...');
     },
 
     // 소셜 로그인하기 클릭

@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
 import lombok.Data;
 
@@ -132,6 +133,7 @@ public class ApiResult<T> {
         final ObjectMapper objMapper = new ObjectMapper();
         String rtStr = null;
         try {
+            objMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
             rtStr = objMapper.writeValueAsString(this.resultMap);
         }
         catch (JsonProcessingException e) {
