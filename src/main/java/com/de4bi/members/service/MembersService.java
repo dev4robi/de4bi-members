@@ -239,6 +239,7 @@ public class MembersService {
             .nickname(tgtMembersDao.getNickname())
             .status(MembersCode.getNameFromSeq(tgtMembersDao.getStatus()))
             .authority(MembersCode.getNameFromSeq(tgtMembersDao.getAuthority()))
+            .authAgency(MembersCode.getNameFromSeq(tgtMembersDao.getAuthAgency()))
             .joinDate(StringUtil.format(tgtMembersDao.getJoinDate()))
             .lastLoginDate(StringUtil.format(tgtMembersDao.getLastLoginDate()))
             .build();

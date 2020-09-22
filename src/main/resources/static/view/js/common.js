@@ -1,3 +1,6 @@
+// 전역
+const gb_apiurl_member_info = '/api/members';
+
 const common_js = {
     page_js_name : 'common_js',
 
@@ -5,20 +8,21 @@ const common_js = {
         console.log(this.page_js_name + ': Begin PageInit...');
 
         // css 이펙터 초기화
-        this.css_loading_spinner_grow(5);
+        this.css_loading_spinner_grow();
 
         console.log(this.page_js_name + ': End PageInit...');
     },
 
     // 로딩 스피너(grow버전)
-    css_loading_spinner_grow : function(i) {
-        console.log(i);
-        setTimeout(function (i) {
-            if (i >= 0) {
-                $('.loading-spinner-grow').append('<div class="spinner-grow text-info"><span class="sr-only">.</span></div>&nbsp;');
+    css_loading_spinner_grow : function() {
+        var tags = $('.loading-spinner-grow');
+        for (i = 0; i < tags.length; ++i) {
+            var tag = tags[i];
+            for (j = 0; j < 5; ++j) {
+                $(tag).append('<div class="spinner-grow text-info" style="animation-delay:' + (j * 0.12) +
+                              's;><span class="sr-only">.</span></div>&nbsp;');
             }
-        }, 2000, (i - 1)); // 여기부터 시작. js재귀호출이 1~2번에서 멈춘다. 이유는? @@
-        console.log('!');
+        }
     }
 }
 

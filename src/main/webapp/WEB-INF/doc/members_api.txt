@@ -41,6 +41,7 @@
     "nickname",
     "status",
     "authority",
+    "auth_agency",
     "join_date":"yyyy-MM-dd HH:mm:ss",
     "last_login_date":"yyyy-MM-dd HH:mm:ss"
   }

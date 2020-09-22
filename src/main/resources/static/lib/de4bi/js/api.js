@@ -32,7 +32,7 @@ const de4bi_api = {
             if (!!alwaysFunc) alwaysFunc(data_jqXHR, textStatus, jqXHR_errorThrown);
         })
         .done(function(data, textStatus, jqXHR) {
-            if (!!doneFunc) doneFunc(data, textStatus, jqXHR);
+            if (!!doneFunc) doneFunc(JSON.parse(data), textStatus, jqXHR);
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
             if (!!failFunc) failFunc(jqXHR, textStatus, errorThrown);
@@ -72,7 +72,11 @@ const de4bi_api = {
             return false;
         }
 
-        return result[key];
+        var rt = '';
+        try { rt = result.data[key]; }
+        catch (e) { console.log('Exception while getResultData(' + key + ')' + e); }
+        
+        return rt;
     },
 
     /**
@@ -81,7 +85,7 @@ const de4bi_api = {
      * @return 성공 시 메시지값, 실패 시 null
      */
     getResultMsg : function(result) {
-        return this.getResultData('message');
+        return result.message;
     },
 
     /**

@@ -14,6 +14,7 @@ public class SelectMemberInfoResDto {
     String nickname;        // 닉네임
     String status;          // 멤버 상태
     String authority;       // 권한
+    String authAgency;      // 인증기관
     String joinDate;        // yyyy-MM-dd HH:mm:ss
     String lastLoginDate;   // yyyy-MM-dd HH:mm:ss
 }
