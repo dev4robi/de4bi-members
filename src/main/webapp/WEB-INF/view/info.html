@@ -42,6 +42,7 @@
 					<!-- ID -->
 					<label class="form-control-label no-drag">ID</label>
 					<input id="input_id" type="text" class="form-control" placeholder="(Email)" readonly>
+					<input id="input_seq" type="hidden" readonly>
 					<!-- State & Authority & Agency -->
 					<div class="row justify-content-center align-items-center border-danger">
 						<div class="col-sm-4">
@@ -90,12 +91,12 @@
 						<div class="col-sm-6">
 							<label class="form-control-label no-drag">OLD PASSWORD</label>
 							<label class="form-control-error no-drag"></label>
-							<input id="input_old_password" type="password" class="form-control">
+							<input id="input_old_password" type="password" placeholder="" class="form-control">
 						</div>
 						<div class="col-sm-6">
 							<label class="form-control-label no-drag">NEW PASSWORD</label>
 							<label class="form-control-error no-drag"></label>
-							<input id="input_new_password" type="password" class="form-control">
+							<input id="input_new_password" type="password" placeholder="(A-z + 0-9 + ! , 8~32Len)" class="form-control">
 						</div>
 					</div>
 					<!-- Info Change Button -->

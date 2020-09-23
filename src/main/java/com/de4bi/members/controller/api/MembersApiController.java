@@ -48,11 +48,10 @@ public class MembersApiController {
     }
 
     @RequireMemberJwt
-    @PutMapping("/members/{seq}")
+    @PutMapping("/members")
     public String putMembers(
-        @PathVariable long seq,
         @RequestBody PutMembersDto putMembersDto) {
-        return membersSvc.updateMemberInfo(seq, putMembersDto).toString();
+        return membersSvc.updateMemberInfo(putMembersDto).toString();
     }
 
     @RequireAdminJwt

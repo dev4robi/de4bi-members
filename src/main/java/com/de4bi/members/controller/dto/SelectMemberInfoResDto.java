@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class SelectMemberInfoResDto {
  
+    long seq;               // 시퀀스
     String id;              // 아이디(메일)
     String name;            // 이름(실명)
     String nickname;        // 닉네임

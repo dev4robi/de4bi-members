@@ -1,5 +1,6 @@
 // 전역
-const gb_apiurl_member_info = '/api/members';
+const gb_pageurl_login = (location.origin + '/login');
+const gb_apiurl_member_info = (location.origin + '/api/members');
 
 const common_js = {
     page_js_name : 'common_js',

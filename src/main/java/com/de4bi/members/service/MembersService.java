@@ -218,6 +218,7 @@ public class MembersService {
         final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO);
         Objects.requireNonNull(jwtMembersDao, "'jwtMembersDao' is null!");
 
+        // 회원 존재여부 검사
         if (tgtMembersDao == null) {
             final String extMsg = checkManagerAuthority(jwtMembersDao)
                 ? "존재하지 않는 회원입니다."
@@ -225,6 +226,7 @@ public class MembersService {
             throw new ApiException(extMsg).setInternalMsg("'tgtMembersDao' is null!");
         }
 
+        // 요청자 권한 검사
         if (jwtMembersDao.getSeq() != tgtMembersDao.getSeq() && checkManagerAuthority(jwtMembersDao) == false) {
             // 관리자 권한이 아니면서, 타인의 정보를 조회하려고 할 경우
             throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
@@ -233,7 +235,9 @@ public class MembersService {
                                 jwtMembersDao.getSeq() + "tgtMembersDao.seq: " + tgtMembersDao + ")");
         }
 
+        // 조회결과 생성
         final SelectMemberInfoResDto rtDto = SelectMemberInfoResDto.builder()
+            .seq(tgtMembersDao.getSeq())
             .id(tgtMembersDao.getId())
             .name(tgtMembersDao.getName())
             .nickname(tgtMembersDao.getNickname())
@@ -260,38 +264,60 @@ public class MembersService {
     /**
      * <p>멤버 존재 여부, 권한, 닉네임 중복검사를 수행 후 멤버 정보를 DB에서 수정합니다.</p>
      * {@code putMembersDto}내부 값 중, null을 전달받은 값은 기존 정보와 동일하게 수정합니다.
-     * @param seq : 수정할 멤버의 seq값.
      * @param putMembersDto : 수정할 멤버 정보.
      * @return {@link ApiResult}를 반환합니다.
      */
-    public ApiResult<?> updateMemberInfo(long seq, PutMembersDto putMembersDto) {
+    public ApiResult<?> updateMemberInfo(PutMembersDto putMembersDto) {
         Objects.requireNonNull(putMembersDto, "'putMembersDto' is null!");
+        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO);
+        Objects.requireNonNull(jwtMembersDao, "'jwtMembersDao' is null!");
 
-        // 존재여부 검사
-        final MembersDao seletedMembersDao = rawSelect(seq).getData();
+        // 회원 존재여부 검사
+        final MembersDao seletedMembersDao = rawSelect(putMembersDto.getSeq()).getData();
         if (seletedMembersDao == null) {
-            throw new ApiException(HttpStatus.ACCEPTED, "존재하지 않는 회원입니다.");
+            final String extMsg = checkManagerAuthority(jwtMembersDao)
+                ? "존재하지 않는 회원입니다."
+                : "해당 기능을 수행할 권한이 없습니다.";
+            throw new ApiException(extMsg).setInternalMsg("'seletedMembersDao' is null!");
         }
 
-        // 권한 검사 (본인이 아닌 경우 매니저권한 이상 필요)
-        if (seq != seletedMembersDao.getSeq()) {
-            checkMemberAuthority(seletedMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER);
+        // 관리자 권한이 아닌 경우 요청자 권한 검사
+        if (checkManagerAuthority(jwtMembersDao) == false) {
+            if (jwtMembersDao.getSeq() != seletedMembersDao.getSeq()) {
+                // 관리자 권한이 아니면서, 타인의 정보를 조회하려고 할 경우
+                throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
+                    .setInternalMsg("No permission! (jwtMembersDao.authority: " +
+                        jwtMembersDao.getAuthority() + ", jwtMembersDao.seq: " +
+                        jwtMembersDao.getSeq() + "seletedMembersDao.seq: " + seletedMembersDao + ")");
+            }
+            
+            if (seletedMembersDao.getPassword() != null) {
+                // 관리자 권한이 아니면서, 등록된 비밀번호가 존재하는 경우
+                final String oldPassword = SecurityUtil.passwordSecureHashing(putMembersDto.getOldPassword(), secureProps.getMemberPasswordSalt());
+                    if (seletedMembersDao.getPassword().equals(oldPassword) == false) {
+                        // 비밀번호 검사 실패한 경우
+                        throw new ApiException("존재하지 않는 회원이거나, 비밀번호가 올바르지 않습니다.")
+                            .setInternalMsg("Wroing password! (id: " + seletedMembersDao.getId() + ")");
+                }
+            }
         }
 
         // 닉네임 중복검사
         if (Objects.nonNull(putMembersDto.getNickname())) {
             final MembersDao duplicatedNicknameMembersDao = membersMapper.selectByNickname(putMembersDto.getNickname());
-            if (duplicatedNicknameMembersDao != null) {
-                throw new ApiException(HttpStatus.ACCEPTED, "'" + putMembersDto.getNickname() + "'은(는) 이미 존재하는 닉네임입니다.");
+            if (duplicatedNicknameMembersDao != null && seletedMembersDao.getSeq() != duplicatedNicknameMembersDao.getSeq()) {
+                throw new ApiException(HttpStatus.ACCEPTED, "'" + putMembersDto.getNickname() + "'은(는) 이미 존재하는 닉네임입니다.")
+                    .setInternalMsg("Duplicated nickname! (id: " + seletedMembersDao.getId() + ", oldNickanme:" +
+                        seletedMembersDao.getNickname() + ", newNickname: " + putMembersDto.getNickname() + ")");
             }
         }
 
         // 업데이트 수행 (변경할 값으로 null을 전달받은 경우 기존값을 그대로 사용)
         final MembersDao updatedMembersDao = seletedMembersDao;
         final String newPassword = 
-            Objects.isNull(putMembersDto.getPassword())
+            (putMembersDto.getNewPassword() == null)
                 ? seletedMembersDao.getPassword()
-                : SecurityUtil.passwordSecureHashing(putMembersDto.getPassword(), secureProps.getMemberPasswordSalt());
+                : SecurityUtil.passwordSecureHashing(putMembersDto.getNewPassword(), secureProps.getMemberPasswordSalt());
         final String newNickname = Optional.ofNullable(putMembersDto.getNickname()).orElse(seletedMembersDao.getNickname());
         final String newName = Optional.ofNullable(putMembersDto.getName()).orElse(seletedMembersDao.getName());
 
@@ -299,6 +325,7 @@ public class MembersService {
         updatedMembersDao.setNickname(newNickname);
         updatedMembersDao.setName(newName);
         membersMapper.update(updatedMembersDao);
+
         return ApiResult.of(true);
     }
 

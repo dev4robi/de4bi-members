@@ -11,7 +11,9 @@ import lombok.NoArgsConstructor;
 @Getter
 public class PutMembersDto {
     
-    private String password;
+    private long seq;
+    private String oldPassword;
+    private String newPassword;
     private String nickname;
     private String name;
 }
