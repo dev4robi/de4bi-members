@@ -147,31 +147,31 @@ public class MemberJwtUtil {
         }
         catch (UnsupportedJwtException e) {
             // JWT파싱중 오류 발생
-            throw new ApiException("토큰 분석에 실패했습니다.", e.getCause());
+            throw ApiException.of("토큰 분석에 실패했습니다.", e.getMessage(), e.getCause());
         }
         catch (MalformedJwtException e) {
             // JWT토큰 포멧이 아닌경우
-            throw new ApiException("올바르지 않은 토큰 포멧입니다.", e.getCause());
+            throw ApiException.of("올바르지 않은 토큰 포멧입니다.", e.getMessage(), e.getCause());
         }
         catch (ExpiredJwtException e) {
             // 토큰 유효기간이 만료된 경우
-            throw new ApiException("만료된 토큰입니다. 다시 로그인 해주세요.", e.getCause());
+            throw ApiException.of("만료된 토큰입니다. 다시 로그인 해주세요.", e.getMessage(), e.getCause());
         }
         catch (SignatureException e) {
             // 서명검사 오류가 발생한 경우.
-            throw new ApiException("변조된 토큰입니다. 다시 로그인 해주세요.", e.getCause());
+            throw ApiException.of("변조된 토큰입니다. 다시 로그인 해주세요.", e.getMessage(), e.getCause());
         }
         catch (MissingClaimException e) {
             // jwtRequried의 key값이 Claims에 존재하지 않는 경우
-            throw new ApiException("토큰에 필수 정보가 존재하지 않습니다.", e.getCause());
+            throw ApiException.of("토큰에 필수 정보가 존재하지 않습니다.", e.getMessage(), e.getCause());
         }
         catch (IncorrectClaimException e) {
             // jwtRequried의 key값에 해당하는 value가 불일치하는 경우
-            throw new ApiException("토큰 필수값이 일치하지 않습니다.", e.getCause());
+            throw ApiException.of("토큰 필수값이 일치하지 않습니다.", e.getMessage(), e.getCause());
         }
         catch (PrematureJwtException e) {
             // not before 보다 이른 시간에 사용하려 한 경우
-            throw new ApiException("아직 사용할 수 없는 토큰입니다.", e.getCause());
+            throw ApiException.of("아직 사용할 수 없는 토큰입니다.", e.getMessage(), e.getCause());
         }
 
         return rtClaims;

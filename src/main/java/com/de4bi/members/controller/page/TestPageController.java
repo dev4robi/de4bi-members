@@ -21,7 +21,7 @@ public class TestPageController {
     public ModelAndView getError() {
         int i = 0;
         if (i == 0) {
-            throw new ApiException("오류 발생!");
+            throw ApiException.of("오류 발생!", "Error!");
         }
         return new ModelAndView("error");
     }

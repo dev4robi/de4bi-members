@@ -90,7 +90,7 @@ public class ControllerAop {
                 }
             }
             catch (NullPointerException e) {
-                throw new ApiException("로그인이 필요합니다.");
+                throw ApiException.of("로그인이 필요합니다.", "'member_jwt' is null!");
             }
 
             // 컨트롤러 수행
@@ -188,7 +188,7 @@ public class ControllerAop {
                 }
             }
             catch (NullPointerException e) {
-                throw new ApiException("로그인이 필요합니다.");
+                throw ApiException.of("로그인이 필요합니다.", "'member_jwt' is null!");
             }
 
             // 컨트롤러 수행

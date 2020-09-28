@@ -5,7 +5,7 @@
 
 <mapper namespace="com.de4bi.members.db.mapper.MembersMapper">
     <!-- Insert -->
-    <insert id="insert" parameterType="com.de4bi.members.data.dao.MembersDao" useGeneratedKeys="true" keyProperty="seq">
+    <insert id="insert" parameterType="com.de4bi.members.data.dao.MembersDao" resultType="Integer" useGeneratedKeys="true" keyProperty="seq">
         INSERT INTO tb_members (id,password,nickname,name,authority,auth_agency,status,join_date)
         VALUES (#{id},#{password},#{nickname},#{name},#{authority},#{authAgency},#{status},#{joinDate});
     </insert>
@@ -30,7 +30,7 @@
     </select>
 
     <!-- Update -->
-    <update id="update" parameterType="com.de4bi.members.data.dao.MembersDao">
+    <update id="update" parameterType="com.de4bi.members.data.dao.MembersDao" resultType="Integer">
         UPDATE tb_members SET
             id=#{id},
             password=#{password},
@@ -45,7 +45,7 @@
     </update>
 
     <!-- Delete -->
-    <delete id="delete" parameterType="Long">
+    <delete id="delete" parameterType="Long" resultType="Integer">
         DELETE FROM tb_members
         WHERE seq = #{seq}
     </delete>

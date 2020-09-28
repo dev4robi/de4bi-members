@@ -65,21 +65,21 @@ public class MembersService {
      */
     private boolean checkMemberLoginable(MembersDao selectedMembersDao, String inputPassword) {
         if (selectedMembersDao == null) {
-            throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.")
-                .setInternalMsg("'selectedMembersDao' is null!");
+            throw ApiException.of("존재하지 않는 회원이거나 비밀번호가 틀립니다.", 
+                "'selectedMembersDao' is null!");
         }
 
         if (inputPassword != null) {
             final String securePassword = SecurityUtil.passwordSecureHashing(inputPassword, secureProps.getMemberPasswordSalt());
             if (selectedMembersDao.getPassword().equals(securePassword) == false) {
-                throw new ApiException("존재하지 않는 회원이거나 비밀번호가 틀립니다.")
-                            .setInternalMsg("Wrong password! (id: " + selectedMembersDao.getId() + ")");
+                throw ApiException.of("존재하지 않는 회원이거나 비밀번호가 틀립니다.", 
+                    "Wrong password! (id: " + selectedMembersDao.getId() + ")");
             }
         }
 
         if (selectedMembersDao.getStatus() == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
-            throw new ApiException("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.")
-                        .setInternalMsg("Banned member! (id: " + selectedMembersDao.getId() + ")");
+            throw ApiException.of("사용 정지된 회원입니다. dev4robi@gmail.com으로 문의하십시오.", 
+                "Banned member! (id: " + selectedMembersDao.getId() + ")");
         }
 
         return true;
@@ -96,9 +96,9 @@ public class MembersService {
         Objects.requireNonNull(requiredAuthOver, "'requiredAuthOver' is null!");
 
         if (selectedMembersDao.getAuthority() < requiredAuthOver.getSeq()) {
-            throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
-                        .setInternalMsg("No permission! (memberAuthority: " +
-                            selectedMembersDao.getAuthority() + ", required: " + requiredAuthOver.getSeq() + ")");
+            throw ApiException.of("해당 기능을 수행할 권한이 없습니다.", 
+                "No permission! (memberAuthority: " +
+                selectedMembersDao.getAuthority() + ", required: " + requiredAuthOver.getSeq() + ")");
         }
 
         return true;
@@ -223,16 +223,16 @@ public class MembersService {
             final String extMsg = checkManagerAuthority(jwtMembersDao)
                 ? "존재하지 않는 회원입니다."
                 : "해당 기능을 수행할 권한이 없습니다.";
-            throw new ApiException(extMsg).setInternalMsg("'tgtMembersDao' is null!");
+            throw ApiException.of(extMsg, "'tgtMembersDao' is null!");
         }
 
         // 요청자 권한 검사
         if (jwtMembersDao.getSeq() != tgtMembersDao.getSeq() && checkManagerAuthority(jwtMembersDao) == false) {
             // 관리자 권한이 아니면서, 타인의 정보를 조회하려고 할 경우
-            throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
-                .setInternalMsg("No permission! (jwtMembersDao.authority: " +
-                                jwtMembersDao.getAuthority() + ", jwtMembersDao.seq: " +
-                                jwtMembersDao.getSeq() + "tgtMembersDao.seq: " + tgtMembersDao + ")");
+            throw ApiException.of("해당 기능을 수행할 권한이 없습니다.", 
+                "No permission! (jwtMembersDao.authority: " +
+                jwtMembersDao.getAuthority() + ", jwtMembersDao.seq: " +
+                jwtMembersDao.getSeq() + "tgtMembersDao.seq: " + tgtMembersDao + ")");
         }
 
         // 조회결과 생성
@@ -278,17 +278,17 @@ public class MembersService {
             final String extMsg = checkManagerAuthority(jwtMembersDao)
                 ? "존재하지 않는 회원입니다."
                 : "해당 기능을 수행할 권한이 없습니다.";
-            throw new ApiException(extMsg).setInternalMsg("'seletedMembersDao' is null!");
+            throw ApiException.of(extMsg, "'seletedMembersDao' is null!");
         }
 
         // 관리자 권한이 아닌 경우 요청자 권한 검사
         if (checkManagerAuthority(jwtMembersDao) == false) {
             if (jwtMembersDao.getSeq() != seletedMembersDao.getSeq()) {
                 // 관리자 권한이 아니면서, 타인의 정보를 조회하려고 할 경우
-                throw new ApiException("해당 기능을 수행할 권한이 없습니다.")
-                    .setInternalMsg("No permission! (jwtMembersDao.authority: " +
-                        jwtMembersDao.getAuthority() + ", jwtMembersDao.seq: " +
-                        jwtMembersDao.getSeq() + "seletedMembersDao.seq: " + seletedMembersDao + ")");
+                throw ApiException.of("해당 기능을 수행할 권한이 없습니다.", 
+                    "No permission! (jwtMembersDao.authority: " +
+                    jwtMembersDao.getAuthority() + ", jwtMembersDao.seq: " +
+                    jwtMembersDao.getSeq() + "seletedMembersDao.seq: " + seletedMembersDao + ")");
             }
             
             if (seletedMembersDao.getPassword() != null) {
@@ -296,8 +296,8 @@ public class MembersService {
                 final String oldPassword = SecurityUtil.passwordSecureHashing(putMembersDto.getOldPassword(), secureProps.getMemberPasswordSalt());
                     if (seletedMembersDao.getPassword().equals(oldPassword) == false) {
                         // 비밀번호 검사 실패한 경우
-                        throw new ApiException("존재하지 않는 회원이거나, 비밀번호가 올바르지 않습니다.")
-                            .setInternalMsg("Wroing password! (id: " + seletedMembersDao.getId() + ")");
+                        throw ApiException.of("존재하지 않는 회원이거나, 비밀번호가 올바르지 않습니다.",
+                            "Wroing password! (id: " + seletedMembersDao.getId() + ")");
                 }
             }
         }
@@ -306,9 +306,9 @@ public class MembersService {
         if (Objects.nonNull(putMembersDto.getNickname())) {
             final MembersDao duplicatedNicknameMembersDao = membersMapper.selectByNickname(putMembersDto.getNickname());
             if (duplicatedNicknameMembersDao != null && seletedMembersDao.getSeq() != duplicatedNicknameMembersDao.getSeq()) {
-                throw new ApiException(HttpStatus.ACCEPTED, "'" + putMembersDto.getNickname() + "'은(는) 이미 존재하는 닉네임입니다.")
-                    .setInternalMsg("Duplicated nickname! (id: " + seletedMembersDao.getId() + ", oldNickanme:" +
-                        seletedMembersDao.getNickname() + ", newNickname: " + putMembersDto.getNickname() + ")");
+                throw ApiException.of(HttpStatus.ACCEPTED, "'" + putMembersDto.getNickname() + "'은(는) 이미 존재하는 닉네임입니다.", 
+                    "Duplicated nickname! (id: " + seletedMembersDao.getId() + ", oldNickanme:" +
+                    seletedMembersDao.getNickname() + ", newNickname: " + putMembersDto.getNickname() + ")");
             }
         }
 
@@ -343,13 +343,13 @@ public class MembersService {
         if (this.rawSelect(id).getData() != null) {
             // 가입정보가 있는 경우 소셜로그인인지 확인, 아닌 경우(자체가입) 중복가입 거부
             if (isSocialSignin == false) {
-                throw new ApiException(StringUtil.quote(id) + "는 이미 가입된 이메일입니다.");
+                throw ApiException.of(StringUtil.quote(id) + "는 이미 가입된 이메일입니다.");
             }
         }
         else {
             // 가입정보가 없는 경우 신규회원 추가
             if (this.insert(postMembersDto).getResult() == false) {
-                throw new ApiException("회원 가입 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+                throw ApiException.of("회원 가입 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
             }
         }
 
@@ -431,7 +431,7 @@ public class MembersService {
         // 추가 검사
         if (selectedMembersDao.getAuthority() != MembersCode.MEMBERS_AUTHORITY_MANAGER.getSeq() &&
             selectedMembersDao.getAuthority() != MembersCode.MEMBERS_AUTHORITY_ADMIN.getSeq()) {
-            throw new ApiException("해당 기능을 수행할 권한이 없습니다.").setInternalMsg("Unauthorized member. (id: " + id + ")");
+            throw ApiException.of("해당 기능을 수행할 권한이 없습니다.", "Unauthorized member. (id: " + id + ")");
         }
 
         // 스레드 스토레지에 저장
