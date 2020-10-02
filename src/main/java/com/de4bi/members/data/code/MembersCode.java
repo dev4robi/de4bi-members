@@ -47,8 +47,8 @@ public enum MembersCode {
 
     /**
      * <p>MembersCode에서 코드 seq에 해당하는 value를 반환합니다.</p>
-     * @param seq - 코드의 고유 시퀀스.
-     * @return 영문 코드값.
+     * @param seq : 코드의 고유 시퀀스
+     * @return 영문 코드값
      */
     public static String getValueFromSeq(long seq) {
         return MEMBERS_CODE_MAP.get(seq).value;
@@ -56,8 +56,8 @@ public enum MembersCode {
 
     /**
      * <p>MembersCode에서 코드 seq에 해당하는 name을 반환합니다.</p>
-     * @param seq - 코드의 고유 시퀀스.
-     * @return 한글 코드명.
+     * @param seq : 코드의 고유 시퀀스
+     * @return 한글 코드명
      */
     public static String getNameFromSeq(long seq) {
         return MEMBERS_CODE_MAP.get(seq).name;

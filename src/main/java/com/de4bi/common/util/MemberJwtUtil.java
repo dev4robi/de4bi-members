@@ -101,7 +101,7 @@ public class MemberJwtUtil {
                                   .signWith(makeSignKey(secret), SignatureAlgorithm.HS256)
                                   .compact();
         }
-        catch (final Exception e) {
+        catch (Exception e) {
             throw new JwtException("Fail to compact Jwt!", e);
         }
 
