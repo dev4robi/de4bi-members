@@ -185,7 +185,7 @@ public class MembersServiceEx {
         final long myAuthSeq = membersDao.getAuthority();
         if (myAuthSeq < reqAuthSeq) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_NO_PERMISSION)
+                .setCode(ErrorCode.MG0_NO_PERMISSIONS)
                 .setMessage("No permission! (myAuthSeq: " + myAuthSeq + " / reqAuthSeq: " + reqAuthSeq + ")");
         }
 
@@ -454,9 +454,123 @@ public class MembersServiceEx {
 
         return rtRst;
     }
+
+    /**
+     * <p>멤버 정보를 조회하여 반환합니다.</p>
+     * @param membersDao : 조회 대상 멤버 DAO <code>(null -> select(seq, id, nickname)수행)</code>
+     * @param seq : 조회대상 시퀀스 (optional)
+     * @param id : 조회대상 아이디 (optional)
+     * @param nickname : 조회대상 닉네임 (optional)
+     * @return true: 조회 성공 (data: {@link SelectMemberInfoResDto})<li>false: 조회 실패</li>
+     */
+    public ApiResult<SelectMemberInfoResDto> selectMemberInfo(MembersDao membersDao, long seq, String id, String nickname) {
+        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO);
+        final MembersDao selMembersDao = (membersDao == null ? select(seq, id, nickname).getData() : membersDao);
+        final boolean isAdminAuthority = checkMemberAuthority(jwtMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult();
+
+        // 존재여부 검사
+        if (selMembersDao == null) {
+            final String errCode = isAdminAuthority
+                ? ErrorCode.MG0_NO_SUCH_MEMBER  // 운영진권한 이상인 경우 회원정보 없음을,
+                : ErrorCode.MG0_NO_PERMISSIONS; // 일반 권한인 경우 권한없음을 반환 (보안상)
+                
+            return ApiResult.of(false, SelectMemberInfoResDto.class)
+                .setCode(errCode).setMessage("No such member! (membersDao: " + membersDao.toString() + ", seq: " + seq + ", id: " + id + "nickname: " + nickname + ")");
+        }
+
+        // 관리자 권한이 아닌 경우 요청자 일치여부 검사
+        if (isAdminAuthority == false && jwtMembersDao.getSeq() != selMembersDao.getSeq()) {
+            return ApiResult.of(false, SelectMemberInfoResDto.class)
+                .setCode(ErrorCode.MG0_NO_PERMISSIONS)
+                .setMessage("No permissions! (jwtMembersDao.seq: " + jwtMembersDao.getSeq() + 
+                            ", selMeberDao.seq: " + selMembersDao.getSeq() +
+                            ", jwtMembersDao.authority: " + MembersCode.getNameFromSeq(jwtMembersDao.getAuthority()) + ")");
+        }
+
+        // 조회결과 생성
+        final SelectMemberInfoResDto rtDto = SelectMemberInfoResDto.builder()
+            .seq(selMembersDao.getSeq())
+            .id(selMembersDao.getId())
+            .name(selMembersDao.getName())
+            .nickname(selMembersDao.getNickname())
+            .status(MembersCode.getNameFromSeq(selMembersDao.getStatus()))
+            .authority(MembersCode.getNameFromSeq(selMembersDao.getAuthority()))
+            .authAgency(MembersCode.getNameFromSeq(selMembersDao.getAuthAgency()))
+            .joinDate(StringUtil.format(selMembersDao.getJoinDate()))
+            .lastLoginDate(StringUtil.format(selMembersDao.getLastLoginDate()))
+            .build();
+
+        return ApiResult.of(true, SelectMemberInfoResDto.class).setData(rtDto);
+    }
+
+    /**
+     * <p>회원 정보를 수정합니다.</p>
+     * @param seq : 수정할 회원의 시퀀스
+     * @param oldPassword : 기존 비밀번호 (nullable)
+     * @param newPassword : 신규 비밀번호 (nullable)
+     * @param nickname : 신규 닉네임
+     * @param name : 신규 이름
+     * @return  true: 수정 성공<li>false: 수정 실패</li>
+     */
+    public ApiResult<Void> updateMemberInfo(long seq, String oldPassword, String newPassword, String nickname, String name) {
+        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO);
+        final MembersDao selMembersDao = select(seq, null, null).getData();
+        final boolean isAdminAuthority = checkMemberAuthority(jwtMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult();
+
+        // 존재여부 검사
+        if (selMembersDao == null) {
+            final String errCode = isAdminAuthority
+                ? ErrorCode.MG0_NO_SUCH_MEMBER  // 운영진권한 이상인 경우 회원정보 없음을,
+                : ErrorCode.MG0_NO_PERMISSIONS; // 일반 권한인 경우 권한없음을 반환 (보안상)
+                
+            return ApiResult.of(false).setCode(errCode).setMessage("No such member! (seq: "+ seq + ")");
+        }
+
+        // 관리자 권한이 아닌 경우
+        if (isAdminAuthority == false) {
+            if (jwtMembersDao.getSeq() != selMembersDao.getSeq()) {
+                // 요청자 일치여부 검사 실패
+                return ApiResult.of(false).setCode(ErrorCode.MG0_NO_PERMISSIONS)
+                    .setMessage("No permissions! (jwtMembersDao.seq: " + jwtMembersDao.getSeq() + 
+                                ", selMeberDao.seq: " + selMembersDao.getSeq() +
+                                ", jwtMembersDao.authority: " + MembersCode.getNameFromSeq(jwtMembersDao.getAuthority()) + ")");
+            }
+
+            final String selPassword = selMembersDao.getPassword();
+            if (selPassword != null && selPassword.equals(SecurityUtil.passwordSecureHashing(oldPassword, secureProps.getMemberPasswordSalt())) {
+                // 비밀번호 등록이 되어 있고, 비밀번호 검사 실패
+                return ApiResult.of(false).setCode(ErrorCode.MG0_NOSMEM_OR_BADPW)
+                    .setMessage("Illegal password! (seq: " + seq + ")");
+            }
+        }
+
+        // 닉네임 중복검사
+        if (nickname != null) {
+            final MembersDao dupChkNicknameMembersDao = select(0L, null, nickname).getData();
+            if (dupChkNicknameMembersDao != null && selMembersDao.getSeq() != dupChkNicknameMembersDao.getSeq()) {
+                return ApiResult.of(false).setCode(ErrorCode.MG0_DUPLICATED_NICKNAME)
+                    .setMessage("Duplicated nickname! (nickname: " + nickname + ")");
+            }
+        }
+
+        // 업데이트 수행 (변경할 값으로 null을 전달받은 경우 기존값을 그대로 사용)
+        final MembersDao updatedMembersDao = selMembersDao;
+        newPassword = (newPassword == null ? selMembersDao.getPassword()
+                                           : SecurityUtil.passwordSecureHashing(newPassword, secureProps.getMemberPasswordSalt()));
+        final String newNickname = Optional.ofNullable(nickname).orElse(selMembersDao.getNickname());
+        final String newName = Optional.ofNullable(name).orElse(selMembersDao.getName());
+
+        updatedMembersDao.setPassword(newPassword);
+        updatedMembersDao.setNickname(newNickname);
+        updatedMembersDao.setName(newName);
+        membersMapper.update(updatedMembersDao);
+
+        return ApiResult.of(true);
+    }
 }
 
-// JWT검증까지 작업 완료.
-// 이후, 멤버 조회, 수정 작업 이어서 한 다음
-// 컨트롤러단에서 이어붙여야 한다.
-// Aop에서 ErrorCode랑 @ReqMemberJwt등 다루는 부분 수정은 덤! @@
+// 코드 수정 완료, 이제 테스트 해야 함
+// 1. 컨트롤러단 이전
+// 2. 도큐먼트 이전
+// 3. 프론트단 이전
+// 4. 테스트

@@ -8,7 +8,7 @@ public class StringUtil {
     
     /**
      * <p>입력된 date값을 'yyyy-MM-dd HH:mm:ss'포멧으로 변환합니다.</p>
-     * @param date - {@code java.util.Date}시간 값.
+     * @param date - {@code java.util.Date}시간 값
      * @return 입력된 date를 변환한 {@code yyyy-MM-dd HH:mm:ss}포멧 문자열.
      */
     public static String format(Date date) {
@@ -18,7 +18,7 @@ public class StringUtil {
 
     /**
      * <p>문자열이 비었는지 검사합니다.</p>
-     * @param str : 검사할 문자열.
+     * @param str : 검사할 문자열
      * @return str이 빈 문자열인 경우 {@code (str == null || str.length() == 0)} true, 그 외의 경우 false.
      */
     public static boolean isEmpty(String str) {
@@ -30,7 +30,7 @@ public class StringUtil {
 
     /**
      * <p>문자열이 안 비었는지 검사합니다.</p>
-     * @param str : 검사할 문자열.
+     * @param str : 검사할 문자열
      * @return str이 빈 문자열인 경우 {@code (str == null || str.length() == 0)} false, 그 외의 경우 true.
      */
     public static boolean isNotEmpty(String str) {
@@ -39,7 +39,7 @@ public class StringUtil {
 
     /**
      * <p>문자열을 {@code '}로 감싸서 반환합니다.</p>
-     * @param str : 원본 문자열.
+     * @param str : 원본 문자열
      * @return {@code "'" + str + "'"}
       @apiNote {@code quote("Hello") -> 'Hello'}
      */
@@ -49,13 +49,40 @@ public class StringUtil {
 
     /**
      * <p>문자열을 {@code quoteStr}로 감싸서 반환합니다.</p>
-     * @param str : 원본 문자열.
-     * @param quoteStr : 감쌀 문자열.
+     * @param str : 원본 문자열
+     * @param quoteStr : 감쌀 문자열
      * @return {@code quoteStr + str + quoteStr}
      * @apiNote {@code quote("World", "\"") -> "World"}
      */
     public static String quote(String str, String quoteStr) {
         return quoteStr + str + quoteStr;
+    }
+
+    /**
+     * <p> 문자열을 <code>()</code>로 감싸서 반환합니다.
+     * @param str : 감쌀 문자열
+     * @return <code>"(" + str + ")"</code>
+     * @apiNote <code> wrap("Hello: World!"); -> "(Hello: World!)"</code>
+     */
+    public static String wrap(String str) {
+        return "(" + str + ")";
+    }
+
+    /**
+     * <p> 문자열을 <code>(),[],{},<></code>중 하나로 감싸서 반환합니다.</p>
+     * @param str : 감쌀 문자열
+     * @param braceType : 괄호 종류 <code>(, [, {, <</code> 그 외 경우에는 기본값으로 <code>(</code>
+     * @return <code>braceType_Open + str + braceType_Close</code>
+     * @apiNote <code> wrap("Hello: World!", '{'); -> "{Hello: World!}"</code>
+     */
+    public static String wrap(String str, char braceType) {
+        switch (braceType) {
+            default:
+            case '(': case ')': return "(" + str + ")";
+            case '[': case ']': return "[" + str + "]";
+            case '{': case '}': return "{" + str + "}";
+            case '<': case '>': return "<" + str + ">";
+        }
     }
 
     /**
