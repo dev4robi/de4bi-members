@@ -1,17 +1,11 @@
 package com.de4bi.members.controller.api;
 
-import com.de4bi.common.annotation.RequireAdminJwt;
 import com.de4bi.common.annotation.RequireMemberJwt;
-import com.de4bi.common.data.ThreadStorage;
-import com.de4bi.members.controller.dto.PostMembersDto;
-import com.de4bi.members.controller.dto.PutMembersDto;
-import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.service.MembersService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,35 +22,27 @@ public class MembersApiController {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @RequireAdminJwt
-    @PostMapping("/members")
-    public String postMembers(@RequestBody PostMembersDto postMembersDto) {
-        return membersSvc.insert(postMembersDto).toString();
-    }
-
     @RequireMemberJwt
     @GetMapping("/members/{seq}")
     public String getMemberBasicInfo(@PathVariable long seq) {
-        return membersSvc.selectMemberInfo(seq).toString();
+        return membersSvc.selectMemberInfo(null, seq, null, null).toString();
     }
 
     @RequireMemberJwt
-    @GetMapping("/members")
-    public String getMemberBasicInfo() {
-        return membersSvc.selectMemberInfo(
-            (MembersDao) ThreadStorage.get(MembersService.TSKEY_JWT_MEMBERS_DAO)).toString();
+    @PutMapping("/members/{seq}")
+    public String putMemberBasicInfo(
+        @PathVariable long seq,
+        @RequestBody(required = false) String oldPassword,
+        @RequestBody(required = false) String newPassword,
+        @RequestBody(required = false) String nickname,
+        @RequestBody(required = false) String name
+    ) {
+        return membersSvc.updateMemberInfo(seq, oldPassword, newPassword, nickname, name).toString();
     }
 
     @RequireMemberJwt
-    @PutMapping("/members")
-    public String putMembers(
-        @RequestBody PutMembersDto putMembersDto) {
-        return membersSvc.updateMemberInfo(putMembersDto).toString();
-    }
-
-    @RequireAdminJwt
     @DeleteMapping("/members/{seq}")
-    public String deleteMembers(@PathVariable long seq) {
-        return membersSvc.rawDelete(seq).toString();
+    public String deregistMember(@PathVariable long seq, @RequestBody String password) {
+        return membersSvc.deregistMember(seq, password).toString();
     }
 }

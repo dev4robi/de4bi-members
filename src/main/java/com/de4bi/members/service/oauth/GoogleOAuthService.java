@@ -8,7 +8,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,14 +20,14 @@ import com.de4bi.common.util.JwtUtil;
 import com.de4bi.common.util.RestHttpUtil;
 import com.de4bi.common.util.StringUtil;
 import com.de4bi.members.controller.dto.PostMembersDto;
+import com.de4bi.members.controller.dto.SigninMembersDto;
+import com.de4bi.members.controller.dto.SocialSigninMembersDto;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.spring.BootApplication;
 import com.de4bi.members.spring.SecureProperties;
 
-import org.apache.catalina.util.URLEncoder;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.tomcat.util.buf.HexUtils;
 
 import org.springframework.http.MediaType;
@@ -179,7 +178,7 @@ public class GoogleOAuthService implements IOAuthService {
             throw ApiException.of(null, "The string \":::\" not allowed for URL!");
         }
         Objects.requireNonNull(nonce, "'nonce' is null!");
-        return ApiResult.of(true, null, returnParam + ":::" + makeStateSignForRedirectionPageStateValidation(nonce));
+        return ApiResult.of(true, String.class).setData(returnParam + ":::" + makeStateSignForRedirectionPageStateValidation(nonce));
     }
 
     /**
@@ -189,7 +188,7 @@ public class GoogleOAuthService implements IOAuthService {
      */
     public ApiResult<String[]> parseState(String state) {
         Objects.requireNonNull(state, "'state' is null!");
-        return ApiResult.of(true, state.split(":::"));
+        return ApiResult.of(true, String[].class).setData(state.split(":::"));
     }
 
     /**
@@ -210,7 +209,7 @@ public class GoogleOAuthService implements IOAuthService {
                 .append("&prompt=consent").append("&state=").append(state) // 리다이렉션 URL에서 검사할 서명값
                 .append("&redirect_uri=").append(OAUTH_CODE_REDIRECT_URI); // Code값을 리다이렉션할 URI
 
-        return ApiResult.of(true, null, rtSb.toString());
+        return ApiResult.of(true, String.class).setData(rtSb.toString());
     }
 
     /**
@@ -241,7 +240,7 @@ public class GoogleOAuthService implements IOAuthService {
         // id_token 반환
         final String idToken = googleResMap.get("id_token").toString();
 
-        return ApiResult.of(true, null, idToken);
+        return ApiResult.of(true, String.class).setData(idToken);
     }
 
     /**
@@ -326,7 +325,7 @@ public class GoogleOAuthService implements IOAuthService {
             throw new IllegalStateException("Fail to get 'name' from google OAuth!");
         }
 
-        return ApiResult.of(true, OAuthDto.builder().email(email).name(name).build());
+        return ApiResult.of(true, OAuthDto.class).setData(OAuthDto.builder().email(email).name(name).build());
     }
 
     /**
@@ -335,24 +334,23 @@ public class GoogleOAuthService implements IOAuthService {
      * @param code : 플랫폼으로부터 클라이언트에게 내려준 인증코드값.
      * @param state : 플랫폼에 Code를위한 URL생성 시 넘겨주었던 고유 식별값.
      * @param extObj : 플랫폼 종속 파라미터를 전달할 객체입니다. (nullable)
-     * @return 성공 시, {@link ApiResult}<{@link PostMembersDto}>를 반환합니다.
+     * @return 성공 시, {@link ApiResult}<{@link SigninMembersDto}>를 반환합니다.
      * @apiNote 내부적으로 {@link IOAuthService}인터페이스의 메서드인
      * {@code requestIdTokenUsingAuthCode()}, {@code getMemberInfoFromIdToken}를 호출합니다.
      */
-    @Override public ApiResult<PostMembersDto> getMemberInfoWithOAuth(String code, String state, Object extObj) {
+    @Override public ApiResult<SocialSigninMembersDto> getMemberInfoWithOAuth(String code, String state, Object extObj) {
         final String idToken = requestIdTokenUsingAuthCode(code, null).getData();
         final OAuthDto oauthDto = getMemberInfoFromIdToken(idToken, state, extObj).getData();
         // 임시 닉네임 생성: {인증기관코드}#{SUBSTR(MD5({이메일}+{이름}+{현재시간}),8)} -> cf.) GOOGLE#af32a1a0
         final String temporalNickname = MembersCode.MEMBERS_AUTHAGENCY_GOOOLE.getValue() + "#" +
             Hex.encodeHexString(CipherUtil.hashing(CipherUtil.MD5,
                 oauthDto.getEmail() + oauthDto.getName() + LocalTime.now().toString())).substring(0, 8);
-        final PostMembersDto rtPostMembersDto = PostMembersDto.builder()
+        final SocialSigninMembersDto rtDto = SocialSigninMembersDto.builder()
             .id(oauthDto.getEmail())
-            .password(null)
             .nickname(temporalNickname)
             .name(oauthDto.getName())
             .authAgency(MembersCode.MEMBERS_AUTHAGENCY_GOOOLE.getSeq())
             .build();
-        return ApiResult.of(true, rtPostMembersDto);
+        return ApiResult.of(true, SocialSigninMembersDto.class).setData(rtDto);
     }
 }

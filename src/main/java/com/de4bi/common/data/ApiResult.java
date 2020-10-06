@@ -30,7 +30,7 @@ public final class ApiResult<T> {
         this.resultMap = (resultMap == null ? new HashMap<>() : resultMap);
         this.resultMap.put(KEY_TID, ThreadStorage.get(KEY_TID));
         this.resultMap.put(KEY_RESULT, true);
-        this.resultMap.put(KEY_CODE, 0);
+        this.resultMap.put(KEY_CODE, "CC0000");
         this.resultMap.put(KEY_MESSAGE, null);
         this.resultMap.put(KEY_DATA, null);
     }

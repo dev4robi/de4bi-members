@@ -22,51 +22,40 @@
 > ResBody : -
 > ETC     : -
 +------------------------------------------------------------------------------------------------------------------------------+
+> API ID  : MembersApiController.getMemberBasicInfo
 > Name    : 회원정보 조회
-> API ID  : members.info.select
-> CTR ID  : getMemberBasicInfo()
-> Version : 1.0.0
-> URL     : /api/members
+> Version : 1.0.0 (2020.10.06)
+> Auth Lv : @RequireMemberJwt
+> URL     : /api/members/{seq}
 > Method  : GET
 > ReqHead : "member_jwt":"{member_jwt}"
 > ReqBody : -
 > ResHead : -
-> ResBody : {
-  "tid",
-  "result",
-  "message",
-  "data": {
-    "seq",
-    "id",
-    "name",
-    "nickname",
-    "status",
-    "authority",
-    "auth_agency",
-    "join_date":"yyyy-MM-dd HH:mm:ss",
-    "last_login_date":"yyyy-MM-dd HH:mm:ss"
-  }
-}
+> ResBody : {"tid","result","code","message","data":{"seq","id","name","nickname","status",
+             "authority","auth_agency","join_date","last_login_date"}}
 > ETC     : -
 +------------------------------------------------------------------------------------------------------------------------------+
+> API ID  : MembersApiController.putMemberBasicInfo
 > Name    : 회원정보 수정
-> API ID  : members.info.update
-> CTR ID  : putMember()
-> Version : 1.0.0
-> URL     : /api/members
+> Version : 1.0.0 (2020.10.06)
+> Auth Lv : @RequireMemberJwt
+> URL     : /api/members/{seq}
 > Method  : PUT
 > ReqHead : "member_jwt":"{member_jwt}"
-> ReqBody : {
-  "old_password",
-  "new_password",
-  "name",
-  "nickname"
-}
+> ReqBody : {"old_password","new_password","name","nickname"}
 > ResHead : -
-> ResBody : {
-  "tid",
-  "result",
-  "message"
-}
+> ResBody : {"tid","result","code","message"}
+> ETC     : -
++------------------------------------------------------------------------------------------------------------------------------+
+> API ID  : MembersApiController.deregistMember
+> Name    : 회원정보 삭제
+> Version : 1.0.0 (2020.10.06)
+> Auth Lv : @RequireMemberJwt
+> URL     : /api/members/{seq}
+> Method  : PUT
+> ReqHead : "member_jwt":"{member_jwt}"
+> ReqBody : {"password"}
+> ResHead : -
+> ResBody : {"tid","result","code","message"}
 > ETC     : -
 +------------------------------------------------------------------------------------------------------------------------------+

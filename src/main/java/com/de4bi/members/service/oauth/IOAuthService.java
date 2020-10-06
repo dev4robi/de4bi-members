@@ -1,7 +1,7 @@
 package com.de4bi.members.service.oauth;
 
 import com.de4bi.common.data.ApiResult;
-import com.de4bi.members.controller.dto.PostMembersDto;
+import com.de4bi.members.controller.dto.SocialSigninMembersDto;
 
 /**
  * OAuth로 멤버 정보를 획득하기 위한 인터페이스 입니다.
@@ -41,9 +41,9 @@ public interface IOAuthService {
      * @param code : 플랫폼으로부터 클라이언트에게 내려준 인증코드값.
      * @param state : 플랫폼에 Code를위한 URL생성 시 넘겨주었던 고유 식별값.
      * @param extObj : 플랫폼 종속 파라미터를 전달할 객체입니다.
-     * @return 성공 시, {@link ApiResult}<{@link PostMembersDto}>를 반환합니다.
+     * @return 성공 시, {@link ApiResult}<{@link SocialSigninMembersDto}>를 반환합니다.
      * @apiNote 내부적으로 {@link IOAuthService}인터페이스의 메서드인
      * {@code requestIdTokenUsingAuthCode()}, {@code getMemberInfoFromIdToken}를 호출할 것입니다. 
      */
-    public ApiResult<PostMembersDto> getMemberInfoWithOAuth(String code, String state, Object extObj);
+    public ApiResult<SocialSigninMembersDto> getMemberInfoWithOAuth(String code, String state, Object extObj);
 }

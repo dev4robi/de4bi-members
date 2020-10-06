@@ -23,14 +23,12 @@ import lombok.AllArgsConstructor;
 @Service
 public class TestService {
 
-    private final static Logger logger = LoggerFactory.getLogger(TestService.class);
-
     private MembersService membersSvc;
     
     public ApiResult<MembersDao> insert() {
-        membersSvc.insert(PostMembersDto.builder()
+        membersSvc.insert(MembersDao.builder()
             .id("de4bi@gmail.com").password("1234")
             .name("dev-lee").nickname("admin").build());
-        return ApiResult.of(true);
+        return ApiResult.of(true, MembersDao.class);
     }
 }

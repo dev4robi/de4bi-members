@@ -16,6 +16,9 @@ import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.exception.ControllerException;
 import com.de4bi.common.exception.MapperException;
 import com.de4bi.common.exception.ServiceException;
+import com.de4bi.members.data.code.ErrorCode;
+import com.de4bi.members.data.code.MembersCode;
+import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.service.MembersService;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -48,7 +51,7 @@ public class ControllerAop {
 
     /**
      * <p>Page Controller전/후를 감싸는 AOP입니다. Controller메서드 호출 및 응답, 예외상황을 핸들링합니다.</p>
-     * @param pjp : {@code @Around}의 필수 인자입니다.
+     * @param pjp : <code>@Around</code>의 필수 인자
      * @return ...
      */
     @Around("execution(* com.de4bi.members.controller.page..*.*(..))")
@@ -82,11 +85,17 @@ public class ControllerAop {
             // 사용자 정의 어노테이션 검사 수행
             try {
                 if (method.getAnnotation(RequireMemberJwt.class) != null) {
-                    membersService.validateMemberJwt(httpSvlReq.getHeader("member_jwt"));
+                    membersService.validateMemberJwt(httpSvlReq.getHeader("member_jwt"), null);
                 }
 
                 if (method.getAnnotation(RequireAdminJwt.class) != null) {
-                    membersService.validateAdminJwt(httpSvlReq.getHeader("member_jwt"));
+                    final MembersDao jwtMembersDao = 
+                        membersService.validateMemberJwt(httpSvlReq.getHeader("member_jwt"), null).getData();
+                    if (membersService.checkMemberAuthority(jwtMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER) == false) {
+                        // @@ 여기부터 시작...
+                        // MembersUtil을 만들어서 빼내야 하나...? 서비스가 꼭 필요한가...?
+                        // 일단 페이지, API컨트롤러 둘 다 @RequireMemberJwt부분 수정이 필요하다!! @@
+                    }
                 }
             }
             catch (NullPointerException e) {
@@ -201,28 +210,28 @@ public class ControllerAop {
         catch (ControllerException e) {
             logger.error("ControllerException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            ctrResult = getErrorResultStr(tid, "[CTR] 요청 처리 중 오류가 발생했습니다.");
+            ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("[CTR] 요청 처리 중 오류가 발생했습니다.").toString();
         }
         catch (ServiceException e) {
             logger.error("ServiceException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            ctrResult = getErrorResultStr(tid, "[SVC] 서비스 처리 중 오류가 발생했습니다.");
+            ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("[SVC] 서비스 처리 중 오류가 발생했습니다.").toString();
         }
         catch (MapperException e) {
             logger.error("MapperException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            ctrResult = getErrorResultStr(tid, "[MPR] DB처리 중 오류가 발생했습니다.");
+            ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("[MPR] DB 처리 중 오류가 발생했습니다.").toString();
         }
         catch (ApiException e) {
             // 외부로 사용자 지정 HTTP Status와 오류 메시지 응답
-            logger.error("ApiException! IntMsg:{} / ExtMsg:{} / Cause:{}", e.getInternalMsg(), e.getMessage(), e.getCause());
+            logger.error("ApiException! IntMsg:{} / ExtMsg:{} / Cause:{}", e.getInternalMsg(), e.getExternalMsg(), e.getCause());
             httpSvlRes.setStatus(e.getHttpStatus().value());
-            ctrResult = getErrorResultStr(tid, e.getMessage());
+            ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage(e.getExternalMsg()).toString();
         }
         catch (Throwable e) {
-            logger.error("UnhandledException!", e);
+            logger.error("UnhandledException!", e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            ctrResult = getErrorResultStr(tid, "[SYS] 서버 오류가 발생했습니다.");
+            ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("[SYS] 서버 오류가 발생했습니다.").toString();
         }
 
         // 결과 로깅 및 반환
@@ -232,17 +241,5 @@ public class ControllerAop {
         logger.info("=== API Controller end! === (Time: " + elapsedTime + "ms)");
         MDC.put("layer", oldLayer);
         return ctrResultStr;
-    }
-
-    /**
-     * 클라이언트에게 전송할 오류 결과 문자열을 다음 포멧으로 생성합니다.
-     * <p>{"tid":"($tid)","result":false,"message":"($message)"}</p>
-     * 
-     * @param tid - 컨트롤러에서 생성된 tid.
-     * @param message - 응답 메시지.
-     * @return 생성된 JSON문자열을 반환합니다.
-     */
-    private String getErrorResultStr(String tid, String message) {
-        return ("{\"tid\":\"" + tid + "\",\"result\":false,\"message\":\"" + message + "\"}");
     }
 }
