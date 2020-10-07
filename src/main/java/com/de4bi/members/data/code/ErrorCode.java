@@ -28,7 +28,8 @@ public class ErrorCode {
     // Members Auth (MA0)
     public static final String MA0_ERROR                = "MA0001"; // 회원 인증 오류 발생
     public static final String MA0_JWT_ISSUE_FAIL       = "MA0002"; // JWT발급 실패
-    public static final String MA0_JWT_AUD_ERROR        = "MA0003"; // JWT사용처 오류
+    public static final String MA0_JWT_VALIDATION_FAIL  = "MA0003"; // JWT인증 실패
+    public static final String MA0_JWT_AUD_ERROR        = "MA0004"; // JWT사용처 오류
 
     // Members DB (MD0)
     public static final String MD0_ERROR                = "MD0001"; // DB작업 오류 발생

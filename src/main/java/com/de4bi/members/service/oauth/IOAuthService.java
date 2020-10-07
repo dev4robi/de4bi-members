@@ -24,7 +24,6 @@ public interface IOAuthService {
      */
     public ApiResult<String> requestIdTokenUsingAuthCode(String code, Object extObj);
 
-
     /**
      * <p>플랫폼으로부터 받은 식별토큰을 처리하여 클라이언트의 정보를 획득합니다.</p>
      * @param idToken : 플랫폼으로부터 전달받은 토큰값.

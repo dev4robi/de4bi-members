@@ -26,7 +26,8 @@
 > Name    : 회원정보 조회
 > Version : 1.0.0 (2020.10.06)
 > Auth Lv : @RequireMemberJwt
-> URL     : /api/members/{seq}
+> URL1    : /api/members
+> URL2    : /api/members/{seq}
 > Method  : GET
 > ReqHead : "member_jwt":"{member_jwt}"
 > ReqBody : -

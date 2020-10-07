@@ -8,7 +8,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.de4bi.common.annotation.RequireAdminJwt;
+import com.de4bi.common.annotation.RequireManagerJwt;
 import com.de4bi.common.annotation.RequireMemberJwt;
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.data.ThreadStorage;
@@ -44,7 +44,10 @@ public class ControllerAop {
     private static final Logger logger = LoggerFactory.getLogger(ControllerAop.class);
 
     // 상수
-    public static final String CTR_REQ_TIME = "REQ_TIME";
+    public static final String TSKEY_CTR_REQ_TIME =
+        "TS_REQ_TIME"; // ThreadStorage에서 컨트롤러 요청 시간을 저장하기 위한 키 값
+    public static final String TSKEY_JWT_MEMBERS_DAO =
+        "TS_JWT_MEMBERS_DAO"; // ThreadStorage에서 인증된 MemberJwt의 MemberDao를 저장하기 위한 키 값
 
     // 서비스
     private MembersService membersService;
@@ -63,7 +66,7 @@ public class ControllerAop {
         MDC.put("layer", "CTR");
         MDC.put("tid", tid);
         ThreadStorage.put(ApiResult.KEY_TID, tid); // 스레드 스토리지에 'tid'를 꼭 넣어줘야 합니다
-        ThreadStorage.put(CTR_REQ_TIME, bgnTime);
+        ThreadStorage.put(TSKEY_CTR_REQ_TIME, bgnTime);
 
         // 접근 로깅
         final ServletRequestAttributes svlReqAttrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -83,23 +86,19 @@ public class ControllerAop {
         final Map<String, Object> ctrMap = new HashMap<>();
         try {
             // 사용자 정의 어노테이션 검사 수행
-            try {
-                if (method.getAnnotation(RequireMemberJwt.class) != null) {
-                    membersService.validateMemberJwt(httpSvlReq.getHeader("member_jwt"), null);
+            final boolean reqManagerJwt = method.getAnnotation(RequireManagerJwt.class) != null ? true : false;
+            if (reqManagerJwt || method.getAnnotation(RequireMemberJwt.class) != null) {
+                final String memberJwt = httpSvlReq.getHeader("member_jwt");
+                final ApiResult<MembersDao> valRst = membersService.validateMemberJwt(memberJwt, null);
+                if (valRst.getResult() == false) {
+                    throw ApiException.of("로그인이 필요합니다. (" + ErrorCode.MA0_JWT_VALIDATION_FAIL + ")", valRst.getMessage());
+                }
+                
+                if (reqManagerJwt && membersService.checkMemberAuthority(valRst.getData(), MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult() == false) {
+                    throw ApiException.of("해당 기능을 수행할 권한이 없습니다. (" + ErrorCode.MG0_NO_PERMISSIONS + ")", valRst.getMessage());
                 }
 
-                if (method.getAnnotation(RequireAdminJwt.class) != null) {
-                    final MembersDao jwtMembersDao = 
-                        membersService.validateMemberJwt(httpSvlReq.getHeader("member_jwt"), null).getData();
-                    if (membersService.checkMemberAuthority(jwtMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER) == false) {
-                        // @@ 여기부터 시작...
-                        // MembersUtil을 만들어서 빼내야 하나...? 서비스가 꼭 필요한가...?
-                        // 일단 페이지, API컨트롤러 둘 다 @RequireMemberJwt부분 수정이 필요하다!! @@
-                    }
-                }
-            }
-            catch (NullPointerException e) {
-                throw ApiException.of("로그인이 필요합니다.", "'member_jwt' is null!");
+                ThreadStorage.put(TSKEY_JWT_MEMBERS_DAO, valRst.getData());
             }
 
             // 컨트롤러 수행
@@ -169,7 +168,7 @@ public class ControllerAop {
         MDC.put("layer", "CTR");
         MDC.put("tid", tid);
         ThreadStorage.put(ApiResult.KEY_TID, tid); // 스레드 스토리지에 'tid'를 꼭 넣어줘야 합니다
-        ThreadStorage.put(CTR_REQ_TIME, bgnTime);
+        ThreadStorage.put(TSKEY_CTR_REQ_TIME, bgnTime);
 
         // 접근 로깅
         final ServletRequestAttributes svlReqAttrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -187,17 +186,19 @@ public class ControllerAop {
         Object ctrResult = null;
         try {
             // 사용자 정의 어노테이션 검사 수행
-            try {
-                if (method.getAnnotation(RequireMemberJwt.class) != null) {
-                    membersService.validateMemberJwt(httpSvlReq.getHeader("member_jwt"));
+            final boolean reqManagerJwt = method.getAnnotation(RequireManagerJwt.class) != null ? true : false;
+            if (reqManagerJwt || method.getAnnotation(RequireMemberJwt.class) != null) {
+                final String memberJwt = httpSvlReq.getHeader("member_jwt");
+                final ApiResult<MembersDao> valRst = membersService.validateMemberJwt(memberJwt, null);
+                if (valRst.getResult() == false) {
+                    throw ApiException.of("로그인이 필요합니다. (" + ErrorCode.MA0_JWT_VALIDATION_FAIL + ")", valRst.getMessage());
+                }
+                
+                if (reqManagerJwt && membersService.checkMemberAuthority(valRst.getData(), MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult() == false) {
+                    throw ApiException.of("해당 기능을 수행할 권한이 없습니다. (" + ErrorCode.MG0_NO_PERMISSIONS + ")", valRst.getMessage());
                 }
 
-                if (method.getAnnotation(RequireAdminJwt.class) != null) {
-                    membersService.validateAdminJwt(httpSvlReq.getHeader("member_jwt"));
-                }
-            }
-            catch (NullPointerException e) {
-                throw ApiException.of("로그인이 필요합니다.", "'member_jwt' is null!");
+                ThreadStorage.put(TSKEY_JWT_MEMBERS_DAO, valRst.getData());
             }
 
             // 컨트롤러 수행
@@ -229,7 +230,7 @@ public class ControllerAop {
             ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage(e.getExternalMsg()).toString();
         }
         catch (Throwable e) {
-            logger.error("UnhandledException!", e.getCause());
+            logger.error("UnhandledException! Cause:{}", e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("[SYS] 서버 오류가 발생했습니다.").toString();
         }

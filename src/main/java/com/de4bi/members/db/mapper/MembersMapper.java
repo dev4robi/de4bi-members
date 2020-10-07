@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 public interface MembersMapper {
     
     // Insert
-    public int insert(MembersDao insertMembersDao);
+    public long insert(MembersDao insertMembersDao);
     
     // Select
     public MembersDao select(long seq);

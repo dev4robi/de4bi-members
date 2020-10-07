@@ -11,6 +11,7 @@ import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.MemberJwtUtil;
 import com.de4bi.common.util.SecurityUtil;
 import com.de4bi.common.util.StringUtil;
+import com.de4bi.members.aop.ControllerAop;
 import com.de4bi.members.controller.dto.SelectMemberInfoResDto;
 import com.de4bi.members.controller.dto.SigninMembersDto;
 import com.de4bi.members.controller.dto.SocialSigninMembersDto;
@@ -43,9 +44,6 @@ public class MembersService {
     private final MembersMapper membersMapper;
     private final SecureProperties secureProps;
     private final Environment env;
-
-    public static final String TSKEY_JWT_MEMBERS_DAO =
-        "JWT_MEMBERS_DAO"; // ThreadStorage에서 인증된 MemberJwt의 MemberDao를 저장하기위한 키값
 
     private static final String ENVKEY_MEMBER_JWT_DEFAULT_AUDIENCE =
         "member.jwt.default-aud"; // MemberJwt 기본 audience
@@ -252,6 +250,7 @@ public class MembersService {
      * @param audience : 사용처 도메인 <code>(null -> "*.de4bi.com")</code>
      * @return true: 검증 성공 시 검증된 유저의 정보<code>(data: member_dao)</code>
      * <li>false: 검증 실패</li>
+     * @apiNote 반환 데이터를 위해 내부적으로 <code>select(seq, id, nickname)메서드를 사용합니다.</code>
      */
     public ApiResult<MembersDao> validateMemberJwt(String memberJwt, String audience) {
         Objects.requireNonNull(memberJwt, "'memberJwt' is null!");
@@ -464,6 +463,16 @@ public class MembersService {
 
     /**
      * <p>멤버 정보를 조회하여 반환합니다.</p>
+     * @return true: 조회 성공 (data: {@link SelectMemberInfoResDto})<li>false: 조회 실패</li>
+     * @apiNote <code>ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO)</code>값의 맴버를 조회합니다.
+     */
+    public ApiResult<SelectMemberInfoResDto> selectMemberInfo() {
+        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(ControllerAop.TSKEY_JWT_MEMBERS_DAO);
+        return selectMemberInfo(jwtMembersDao, 0L, null, null);
+    }
+
+    /**
+     * <p>멤버 정보를 조회하여 반환합니다.</p>
      * @param membersDao : 조회 대상 멤버 DAO <code>(null -> select(seq, id, nickname)수행)</code>
      * @param seq : 조회대상 시퀀스 (optional)
      * @param id : 조회대상 아이디 (optional)
@@ -471,7 +480,7 @@ public class MembersService {
      * @return true: 조회 성공 (data: {@link SelectMemberInfoResDto})<li>false: 조회 실패</li>
      */
     public ApiResult<SelectMemberInfoResDto> selectMemberInfo(MembersDao membersDao, long seq, String id, String nickname) {
-        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO);
+        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(ControllerAop.TSKEY_JWT_MEMBERS_DAO);
         final MembersDao selMembersDao = (membersDao == null ? select(seq, id, nickname).getData() : membersDao);
         final boolean isAdminAuthority = checkMemberAuthority(jwtMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult();
 
@@ -520,7 +529,7 @@ public class MembersService {
      * @return true: 수정 성공<li>false: 수정 실패</li>
      */
     public ApiResult<Void> updateMemberInfo(long seq, String oldPassword, String newPassword, String nickname, String name) {
-        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO);
+        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(ControllerAop.TSKEY_JWT_MEMBERS_DAO);
         final MembersDao selMembersDao = select(seq, null, null).getData();
         final boolean isAdminAuthority = checkMemberAuthority(jwtMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult();
 
@@ -589,7 +598,7 @@ public class MembersService {
     public ApiResult<Void> deregistMember(long seq, String password) {
         Objects.requireNonNull(password, "'password' is null!");
         
-        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(TSKEY_JWT_MEMBERS_DAO);
+        final MembersDao jwtMembersDao = (MembersDao) ThreadStorage.get(ControllerAop.TSKEY_JWT_MEMBERS_DAO);
         final MembersDao selMembersDao = select(seq, null, null).getData();
         final boolean isAdminAuthority = checkMemberAuthority(jwtMembersDao, MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult();
 
