@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Getter
-public class PutMembersDto {
+public class PutMemberBasicInfoReqDto {
     
-    private long seq;
     private String oldPassword;
     private String newPassword;
     private String nickname;

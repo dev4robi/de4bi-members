@@ -77,12 +77,12 @@
 					<div class="row justify-content-center align-items-center border-danger">
 						<div class="col-sm-6">
 							<label class="form-control-label no-drag">NAME</label>
-							<label class="form-control-error no-drag"></label>
+							<label id="label_name_error" class="form-control-error no-drag"></label>
 							<input id="input_name" type="text" class="form-control">
 						</div>
 						<div class="col-sm-6">
 							<label class="form-control-label no-drag">NICKNAME</label>
-							<label class="form-control-error no-drag"></label>
+							<label id="label_nickname_error" class="form-control-error no-drag"></label>
 							<input id="input_nickname" type="text" class="form-control">
 						</div>
 					</div>
@@ -90,13 +90,18 @@
 					<div class="row justify-content-center align-items-center border-danger">
 						<div class="col-sm-6">
 							<label class="form-control-label no-drag">OLD PASSWORD</label>
-							<label class="form-control-error no-drag"></label>
+							<label id="label_old_pw_error" class="form-control-error no-drag"></label>
 							<input id="input_old_password" type="password" placeholder="" class="form-control">
 						</div>
 						<div class="col-sm-6">
 							<label class="form-control-label no-drag">NEW PASSWORD</label>
-							<label class="form-control-error no-drag"></label>
-							<input id="input_new_password" type="password" placeholder="(A-z + 0-9 + ! , 8~32Len)" class="form-control">
+							<label id="label_new_pw_error" class="form-control-error no-drag"></label>
+							<input id="input_new_password" type="password" placeholder="(A-z, 0-9, !, 8~32Len)" class="form-control">
+						</div>
+					</div>
+					<div class="row justify-content-center align-items-center border-danger">
+						<div class="col-sm-12 text-right">
+							<label id="label_change_info_error" class="form-control-error no-drag"></label>
 						</div>
 					</div>
 					<!-- Info Change Button -->

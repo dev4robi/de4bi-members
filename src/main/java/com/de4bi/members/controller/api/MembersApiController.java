@@ -1,6 +1,7 @@
 package com.de4bi.members.controller.api;
 
 import com.de4bi.common.annotation.RequireMemberJwt;
+import com.de4bi.members.controller.dto.PutMemberBasicInfoReqDto;
 import com.de4bi.members.service.MembersService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
@@ -38,12 +40,10 @@ public class MembersApiController {
     @PutMapping("/members/{seq}")
     public String putMemberBasicInfo(
         @PathVariable long seq,
-        @RequestBody(required = false) String oldPassword,
-        @RequestBody(required = false) String newPassword,
-        @RequestBody(required = false) String nickname,
-        @RequestBody(required = false) String name
+        @RequestBody PutMemberBasicInfoReqDto reqDto
     ) {
-        return membersSvc.updateMemberInfo(seq, oldPassword, newPassword, nickname, name).toString();
+        return membersSvc.updateMemberInfo(
+            seq, reqDto.getOldPassword(), reqDto.getNewPassword(), reqDto.getNickname(), reqDto.getName()).toString();
     }
 
     @RequireMemberJwt
