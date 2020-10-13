@@ -27,13 +27,13 @@ public class MembersApiController {
     @RequireMemberJwt
     @GetMapping("/members")
     public String getMemberBasicInfo() {
-        return membersSvc.selectMemberInfo().toString();
+        return membersSvc.selectMemberBasicInfo().toString();
     }
 
     @RequireMemberJwt
     @GetMapping("/members/{seq}")
     public String getMemberBasicInfo(@PathVariable long seq) {
-        return membersSvc.selectMemberInfo(null, seq, null, null).toString();
+        return membersSvc.selectMemberBasicInfo(null, seq, null, null).toString();
     }
 
     @RequireMemberJwt

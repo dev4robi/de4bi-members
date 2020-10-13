@@ -20,6 +20,7 @@ import com.de4bi.members.data.code.ErrorCode;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.service.MembersService;
+import com.de4bi.members.util.MembersUtil;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -94,7 +95,7 @@ public class ControllerAop {
                     throw ApiException.of("로그인이 필요합니다. (" + ErrorCode.MA0_JWT_VALIDATION_FAIL + ")", valRst.getMessage());
                 }
                 
-                if (reqManagerJwt && membersService.checkMemberAuthority(valRst.getData(), MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult() == false) {
+                if (reqManagerJwt && MembersUtil.checkMemberAuthority(valRst.getData(), MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult() == false) {
                     throw ApiException.of("해당 기능을 수행할 권한이 없습니다. (" + ErrorCode.MG0_NO_PERMISSIONS + ")", valRst.getMessage());
                 }
 
@@ -194,7 +195,7 @@ public class ControllerAop {
                     throw ApiException.of("로그인이 필요합니다. (" + ErrorCode.MA0_JWT_VALIDATION_FAIL + ")", valRst.getMessage());
                 }
                 
-                if (reqManagerJwt && membersService.checkMemberAuthority(valRst.getData(), MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult() == false) {
+                if (reqManagerJwt && MembersUtil.checkMemberAuthority(valRst.getData(), MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult() == false) {
                     throw ApiException.of("해당 기능을 수행할 권한이 없습니다. (" + ErrorCode.MG0_NO_PERMISSIONS + ")", valRst.getMessage());
                 }
 
