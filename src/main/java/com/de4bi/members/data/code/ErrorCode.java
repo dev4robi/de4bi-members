@@ -9,6 +9,10 @@ import lombok.ToString;
 @ToString
 public class ErrorCode {
 
+    public static final String GC_OK        = "G0000"; // 정상 응답
+    public static final String GC_FAIL      = "G0001"; // 실패 응답
+
+
     // Common (CC0)
     public static final String CC0_OK                   = "CC0000"; // 정상 응답
     public static final String CC0_ERROR                = "CC9999"; // 오류 응답
