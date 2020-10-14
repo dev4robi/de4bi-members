@@ -45,7 +45,7 @@ public class ServiceAop {
         ApiResult<?> svcResult = null;
         try {
             // [Note] 개발자의 실수로 일반적인 Service에서 ApiResult<?>를 반환하지 않는 경우
-            // ClassCastException이 발생합니다. 반드시 위 클래스를 반환하도록 설계하셔야 합니다.
+            // ClassCastException이 발생합니다. 반드시 위 클래스를 반환하도록 설계해야 합니다.
             svcResult = (ApiResult<?>) pjp.proceed();
         }
         catch (MapperException | ApiException e) {
