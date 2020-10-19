@@ -19,6 +19,7 @@ import com.de4bi.common.exception.ServiceException;
 import com.de4bi.members.data.code.ErrorCode;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
+import com.de4bi.members.manager.CodeMsgManager;
 import com.de4bi.members.service.MembersService;
 import com.de4bi.members.util.MembersUtil;
 
@@ -52,6 +53,9 @@ public class ControllerAop {
 
     // 서비스
     private MembersService membersService;
+
+    // 매니저
+    private CodeMsgManager codeMsgManager;
 
     /**
      * <p>API/Page Controller전~후를 감싸는 AOP입니다. Controller메서드 호출 및 응답, 예외상황을 핸들링합니다.</p>
@@ -109,7 +113,7 @@ public class ControllerAop {
             }
             else if (isApiCtr) {
                 final ApiResult<?> tempResult = (ApiResult<?>) ctrResult;
-                tempResult.setMessage("?"); // 코드에서 언어에 맞는 메시지 가져오는 작업 수행##
+                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
                 ctrResult = tempResult;
             }
         }
@@ -117,7 +121,9 @@ public class ControllerAop {
             logger.error("ControllerException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("er?");
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+                ctrResult = tempResult;
             }
             else {
                 ctrMap.put("message", "컨트롤러 오류가 발생했습니다.");
@@ -127,7 +133,9 @@ public class ControllerAop {
             logger.error("ServiceException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("er?");
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+                ctrResult = tempResult;
             }
             else {
                 ctrMap.put("message", "서비스 오류가 발생했습니다.");
@@ -137,7 +145,9 @@ public class ControllerAop {
             logger.error("MapperException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("er?");
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+                ctrResult = tempResult;
             }
             else {
                 ctrMap.put("message", "DB오류가 발생했습니다.");
@@ -147,7 +157,9 @@ public class ControllerAop {
             logger.error("ApiException! IntMsg:{} / ExtMsg:{} / Cause:{}", e.getInternalMsg(), e.getMessage(), e.getCause());
             httpSvlRes.setStatus(e.getHttpStatus().value());
             if (isApiCtr) {
-                ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("er?");
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+                ctrResult = tempResult;
             }
             else {
                 ctrMap.put("message", e.getMessage());
@@ -157,7 +169,9 @@ public class ControllerAop {
             logger.error("UnhandledException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                ctrResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR).setMessage("er?");
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+                ctrResult = tempResult;
             }
             else {
                 ctrMap.put("message", "미정의된 오류가 발생했습니다.");

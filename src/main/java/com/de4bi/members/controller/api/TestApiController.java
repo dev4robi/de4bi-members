@@ -27,4 +27,10 @@ public class TestApiController {
         ThreadStorage.put(ApiResult.KEY_TID, RandomStringUtils.randomAlphanumeric(16));
         return testSvc.insert().toString();
     }
+
+    @GetMapping("/testb")
+    public String getTestB() {
+        return ApiResult.of(false).setCode("GC9999").setMessage("아이고...").toString();
+        // @@ 파서 오류부터 고치자... debug 실행시켜보면 예외 터짐!!
+    }
 }
