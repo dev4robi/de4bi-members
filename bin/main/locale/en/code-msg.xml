@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <codes lang="en">
     <code code="GC0000" msg="OK"/>
-    <code code="GC9999" msg="Unknown error has occurred."/>
+    <code code="GC9999" msg="Unknown error has occurred. {0},{1},{2}"/>
 </codes>

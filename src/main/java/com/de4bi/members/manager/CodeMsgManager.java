@@ -1,6 +1,10 @@
 package com.de4bi.members.manager;
 
 import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,10 +65,6 @@ public class CodeMsgManager {
 
     static {
         CODE_MSG_MAP_LIST = new ArrayList<>();
-        final int localeCnt = Locale.values().length;
-        for (int i = 0; i < localeCnt; ++i) {
-            CODE_MSG_MAP_LIST.add(new HashMap<>());
-        }
     }
 
     /**
@@ -96,14 +96,16 @@ public class CodeMsgManager {
         //      <code code="GC9999" msg="알 수 없는 오류가 발생했습니다.""/>
         //  </codes>
         final Locale[] locales = Locale.values();
+        final int localeCnt = locales.length - 1; // DEFAULT 로케일은 제외
 
-        for (int idx = 0; idx < locales.length; ++idx) {
+        for (int idx = 0; idx < localeCnt; ++idx) {
             final long loadBgnTime = System.currentTimeMillis();
             final String localeXmlFileName = localXmlPath + "/" + locales[idx].alias + "/code-msg.xml";
             final Map<String, String> localeMap = new HashMap<>();
             
             try {
-                Document doc = docBuilder.parse(localeXmlFileName);
+                FileChannel fileCh = FileChannel.open(Paths.get(localeXmlFileName), StandardOpenOption.READ);
+                Document doc = docBuilder.parse(Channels.newInputStream(fileCh));
                 NodeList docNodeList = doc.getChildNodes();
                 int docNodeListLen = docNodeList.getLength();
 
@@ -131,10 +133,12 @@ public class CodeMsgManager {
             }
             catch (IOException | SAXException e) {
                 if (idx == 0) {
-                    throw new IllegalStateException("Fail to open and parse the locale file '" + localeXmlFileName + "'!", e.getCause());
+                    throw new IllegalStateException("Fail to open or parse the default locale file '" + localeXmlFileName + "'!", e.getCause());
                 }
                 
-                logger.warn("No such locale file '" + localeXmlFileName + "'!");
+                final String errMsg = ((e instanceof SAXException) ? "Fail to parse locale file '" 
+                                                                   : "Fail to open locale file '") + localeXmlFileName + "'!";
+                logger.warn(errMsg);
                 continue;
             }
 

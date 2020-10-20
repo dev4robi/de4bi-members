@@ -2,7 +2,9 @@ package com.de4bi.members.aop;
 
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -113,7 +115,7 @@ public class ControllerAop {
             }
             else if (isApiCtr) {
                 final ApiResult<?> tempResult = (ApiResult<?>) ctrResult;
-                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), tempResult.getMsgParamList()));
                 ctrResult = tempResult;
             }
         }

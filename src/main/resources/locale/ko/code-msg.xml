@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <codes lang="ko">
-    <code code="GC0000" msg="OK"/>
-    <code code="GC9999" msg="Unknown error has occurred."/>
+    <code code="A0000" msg="성공"/>
+    <code code="A9999" msg="알 수 없는 오류가 발생했습니다. {0},{1},{2}"/>
 </codes>
+
+@@ 에러코드 작성부터 시작
+컨트롤러/서비스 기존 코드들 싹 빨개지겠지만,
+해야 할 일이다 ㅋㅋ...

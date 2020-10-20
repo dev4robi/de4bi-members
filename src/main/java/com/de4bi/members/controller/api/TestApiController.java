@@ -2,6 +2,7 @@ package com.de4bi.members.controller.api;
 
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.data.ThreadStorage;
+import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.service.TestService;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -23,14 +24,15 @@ public class TestApiController {
     private TestService testSvc;
 
     @GetMapping("/test")
-    public String getTest() {
+    public ApiResult<MembersDao> getTest() {
         ThreadStorage.put(ApiResult.KEY_TID, RandomStringUtils.randomAlphanumeric(16));
-        return testSvc.insert().toString();
+        return testSvc.insert();
     }
 
     @GetMapping("/testb")
-    public String getTestB() {
-        return ApiResult.of(false).setCode("GC9999").setMessage("아이고...").toString();
-        // @@ 파서 오류부터 고치자... debug 실행시켜보면 예외 터짐!!
+    public ApiResult<MembersDao> getTestB() {
+        return ApiResult.of(false, MembersDao.class)
+            .setCode("A9999").setMessage("아이고...").addMsgParam("헬로")
+            .setData(MembersDao.builder().id("test@gmail.com").nickname("닉넴이 뭐니?").build());
     }
 }

@@ -1,7 +1,9 @@
 package com.de4bi.members.controller.api;
 
 import com.de4bi.common.annotation.RequireMemberJwt;
+import com.de4bi.common.data.ApiResult;
 import com.de4bi.members.controller.dto.PutMemberBasicInfoReqDto;
+import com.de4bi.members.controller.dto.SelectMemberInfoResDto;
 import com.de4bi.members.service.MembersService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
@@ -26,29 +27,29 @@ public class MembersApiController {
 
     @RequireMemberJwt
     @GetMapping("/members")
-    public String getMemberBasicInfo() {
-        return membersSvc.selectMemberBasicInfo().toString();
+    public ApiResult<SelectMemberInfoResDto> getMemberBasicInfo() {
+        return membersSvc.selectMemberBasicInfo();
     }
 
     @RequireMemberJwt
     @GetMapping("/members/{seq}")
-    public String getMemberBasicInfo(@PathVariable long seq) {
-        return membersSvc.selectMemberBasicInfo(null, seq, null, null).toString();
+    public ApiResult<SelectMemberInfoResDto> getMemberBasicInfo(@PathVariable long seq) {
+        return membersSvc.selectMemberBasicInfo(null, seq, null, null);
     }
 
     @RequireMemberJwt
     @PutMapping("/members/{seq}")
-    public String putMemberBasicInfo(
+    public ApiResult<Void> putMemberBasicInfo(
         @PathVariable long seq,
         @RequestBody PutMemberBasicInfoReqDto reqDto
     ) {
         return membersSvc.updateMemberInfo(
-            seq, reqDto.getOldPassword(), reqDto.getNewPassword(), reqDto.getNickname(), reqDto.getName()).toString();
+            seq, reqDto.getOldPassword(), reqDto.getNewPassword(), reqDto.getNickname(), reqDto.getName());
     }
 
     @RequireMemberJwt
     @DeleteMapping("/members/{seq}")
-    public String deregistMember(@PathVariable long seq, @RequestBody String password) {
-        return membersSvc.deregistMember(seq, password).toString();
+    public ApiResult<Void> deregistMember(@PathVariable long seq, @RequestBody String password) {
+        return membersSvc.deregistMember(seq, password);
     }
 }

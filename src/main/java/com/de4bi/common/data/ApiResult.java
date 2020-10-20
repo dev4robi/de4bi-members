@@ -1,10 +1,14 @@
 package com.de4bi.common.data;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -12,9 +16,14 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.Data;
 
 @Data
+@JsonPropertyOrder({"tid", "result", "code", "message", "data"})
+@JsonIgnoreProperties("msgParamList")
 public final class ApiResult<T> {
 
+    @JsonIgnore
     private final Map<String, Object> resultMap;
+
+    private final List<String> msgParamList;
 
     public static final String KEY_TID      = "tid";        // 추적 아이디 (trace_id)
     public static final String KEY_RESULT   = "result";     // 결과 (API result)
@@ -27,10 +36,11 @@ public final class ApiResult<T> {
      * @param resultMap : 객체 내부에서 데이터를 관리하기 위해 사용할 Map입니다. null전달 시 HashMap을 사용합니다.
      */
     private ApiResult(Map<String, Object> resultMap) {
-        this.resultMap = (resultMap == null ? new HashMap<>() : resultMap);
+        this.resultMap = (resultMap == null ? new LinkedHashMap<>() : resultMap);
+        this.msgParamList = new LinkedList<>();
         this.resultMap.put(KEY_TID, ThreadStorage.get(KEY_TID));
         this.resultMap.put(KEY_RESULT, true);
-        this.resultMap.put(KEY_CODE, "CC0000");
+        this.resultMap.put(KEY_CODE, null);
         this.resultMap.put(KEY_MESSAGE, null);
         this.resultMap.put(KEY_DATA, null);
     }
@@ -133,6 +143,36 @@ public final class ApiResult<T> {
     }
 
     /**
+     * @return 메시지 파라미터 <code>List&lt;String></code>
+     */
+    public List<String> getMsgParamList() {
+        return this.msgParamList;
+    }
+
+    /**
+     * @param idx : 추가할 매개변수 인덱스 (0~)
+     * @param param : 추가할 메시지 매개변수
+     * @return ApiResult자신을 반환합니다.
+     * @apiNote 추가된 총 매개변수보다 <code>idx</code>값이 더 크면 <code>idx</code>만큼 빈 문자열("")을 리스트에 채워넣습니다.
+     */
+    public ApiResult<T> setMsgParam(int idx, String param) {
+        while (this.msgParamList.size() > idx) {
+            this.msgParamList.add("");
+        }
+        this.msgParamList.set(idx, param);
+        return this;
+    }
+
+    /**
+     * @param param : 추가할 메시지 매개변수
+     * @return ApiResult자신을 반환합니다.
+     */
+    public ApiResult<T> addMsgParam(String param) {
+        this.msgParamList.add(param);
+        return this;
+    }
+
+    /**
      * @return <T>타입 'data'를 반환합니다.
      */
     public T getData() {
@@ -156,7 +196,8 @@ public final class ApiResult<T> {
     /**
      * <p>ApiResult를 JSON문자열로 변환하여 반환합니다.</p>
      * 변환중 오류가 발생하거나 변환할 데이터가 없다면 "{}"를 반환합니다.
-     * @return JSON포멧 문자열.
+     * @return JSON포멧 문자열
+     * @apiNote <code>List&lt;String>msgParamList</code>은 toString()에서 출력하지 않습니다.
      */
     @Override
     public String toString() {
