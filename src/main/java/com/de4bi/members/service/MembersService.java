@@ -15,7 +15,7 @@ import com.de4bi.members.aop.ControllerAop;
 import com.de4bi.members.controller.dto.SelectMemberInfoResDto;
 import com.de4bi.members.controller.dto.SigninMembersDto;
 import com.de4bi.members.controller.dto.SocialSigninMembersDto;
-import com.de4bi.members.data.code.ErrorCode;
+import com.de4bi.members.data.code.ResponseCode;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.db.mapper.MembersMapper;
@@ -222,7 +222,7 @@ public class MembersService {
         
         if (isSameAud == false) {
             return ApiResult.of(false, MembersDao.class)
-                .setCode(ErrorCode.MA0_JWT_AUD_ERROR)
+                .setCode(ResponseCode.MA_JWT_INVAILD_AUD)
                 .setMessage("No same audience! (audience: " + audience + " / " + " jwtAud: " + jwtAud + ")");
         }
 
@@ -248,7 +248,7 @@ public class MembersService {
         final String newId = membersDto.getId();
         if (select(0L, newId, null).getResult()) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_DUPLICATED)
+                .setCode(ResponseCode.M_DUPLICATED_EMAIL)
                 .setMessage("Duplicated id! (newId: " + newId + ")");
         }
 
@@ -278,7 +278,7 @@ public class MembersService {
         final String newId = membersDto.getId();
         if (select(0L, newId, null).getResult()) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_DUPLICATED)
+                .setCode(ResponseCode.M_DUPLICATED_EMAIL)
                 .setMessage("Duplicated id! (newId: " + newId + ")");
         }
 
@@ -327,14 +327,14 @@ public class MembersService {
         final ApiResult<String> rtRst = issueMemberJwt(id, audience, expSec);
         if (rtRst.getResult() == false) {
             return ApiResult.of(tempRst, String.class)
-                .setCode(ErrorCode.MA0_JWT_ISSUE_FAIL);
+                .setCode(ResponseCode.MA_JWT_ISSUE_FAIL);
         }
 
         // 로그인 일자 갱신
         loginMemberDao.setLastLoginDate(Date.from(Instant.now()));
         if ((tempRst = update(loginMemberDao)).getResult() == false) {
             return ApiResult.of(tempRst, String.class)
-                .setCode(ErrorCode.MA0_JWT_ISSUE_FAIL);
+                .setCode(ResponseCode.MA_JWT_ISSUE_FAIL);
         }
 
         return rtRst;
@@ -379,14 +379,14 @@ public class MembersService {
         final ApiResult<String> rtRst = issueMemberJwt(id, audience, expSec);
         if (rtRst.getResult() == false) {
             return ApiResult.of(tempRst, String.class)
-                .setCode(ErrorCode.MA0_JWT_ISSUE_FAIL);
+                .setCode(ResponseCode.MA_JWT_ISSUE_FAIL);
         }
 
         // 로그인 일자 갱신
         loginMemberDao.setLastLoginDate(Date.from(Instant.now()));
         if ((tempRst = update(loginMemberDao)).getResult() == false) {
             return ApiResult.of(tempRst, String.class)
-                .setCode(ErrorCode.MA0_JWT_ISSUE_FAIL);
+                .setCode(ResponseCode.MA_JWT_ISSUE_FAIL);
         }
 
         return rtRst;
@@ -487,7 +487,7 @@ public class MembersService {
             final MembersDao dupChkNicknameMembersDao = select(0L, null, nickname).getData();
             if (dupChkNicknameMembersDao != null && selMembersDao.getSeq() != dupChkNicknameMembersDao.getSeq()) {
                 return ApiResult.of(false)
-                    .setCode(ErrorCode.MG0_DUPLICATED_NICKNAME)
+                    .setCode(ResponseCode.M_DUPLICATED_NICKNAME)
                     .setMessage("Duplicated nickname! (nickname: " + nickname + ")");
             }
         }
@@ -506,7 +506,7 @@ public class MembersService {
         updMembersDao.setName(updName);
         
         if (membersMapper.update(updMembersDao) != 1) {
-            return ApiResult.of(false).setCode(ErrorCode.MD0_UPDATE_ERROR)
+            return ApiResult.of(false).setCode(ResponseCode.M_CHAGNE_INFO_FAILED)
                 .setMessage("Fail to update! (seq: " + seq + ")");
         }
 
@@ -553,7 +553,7 @@ public class MembersService {
         selMembersDao.setStatus(MembersCode.MEMBERS_STATUS_DEREGISTER.getSeq());
 
         if (membersMapper.update(selMembersDao) != 1) {
-            return ApiResult.of(false).setCode(ErrorCode.MD0_UPDATE_ERROR)
+            return ApiResult.of(false).setCode(ResponseCode.M_DEREGISTER_FAILED)
                 .setMessage("Fail to update! (seq: " + seq + ")");
         }
 

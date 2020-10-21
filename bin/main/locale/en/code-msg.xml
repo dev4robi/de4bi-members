@@ -1,5 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <codes lang="en">
-    <code code="GC0000" msg="OK"/>
-    <code code="GC9999" msg="Unknown error has occurred. {0},{1},{2}"/>
+    <!-- A:API -->
+    <code code="A0000" msg="Sucess"/>
+    <code code="A0001" msg="Fail"/>
+    <code code="A9999" msg="Unkown error has occured."/>
+
+    <!-- M:Member -->
+    <code code="M0000" msg="Member process success."/>
+    <code code="M0001" msg="Member process failed."/>
+    <code code="M0002" msg="Member already registred."/>
+    <code code="M0003" msg="Member not exist."/>
+    <code code="M0004" msg="Wrong password."/>
+    <code code="M0005" msg="Member not exist or wrong passwrod."/>
+    <code code="M0006" msg="No permssion."/>
+    <code code="M0007" msg="Email already used."/>
+    <code code="M0008" msg="Nickname already used."/>
+    <code code="M0009" msg="Banned member."/>
+    <code code="M0010" msg="Deregistred member."/>
+    <code code="M0011" msg="Sleeping member."/>
+    <code code="M0012" msg="Change member info failed."/>
+    <code code="M0013" msg="Delete account failed."/>
+    <code code="M9999" msg="Member error has occured."/>
+
+    <!-- MA:Member Auth -->
+    <code code="MA000" msg="Member auth success."/>
+    <code code="MA001" msg="Member auth failed."/>
+    <code code="MA002" msg="Success issuing meber token."/>
+    <code code="MA003" msg="Member token validation failed."/>
+    <code code="MA004" msg="Invailed member token audience."/>
+    <code code="MA999" msg="Member auth error has occured."/>
+
+    <!-- DB -->
+    <code code="DB000" msg="DB proccess success."/>
+    <code code="DB001" msg="DB proccess failed."/>
+    <code code="DB002" msg="DB insert failed."/>
+    <code code="DB003" msg="DB select failed."/>
+    <code code="DB004" msg="DB update failed."/>
+    <code code="DB004" msg="DB deletion failed."/>
+    <code code="DB999" msg="DB error has occured."/>
 </codes>

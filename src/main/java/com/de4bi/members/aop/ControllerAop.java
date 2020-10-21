@@ -18,7 +18,7 @@ import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.exception.ControllerException;
 import com.de4bi.common.exception.MapperException;
 import com.de4bi.common.exception.ServiceException;
-import com.de4bi.members.data.code.ErrorCode;
+import com.de4bi.members.data.code.ResponseCode;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 import com.de4bi.members.manager.CodeMsgManager;
@@ -92,30 +92,40 @@ public class ControllerAop {
         ctrMap.put("tid", tid);
         Object ctrResult = null;
         try {
+            boolean doProcess = true;
+
             // 사용자 정의 어노테이션 검사 수행
             final boolean reqManagerJwt = method.getAnnotation(RequireManagerJwt.class) != null ? true : false;
             if (reqManagerJwt || method.getAnnotation(RequireMemberJwt.class) != null) {
                 final String memberJwt = httpSvlReq.getHeader("member_jwt");
                 final ApiResult<MembersDao> valRst = membersService.validateMemberJwt(memberJwt, null);
                 if (valRst.getResult() == false) {
-                    throw ApiException.of("로그인이 필요합니다. (" + ErrorCode.MA0_JWT_VALIDATION_FAIL + ")", valRst.getMessage());
+                    doProcess = false;
                 }
                 
                 if (reqManagerJwt && MembersUtil.checkMemberAuthority(valRst.getData(), MembersCode.MEMBERS_AUTHORITY_MANAGER).getResult() == false) {
-                    throw ApiException.of("해당 기능을 수행할 권한이 없습니다. (" + ErrorCode.MG0_NO_PERMISSIONS + ")", valRst.getMessage());
+                    doProcess = false;
                 }
 
-                ThreadStorage.put(TSKEY_JWT_MEMBERS_DAO, valRst.getData());
+                if (doProcess) {
+                    ThreadStorage.put(TSKEY_JWT_MEMBERS_DAO, valRst.getData());
+                }
             }
 
             // 컨트롤러 수행
-            if ((ctrResult = pjp.proceed()) == null) {
+            if (doProcess) {
+                ctrResult = pjp.proceed();
+            }
+
+            // 수행결과 재조립
+            if (ctrResult == null) {
                 logger.warn("Controller returns null!");
                 ctrResult = (isApiCtr ? ApiResult.of(false).toString() : new ModelAndView("error"));
             }
             else if (isApiCtr) {
                 final ApiResult<?> tempResult = (ApiResult<?>) ctrResult;
-                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), tempResult.getMsgParamList()));
+                final String tempErrCode = tempResult.getCode();
+                if (tempErrCode != null) tempResult.setMessage(codeMsgManager.getMsg(tempErrCode, tempResult.getMsgParamList()));
                 ctrResult = tempResult;
             }
         }
@@ -123,7 +133,7 @@ public class ControllerAop {
             logger.error("ControllerException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
                 tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
                 ctrResult = tempResult;
             }
@@ -135,7 +145,7 @@ public class ControllerAop {
             logger.error("ServiceException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
                 tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
                 ctrResult = tempResult;
             }
@@ -147,7 +157,7 @@ public class ControllerAop {
             logger.error("MapperException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
                 tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
                 ctrResult = tempResult;
             }
@@ -159,7 +169,7 @@ public class ControllerAop {
             logger.error("ApiException! IntMsg:{} / ExtMsg:{} / Cause:{}", e.getInternalMsg(), e.getMessage(), e.getCause());
             httpSvlRes.setStatus(e.getHttpStatus().value());
             if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
                 tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
                 ctrResult = tempResult;
             }
@@ -171,7 +181,7 @@ public class ControllerAop {
             logger.error("UnhandledException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ErrorCode.CC0_ERROR);
+                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
                 tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
                 ctrResult = tempResult;
             }

@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.de4bi.common.data.ApiResult;
 import com.de4bi.common.data.ThreadStorage;
 import com.de4bi.members.aop.ControllerAop;
-import com.de4bi.members.data.code.ErrorCode;
+import com.de4bi.members.data.code.ResponseCode;
 import com.de4bi.members.data.code.MembersCode;
 import com.de4bi.members.data.dao.MembersDao;
 
@@ -39,7 +39,7 @@ public class MembersUtil {
         final long myAuthSeq = membersDao.getAuthority();
         if (myAuthSeq < reqAuthSeq) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_NO_PERMISSIONS)
+                .setCode(ResponseCode.M_NO_PERMISSION)
                 .setMessage("No permission! (myAuthSeq: " + myAuthSeq + " / reqAuthSeq: " + reqAuthSeq + ")");
         }
 
@@ -57,17 +57,17 @@ public class MembersUtil {
         final long memberStatusSeq = membersDao.getStatus();
         if (memberStatusSeq == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_BANNED_MEMBER)
+                .setCode(ResponseCode.M_BANNED_MEMBER)
                 .setMessage("Banned member! (id: " + membersDao.getId() + ")");
         }
         else if (memberStatusSeq == MembersCode.MEMBERS_STATUS_DEREGISTER.getSeq()) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_DEREGISTERED_MEMBER)
+                .setCode(ResponseCode.M_DEREGISTED_MEMBER)
                 .setMessage("Deregistred member! (id: " + membersDao.getId() + ")");
         }
         else if (memberStatusSeq == MembersCode.MEMBERS_STATUS_SLEEP.getSeq()) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_SLEEPING_MEMBER)
+                .setCode(ResponseCode.M_SLEEPING_MEMBER)
                 .setMessage("Sleeping member! (id: " + membersDao.getId() + ")");
         }
 
@@ -104,7 +104,7 @@ public class MembersUtil {
         if (membersDao == null) {
             return ApiResult.of(false)
                 // 매니저권한 이상인 경우 회원정보 없음을, 일반 권한인 경우 권한없음을 반환 (보안)
-                .setCode(atleastManager ? ErrorCode.MG0_NO_SUCH_MEMBER : ErrorCode.MG0_NOSMEM_OR_BADPW)
+                .setCode(atleastManager ? ResponseCode.M_NOT_EXIST_MEMBER : ResponseCode.M_NO_PERMISSION)
                 .setMessage("No such member!");
         }
 
@@ -123,7 +123,7 @@ public class MembersUtil {
 
         if (firstDao.getSeq() != secondDao.getSeq()) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_NO_PERMISSIONS)
+                .setCode(ResponseCode.M_NO_PERMISSION)
                 .setMessage("No permissions! (firstDao.seq: " + firstDao.getSeq() + ", secondDao.seq: " + secondDao.getSeq());
         }
 
@@ -148,7 +148,7 @@ public class MembersUtil {
 
         if (originPw.equals(inputPw)) {
             return ApiResult.of(false)
-                .setCode(ErrorCode.MG0_NOSMEM_OR_BADPW)
+                .setCode(ResponseCode.M_NOT_EXIST_OR_WRONG_PW)
                 .setMessage("Wrong password!");
         }
 

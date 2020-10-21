@@ -1,9 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <codes lang="ko">
+    <!-- A:API -->
     <code code="A0000" msg="성공"/>
-    <code code="A9999" msg="알 수 없는 오류가 발생했습니다. {0},{1},{2}"/>
-</codes>
+    <code code="A0001" msg="실패"/>
+    <code code="A9999" msg="알 수 없는 오류가 발생했습니다."/>
 
-@@ 에러코드 작성부터 시작
-컨트롤러/서비스 기존 코드들 싹 빨개지겠지만,
-해야 할 일이다 ㅋㅋ...
+    <!-- M:회원 -->
+    <code code="M0000" msg="회원 관련 처리를 성공했습니다."/>
+    <code code="M0001" msg="회원 관련 작업에 실패했습니다."/>
+    <code code="M0002" msg="이미 가입된 회원입니다."/>
+    <code code="M0003" msg="존재하지 않은 회원입니다."/>
+    <code code="M0004" msg="비밀번호가 일치하지 않습니다."/>
+    <code code="M0005" msg="존재하지 않은 회원이거나, 비밀번호가 일치하지 않습니다."/>
+    <code code="M0006" msg="회원 권한이 부족합니다."/>
+    <code code="M0007" msg="이미 사용중인 이메일입니다."/>
+    <code code="M0008" msg="이미 사용중인 닉네임입니다."/>
+    <code code="M0009" msg="운영 정책상 정지된 회원입니다."/>
+    <code code="M0010" msg="탈퇴한 회원입니다."/>
+    <code code="M0011" msg="휴면중인 회원입니다."/>
+    <code code="M0012" msg="회원정보 수정에 실패했습니다."/>
+    <code code="M0012" msg="회원 탈퇴에 실패했습니다."/>
+    <code code="M9999" msg="회원 관련 작업중 오류가 발생했습니다."/>
+
+    <!-- MA:회원 인증 -->
+    <code code="MA000" msg="회원 인증에 성공했습니다."/>
+    <code code="MA001" msg="회원 인증에 실패했습니다."/>
+    <code code="MA002" msg="회원토큰 발급에 실패했습니다."/>
+    <code code="MA003" msg="회원토큰 인증에 실패했습니다."/>
+    <code code="MA004" msg="허용되지 않은 회원토큰 사용처입니다."/>
+    <code code="MA999" msg="회원 인증 중 오류가 발생했습니다."/>
+
+    <!-- DB -->
+    <code code="DB000" msg="DB처리를 성공했습니다."/>
+    <code code="DB001" msg="DB처리에 실패했습니다."/>
+    <code code="DB002" msg="DB에 추가 중 실패했습니다."/>
+    <code code="DB003" msg="DB에서 조회 중 실패했습니다."/>
+    <code code="DB004" msg="DB에서 수정 중 실패했습니다."/>
+    <code code="DB004" msg="DB에서 삭제 중 실패했습니다."/>
+    <code code="DB999" msg="DB작업 중 오류가 발생했습니다."/>
+</codes>
