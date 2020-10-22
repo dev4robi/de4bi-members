@@ -124,8 +124,9 @@ public class ControllerAop {
             }
             else if (isApiCtr) {
                 final ApiResult<?> tempResult = (ApiResult<?>) ctrResult;
-                final String tempErrCode = tempResult.getCode();
-                if (tempErrCode != null) tempResult.setMessage(codeMsgManager.getMsg(tempErrCode, tempResult.getMsgParamList()));
+                final String tempResCode = tempResult.getCode();
+                if (tempResCode == null) tempResult.setCode(tempResult.getResult() ? ResponseCode.A_SUCCESS : ResponseCode.A_FAIL);
+                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), tempResult.getMsgParamList()));
                 ctrResult = tempResult;
             }
         }

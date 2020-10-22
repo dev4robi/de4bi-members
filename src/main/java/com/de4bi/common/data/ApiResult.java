@@ -23,6 +23,7 @@ public final class ApiResult<T> {
     @JsonIgnore
     private final Map<String, Object> resultMap;
 
+    @JsonIgnore
     private final List<String> msgParamList;
 
     public static final String KEY_TID      = "tid";        // 추적 아이디 (trace_id)
