@@ -1,5 +1,8 @@
 package com.de4bi.members.controller.dto;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,6 +10,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 @Data
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class SelectMemberInfoResDto {
  
     long seq;               // 시퀀스

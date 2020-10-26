@@ -18,14 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import lombok.AllArgsConstructor;
 
-@Api
 @AllArgsConstructor
 @RestController
-@RequestMapping(value = {"/api", "/api/v1"})
+@RequestMapping(value = {"/api/v1"})
+@Api
 public class MembersApiController {
     
     private final MembersService membersSvc;
@@ -34,25 +32,37 @@ public class MembersApiController {
 
     @RequireMemberJwt
     @GetMapping("/members")
-    public ApiResult<SelectMemberInfoResDto> getMemberBasicInfo() {
+    @ApiOperation(value = "회원 기본정보 획득", notes = "회원 기본정보를 획득합니다.")
+    public ApiResult<SelectMemberInfoResDto> getMemberBasicInfo(
+        @ApiParam(required = true, value = "조회를 시도하는 회원 JWT")
+            @RequestHeader(name = "member_jwt") String memberJwt
+    ) {
         return membersSvc.selectMemberBasicInfo();
     }
 
     
     @GetMapping("/members/{seq}")
-    @ApiOperation(value = "회원 기본정보 획득.", notes = "회원 기본정보를 획득합니다.")
     @RequireMemberJwt
+    @ApiOperation(value = "회원 기본정보 획득", notes = "회원 기본정보를 획득합니다.")
     public ApiResult<SelectMemberInfoResDto> getMemberBasicInfo(
-        @ApiParam(required = true, value = "조회를 시도하는 회원 JWT") @RequestHeader(name = "member_jwt") String memberJwt,
-        @ApiParam(required = true) @PathVariable long seq) {
+        @ApiParam(required = true, value = "조회를 시도하는 회원 JWT")
+            @RequestHeader(name = "member_jwt") String memberJwt,
+        @ApiParam(required = true, value = "회원 시퀀스")
+            @PathVariable long seq
+    ) {
         return membersSvc.selectMemberBasicInfo(null, seq, null, null);
     }
 
     @RequireMemberJwt
     @PutMapping("/members/{seq}")
+    @ApiOperation(value = "회원정보 수정", notes = "회원정보를 수정합니다.")
     public ApiResult<Void> putMemberBasicInfo(
-        @PathVariable long seq,
-        @RequestBody PutMemberBasicInfoReqDto reqDto
+        @ApiParam(required = true, value = "조회를 시도하는 회원 JWT")
+            @RequestHeader(name = "member_jwt") String memberJwt,
+        @ApiParam(required = true, value = "회원 시퀀스")
+            @PathVariable long seq,
+        @ApiParam(required = true, value = "수정할 회원 정보")
+            @RequestBody PutMemberBasicInfoReqDto reqDto
     ) {
         return membersSvc.updateMemberInfo(
             seq, reqDto.getOldPassword(), reqDto.getNewPassword(), reqDto.getNickname(), reqDto.getName());
@@ -60,7 +70,15 @@ public class MembersApiController {
 
     @RequireMemberJwt
     @DeleteMapping("/members/{seq}")
-    public ApiResult<Void> deregistMember(@PathVariable long seq, @RequestBody String password) {
+    @ApiOperation(value = "회원 탈퇴", notes = "회원 탈퇴를 수행합니다.")
+    public ApiResult<Void> deregistMember(
+        @ApiParam(required = true, value = "조회를 시도하는 회원 JWT")
+            @RequestHeader(name = "member_jwt") String memberJwt,
+        @ApiParam(required = true, value = "회원 시퀀스")
+            @PathVariable long seq,
+        @ApiParam(required = true, value = "계정 비밀번호")
+            @RequestBody String password
+    ) {
         return membersSvc.deregistMember(seq, password);
     }
 }
