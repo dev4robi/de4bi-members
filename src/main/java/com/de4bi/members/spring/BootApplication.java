@@ -30,7 +30,7 @@ public class BootApplication {
 }
 
 /**
- * To do list
+ * To do list @@
  * 
  * 1. 회원 탈퇴 후 재가입 관련...
  * 2. 탈퇴자 API접근 체크...
