@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <codes lang="en">
     <!-- A:API -->
-    <code code="A0000" msg="Sucess"/>
-    <code code="A0001" msg="Fail"/>
+    <code code="A0000" msg="OK"/>
+    <code code="A0001" msg="FAIL"/>
     <code code="A9999" msg="Unkown error has occured."/>
 
     <!-- M:Member -->

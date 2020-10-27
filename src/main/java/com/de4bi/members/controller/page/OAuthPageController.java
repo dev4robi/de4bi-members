@@ -2,9 +2,12 @@ package com.de4bi.members.controller.page;
 
 import java.util.Map;
 
+import com.de4bi.common.data.ApiResult;
+import com.de4bi.common.exception.ApiException;
 import com.de4bi.common.util.StringUtil;
 import com.de4bi.common.util.UrlUtil;
 import com.de4bi.members.controller.dto.SocialSigninMembersDto;
+import com.de4bi.members.manager.CodeMsgManager;
 import com.de4bi.members.service.MembersService;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
 
@@ -21,6 +24,7 @@ public class OAuthPageController {
 
     private final GoogleOAuthService googleOAuthService;
     private final MembersService membersService;
+    private final CodeMsgManager codeMsgManager;
 
     @RequestMapping("/oauth/google/code")
     public ModelAndView googleAuthCodePage(
@@ -34,7 +38,10 @@ public class OAuthPageController {
         final SocialSigninMembersDto newMembersDto = googleOAuthService.getMemberInfoWithOAuth(code, state, null).getData();
         
         // 회원가입 수행
-        membersService.socialSignin(newMembersDto).getResult();
+        ApiResult<Void> tempRst = null;
+        if ((tempRst = membersService.socialSignin(newMembersDto)).getResult() == false) {
+            throw ApiException.of(tempRst.getCode());
+        }
 
         // 자동 로그인 수행
         final boolean isKeepLoggedIn = rtParamMap.getOrDefault("keep_logged_in", "").toString().equals("true") ? true : false;
@@ -45,6 +52,7 @@ public class OAuthPageController {
         for (String key : rtParamMap.keySet()) {
             paramSb.append('&').append(StringUtil.toSnakeCase(key)).append('=').append(rtParamMap.getOrDefault(key, "").toString());
         }
+
         return new ModelAndView("redirect:/login?member_jwt=" + memberJwt + paramSb.toString());
     }
 }

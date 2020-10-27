@@ -40,11 +40,11 @@ public class ResponseCode {
     public static final String MA_ERROR                 = "MA999"; // 회원 인증관련 오류 발생
 
     // MD(회원 DB)
-    public static final String DB_SUCCESS               = "DB0000"; // DB작업 성공
-    public static final String DB_FAIL                  = "DB0001"; // DB작업 실패
-    public static final String DB_INSERT_FAIL           = "DB0002"; // DB인서트 실패
-    public static final String DB_SELECT_FAIL           = "DB0003"; // DB셀렉트 실패
-    public static final String DB_UPDATE_FAIL           = "DB0004"; // DB업데이트 실패
-    public static final String DB_DELETE_FAIL           = "DB0005"; // DB딜리트 실패
-    public static final String DB_ERROR                 = "DB9999"; // DB관련 오류 발생
+    public static final String DB_SUCCESS               = "DB000"; // DB작업 성공
+    public static final String DB_FAIL                  = "DB001"; // DB작업 실패
+    public static final String DB_INSERT_FAIL           = "DB002"; // DB인서트 실패
+    public static final String DB_SELECT_FAIL           = "DB003"; // DB셀렉트 실패
+    public static final String DB_UPDATE_FAIL           = "DB004"; // DB업데이트 실패
+    public static final String DB_DELETE_FAIL           = "DB005"; // DB딜리트 실패
+    public static final String DB_ERROR                 = "DB999"; // DB관련 오류 발생
 }

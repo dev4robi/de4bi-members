@@ -116,56 +116,54 @@ public class ControllerAop {
             if (doProcess) {
                 ctrResult = pjp.proceed();
             }
-
-            // 수행결과 재조립
-            if (ctrResult == null) {
-                logger.warn("Controller returns null!");
-                ctrResult = (isApiCtr ? ApiResult.of(false).toString() : new ModelAndView("error"));
-            }
-            else if (isApiCtr) {
-                final ApiResult<?> tempResult = (ApiResult<?>) ctrResult;
-                final String tempResCode = tempResult.getCode();
-                if (tempResCode == null) tempResult.setCode(tempResult.getResult() ? ResponseCode.A_SUCCESS : ResponseCode.A_FAIL);
-                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), tempResult.getMsgParamList()));
-                ctrResult = tempResult;
-            }
         }
-        catch (ControllerException e) {
-            logger.error("ControllerException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
-            httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
-                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
-                ctrResult = tempResult;
-            }
-            else {
-                ctrMap.put("message", "컨트롤러 오류가 발생했습니다.");
-            }
-        }
-        catch (ServiceException e) {
-            logger.error("ServiceException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
-            httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
-                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
-                ctrResult = tempResult;
-            }
-            else {
-                ctrMap.put("message", "서비스 오류가 발생했습니다.");
-            }
-        }
-        catch (MapperException e) {
-            logger.error("MapperException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
-            httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
-                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
-                ctrResult = tempResult;
-            }
-            else {
-                ctrMap.put("message", "DB오류가 발생했습니다.");
-            }
-        }
+        // catch (ControllerException e) {
+        //     logger.error("ControllerException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
+        //     httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        //     if (isApiCtr) {
+        //         final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
+        //         tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+        //         ctrResult = tempResult;
+        //     }
+        //     else {
+        //         ctrMap.put("message", "컨트롤러 오류가 발생했습니다.");
+        //     }
+        // }
+        // catch (ServiceException e) {
+        //     logger.error("ServiceException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
+        //     httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        //     if (isApiCtr) {
+        //         final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
+        //         tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+        //         ctrResult = tempResult;
+        //     }
+        //     else {
+        //         ctrMap.put("message", "서비스 오류가 발생했습니다.");
+        //     }
+        // }
+        // catch (MapperException e) {
+        //     logger.error("MapperException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
+        //     httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        //     if (isApiCtr) {
+        //         final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
+        //         tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
+        //         ctrResult = tempResult;
+        //     }
+        //     else {
+        //         ctrMap.put("message", "DB오류가 발생했습니다.");
+        //     }
+        // }
+        // 기존 구조는 ApiResult false를 반환하는 것 없이, ApiException을 마구 던지는 식으로 개발하여
+        // 지금의 구조와는 조금 어울리지 않는 문제점이 있다.
+        // 따라서, AoP구조의 변경이 불가피하게 필요한 상황.
+        // 지금 ApiException은, 특정 상황에서 긴급하게 탈출하는 용도로 사용하게 될듯 한데,
+        // 이를 반영하여 작업을 해야 할 듯.
+        // 페이지를 처리하는 aop와 api를 처리하는 aop가 하나로 통일됨에 따라 생기는 변수도
+        // 관리해 줘야 한다..
+        // api를 응답해야 할 경우에는 apiException이 발생하더라도 error 페이지로 안내되는것이 아니라
+        // 해당 내용을 코드변환하여 출력해 주는것이 맞으며,
+        // 페이지를 반환해야 하는 경우에는 apiException이 발생한 경우 error페이지에 코드변환된 메시지를 출력해 주어야 할 것이다.
+        // 그 외 상황에 대해서도 한번쯤 정리가 필요하다. 여기부터 시작해 보자. @@
         catch (ApiException e) {
             logger.error("ApiException! IntMsg:{} / ExtMsg:{} / Cause:{}", e.getInternalMsg(), e.getMessage(), e.getCause());
             httpSvlRes.setStatus(e.getHttpStatus().value());
@@ -175,7 +173,7 @@ public class ControllerAop {
                 ctrResult = tempResult;
             }
             else {
-                ctrMap.put("message", e.getMessage());
+                ctrMap.put("message", codeMsgManager.getMsg(e.getMessage(), null));
             }
         }
         catch (Throwable e) {
@@ -189,6 +187,19 @@ public class ControllerAop {
             else {
                 ctrMap.put("message", "미정의된 오류가 발생했습니다.");
             }
+        }
+
+        // 수행결과 재조립
+        if (ctrResult == null) {
+            logger.warn("Controller returns null!");
+            ctrResult = (isApiCtr ? ApiResult.of(false).toString() : new ModelAndView("error"));
+        }
+        else if (isApiCtr) {
+            final ApiResult<?> tempResult = (ApiResult<?>) ctrResult;
+            final String tempResCode = tempResult.getCode();
+            if (tempResCode == null) tempResult.setCode(tempResult.getResult() ? ResponseCode.A_SUCCESS : ResponseCode.A_FAIL);
+            tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), tempResult.getMsgParamList()));
+            ctrResult = tempResult;
         }
 
         // 결과 로깅 및 반환

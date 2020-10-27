@@ -246,13 +246,17 @@ public class MembersService {
         Objects.requireNonNull(membersDto, "'membersDto' is null!");
 
         final String newId = membersDto.getId();
-        if (select(0L, newId, null).getResult()) {
-            return ApiResult.of(false)
-                .setCode(ResponseCode.M_DUPLICATED_EMAIL)
-                .setMessage("Duplicated id! (newId: " + newId + ")");
+        final MembersDao selMembersDao = select(0L, newId, null).getData();
+
+        ApiResult<Void> tempRst = MembersUtil.checkMemberExist(selMembersDao);
+        final boolean isRejoinMember = (tempRst.getResult() ? true : false);
+        
+        if ((tempRst = MembersUtil.checkMemberSigninable(selMembersDao)).getResult() == false) {
+            return tempRst;
         }
 
-        final MembersDao newMembersDao = MembersDao.builder()
+        final MembersDao singinMembersDao = MembersDao.builder()
+            .seq(isRejoinMember ? selMembersDao.getSeq() : 0L)
             .id(membersDto.getId())
             .password(null)
             .nickname(membersDto.getNickname())
@@ -262,9 +266,10 @@ public class MembersService {
             .authAgency(membersDto.getAuthAgency())
             .joinDate(Date.from(Instant.now()))
             .lastLoginDate(null)
+            .deregisterDate(null)
             .build();
 
-        return insert(newMembersDao);
+        return isRejoinMember ? update(singinMembersDao) : insert(singinMembersDao);
     }
 
     /**
@@ -276,15 +281,19 @@ public class MembersService {
         Objects.requireNonNull(membersDto, "'membersDto' is null!");
 
         final String newId = membersDto.getId();
-        if (select(0L, newId, null).getResult()) {
-            return ApiResult.of(false)
-                .setCode(ResponseCode.M_DUPLICATED_EMAIL)
-                .setMessage("Duplicated id! (newId: " + newId + ")");
+        final MembersDao selMembersDao = select(0L, newId, null).getData();
+        
+        ApiResult<Void> tempRst = MembersUtil.checkMemberExist(selMembersDao);
+        final boolean isRejoinMember = (tempRst.getResult() ? true : false);
+        
+        if ((tempRst = MembersUtil.checkMemberSigninable(selMembersDao)).getResult() == false) {
+            return tempRst;
         }
 
-        final MembersDao newMembersDao = MembersDao.builder()
+        final MembersDao singinMembersDao = MembersDao.builder()
+            .seq(isRejoinMember ? selMembersDao.getSeq() : 0L)    
             .id(membersDto.getId())
-            .password(SecurityUtil.passwordSecureHashing(membersDto.getPassword(), secureProps.getMemberPasswordSalt()))
+            .password(null)
             .nickname(membersDto.getNickname())
             .name(membersDto.getName())
             .authority(MembersCode.MEMBERS_AUTHORITY_BASIC.getSeq())
@@ -292,9 +301,10 @@ public class MembersService {
             .authAgency(MembersCode.MEMBERS_AUTHAGENCY_DE4BI.getSeq())
             .joinDate(Date.from(Instant.now()))
             .lastLoginDate(null)
+            .deregisterDate(null)
             .build();
 
-        return insert(newMembersDao);
+        return isRejoinMember ? update(singinMembersDao) : insert(singinMembersDao);
     }
 
     /**
@@ -550,7 +560,7 @@ public class MembersService {
         }
 
         // 업데이트 수행
-        selMembersDao.setStatus(MembersCode.MEMBERS_STATUS_DEREGISTER.getSeq());
+        selMembersDao.setDeregisterDate(Date.from(Instant.now()));
 
         if (membersMapper.update(selMembersDao) != 1) {
             return ApiResult.of(false).setCode(ResponseCode.M_DEREGISTER_FAILED)

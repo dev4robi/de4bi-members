@@ -1,6 +1,6 @@
 -- Service: de4bi-members
--- Last Modified: 2020.08.25
--- Version: 1.0.1
+-- Last Modified: 2020.10.27
+-- Version: 1.0.2
 -- name : db_members
 
 CREATE DATABASE db_members;
@@ -27,7 +27,6 @@ INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(5,'MEM
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(101,'MEMBERS_STATUS','ST00','일반');
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(102,'MEMBERS_STATUS','ST01','휴면');
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(103,'MEMBERS_STATUS','ST02','정지');
-INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(104,'MEMBERS_STATUS','ST03','탈퇴');
 
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(10001,'MEMBERS_AUTHAGENCY','DE4BI','자체');
 INSERT INTO `db_members`.`tb_codes`(`seq`,`groups`,`value`,`name`) VALUES(10002,'MEMBERS_AUTHAGENCY','GOOGLE','구글');
@@ -46,6 +45,7 @@ CREATE TABLE `db_members`.`tb_members` (
   `auth_agency`     BIGINT NOT NULL DEFAULT '0',    -- 인증기관
   `join_date`       DATETIME NOT NULL,              -- 가입일자 (재가입시 갱신)
   `last_login_date` DATETIME,                       -- 마지막 로그인 일자
+  `deregister_date` DATETIME,                       -- 탈퇴 일자
 
   PRIMARY KEY (`seq`),
   UNIQUE KEY (`id`),

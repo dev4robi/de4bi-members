@@ -40,7 +40,8 @@
             status=#{status},
             auth_agency=#{authAgency},
             join_date=#{joinDate},
-            last_login_date=#{lastLoginDate}
+            last_login_date=#{lastLoginDate},
+            deregister_date=#{deregisterDate}
         WHERE seq = #{seq};
     </update>
 

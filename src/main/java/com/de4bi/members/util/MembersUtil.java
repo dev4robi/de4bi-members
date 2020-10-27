@@ -47,7 +47,7 @@ public class MembersUtil {
     }
 
     /**
-     * <p>회원의 로그인 가능 여부를 검사합니다.<p>
+     * <p>회원의 로그인 가능 여부를 검사합니다.</p>
      * @param membersDao : 검사할 회원 DAO
      * @return true: 로그인 가능<li>false: 로그인 불가능</li>
      */
@@ -60,7 +60,7 @@ public class MembersUtil {
                 .setCode(ResponseCode.M_BANNED_MEMBER)
                 .setMessage("Banned member! (id: " + membersDao.getId() + ")");
         }
-        else if (memberStatusSeq == MembersCode.MEMBERS_STATUS_DEREGISTER.getSeq()) {
+        else if (membersDao.getDeregisterDate() != null) {
             return ApiResult.of(false)
                 .setCode(ResponseCode.M_DEREGISTED_MEMBER)
                 .setMessage("Deregistred member! (id: " + membersDao.getId() + ")");
@@ -69,6 +69,27 @@ public class MembersUtil {
             return ApiResult.of(false)
                 .setCode(ResponseCode.M_SLEEPING_MEMBER)
                 .setMessage("Sleeping member! (id: " + membersDao.getId() + ")");
+        }
+
+        return ApiResult.of(true);
+    }
+
+    /**
+     * <p>회원의 회원가입 가능 여부를 검사합니다.</p>
+     * @param membersDao : 검사할 회원 DAO (nullable)
+     * @return true: 회원가입 가능, false: 회원가입 불가능
+     */
+    public static ApiResult<Void> checkMemberSigninable(MembersDao membersDao) {
+        // 최초 가입인 경우
+        if (membersDao == null) {
+            return ApiResult.of(true);
+        }
+
+        // 기존에 가입했던 경우, 정지된 회원인지 확인
+        final long memberStatusSeq = membersDao.getStatus();
+        if (memberStatusSeq == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
+            return ApiResult.of(false).setCode(ResponseCode.M_BANNED_MEMBER)
+                .setMessage("Banned member. Signin rejected! (id: " + membersDao.getId() + ")");
         }
 
         return ApiResult.of(true);
