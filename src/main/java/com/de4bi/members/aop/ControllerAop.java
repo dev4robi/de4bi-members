@@ -88,9 +88,10 @@ public class ControllerAop {
         logger.info(reqInfo);
         logger.info(reqFunc);
 
-        final Map<String, Object> ctrMap = new HashMap<>();
-        ctrMap.put("tid", tid);
+        final Map<String, Object> pageCtrMap = new HashMap<>(); 
+        pageCtrMap.put("tid", tid);
         Object ctrResult = null;
+
         try {
             boolean doProcess = true;
 
@@ -114,92 +115,54 @@ public class ControllerAop {
 
             // 컨트롤러 수행
             if (doProcess) {
-                ctrResult = pjp.proceed();
+                if ((ctrResult = pjp.proceed()) == null) {
+                    throw ApiException.of().setInternalMsg("'ctrResult' is null! Check service logic!");
+                }
             }
-        }
-        // catch (ControllerException e) {
-        //     logger.error("ControllerException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
-        //     httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-        //     if (isApiCtr) {
-        //         final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
-        //         tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
-        //         ctrResult = tempResult;
-        //     }
-        //     else {
-        //         ctrMap.put("message", "컨트롤러 오류가 발생했습니다.");
-        //     }
-        // }
-        // catch (ServiceException e) {
-        //     logger.error("ServiceException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
-        //     httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-        //     if (isApiCtr) {
-        //         final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
-        //         tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
-        //         ctrResult = tempResult;
-        //     }
-        //     else {
-        //         ctrMap.put("message", "서비스 오류가 발생했습니다.");
-        //     }
-        // }
-        // catch (MapperException e) {
-        //     logger.error("MapperException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
-        //     httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
-        //     if (isApiCtr) {
-        //         final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
-        //         tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
-        //         ctrResult = tempResult;
-        //     }
-        //     else {
-        //         ctrMap.put("message", "DB오류가 발생했습니다.");
-        //     }
-        // }
-        // 기존 구조는 ApiResult false를 반환하는 것 없이, ApiException을 마구 던지는 식으로 개발하여
-        // 지금의 구조와는 조금 어울리지 않는 문제점이 있다.
-        // 따라서, AoP구조의 변경이 불가피하게 필요한 상황.
-        // 지금 ApiException은, 특정 상황에서 긴급하게 탈출하는 용도로 사용하게 될듯 한데,
-        // 이를 반영하여 작업을 해야 할 듯.
-        // 페이지를 처리하는 aop와 api를 처리하는 aop가 하나로 통일됨에 따라 생기는 변수도
-        // 관리해 줘야 한다..
-        // api를 응답해야 할 경우에는 apiException이 발생하더라도 error 페이지로 안내되는것이 아니라
-        // 해당 내용을 코드변환하여 출력해 주는것이 맞으며,
-        // 페이지를 반환해야 하는 경우에는 apiException이 발생한 경우 error페이지에 코드변환된 메시지를 출력해 주어야 할 것이다.
-        // 그 외 상황에 대해서도 한번쯤 정리가 필요하다. 여기부터 시작해 보자. @@
-        catch (ApiException e) {
-            logger.error("ApiException! IntMsg:{} / ExtMsg:{} / Cause:{}", e.getInternalMsg(), e.getMessage(), e.getCause());
-            httpSvlRes.setStatus(e.getHttpStatus().value());
+
             if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
-                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
-                ctrResult = tempResult;
+                // API 컨트롤러는 CodeMsgManager를 통해 코드->메시지 변환을 수행하는 과정을 갖는다
+                final ApiResult<?> tempRst = (ApiResult<?>) ctrResult;
+                tempRst.setMessage(codeMsgManager.getMsg(tempRst.getCode(), null));
+                ctrResult = tempRst;
             }
             else {
-                ctrMap.put("message", codeMsgManager.getMsg(e.getMessage(), null));
+                // 페이지 컨트롤러는 메시지를 @Controller단에서 직접 작업한다
+                // 따라서, 예외가 발생한 경우에만 별도로 핸들링하고 이 곳은 비워둔다
+            }
+        }
+        catch (ApiException e) {
+            // 로직에서 의도적으로 발생시킨 예외는 실패로 처리 (A0001)
+            logger.error("ApiException! HttpStatus:{} / IntMsg:{} / ExtMsg:{} / Cause:{}",
+                            e.getHttpStatus(), e.getInternalMsg(), e.getExternalMsg(), e.getCause());
+            httpSvlRes.setStatus(e.getHttpStatus().value());
+            if (isApiCtr) {
+                final ApiResult<?> tempRst = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
+                tempRst.setMessage(codeMsgManager.getMsg(tempRst.getCode(), null));
+                ctrResult = tempRst;
+            }
+            else {
+                // @@ e.getExternalMsg에서 NPE 발생.
+                // 뷰 컨트롤러에서 메시지를 안담아 보내서 그런 듯.
+                // OAuthPageController ln43 기억하고 (throw ApiException.of(tempRst.getCode());)
+                // 페이지/API단을 어떻게 이음할건지 다시 한번 고민. @@
+                pageCtrMap.put("message", codeMsgManager.getMsg(e.getExternalMsg(), null));
+                ctrResult = new ModelAndView("/error", pageCtrMap);
             }
         }
         catch (Throwable e) {
+            // 시스템에서 기대치 않게 발생한 예외는 오류로 처리 (A9999)
             logger.error("UnhandledException! Msg:{} / Cause:{}", e.getMessage(), e.getCause());
             httpSvlRes.setStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
             if (isApiCtr) {
-                final ApiResult<?> tempResult = ApiResult.of(false).setCode(ResponseCode.A_FAIL);
-                tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), null));
-                ctrResult = tempResult;
+                final ApiResult<?> tempRst = ApiResult.of(false).setCode(ResponseCode.A_ERROR);
+                tempRst.setMessage(codeMsgManager.getMsg(tempRst.getCode(), null));
+                ctrResult = tempRst;
             }
             else {
-                ctrMap.put("message", "미정의된 오류가 발생했습니다.");
+                pageCtrMap.put("message", codeMsgManager.getMsg(e.getMessage(), null));
+                ctrResult = new ModelAndView("/error", pageCtrMap);
             }
-        }
-
-        // 수행결과 재조립
-        if (ctrResult == null) {
-            logger.warn("Controller returns null!");
-            ctrResult = (isApiCtr ? ApiResult.of(false).toString() : new ModelAndView("error"));
-        }
-        else if (isApiCtr) {
-            final ApiResult<?> tempResult = (ApiResult<?>) ctrResult;
-            final String tempResCode = tempResult.getCode();
-            if (tempResCode == null) tempResult.setCode(tempResult.getResult() ? ResponseCode.A_SUCCESS : ResponseCode.A_FAIL);
-            tempResult.setMessage(codeMsgManager.getMsg(tempResult.getCode(), tempResult.getMsgParamList()));
-            ctrResult = tempResult;
         }
 
         // 결과 로깅 및 반환

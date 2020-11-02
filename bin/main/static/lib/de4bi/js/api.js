@@ -32,7 +32,7 @@ const de4bi_api = {
             if (!!alwaysFunc) alwaysFunc(data_jqXHR, textStatus, jqXHR_errorThrown);
         })
         .done(function(data, textStatus, jqXHR) {
-            try { data = JSON.parse(data) } catch (e) {} // 일단 JSON파싱 수행, 이미 JSON이거나 오류인 경우 예외 삼킴
+            try { data = JSON.parse(data) } catch (e) {} // 일단 JSON변환 수행, 이미 JSON포멧이면 예외 삼킴
             if (!!doneFunc) doneFunc(data, textStatus, jqXHR);
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
