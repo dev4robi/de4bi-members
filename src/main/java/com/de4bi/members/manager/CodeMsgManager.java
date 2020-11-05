@@ -166,14 +166,14 @@ public class CodeMsgManager {
 
     /**
      * 지정 Locale을 사용하여, 코드(code)로부터 메시지(msg)를 가져옵니다.
-     * @param code 메시지의 코드값
+     * @param code 메시지의 코드값 (nullable)
      * @param paramList 메시지에 노출할 파라미터 리스트 (nullable)
      * @param locale 로케일 정보 <code>(null -> Locale.DEFAULT)</code>
      * @return 메시지코드에 해당하는 메시지
      * @apiNote "Hello {0}!" -> paramList.get(0) -> "Hello World!"
      */
     public String getMsg(String code, List<String> paramList, Locale locale) {
-        Objects.requireNonNull(code);
+        if (code == null) code = "";
         if (locale == null) locale = Locale.DEFAULT;
         
         Map<String, String> localeMap = CODE_MSG_MAP_LIST.get(locale.getSeq());

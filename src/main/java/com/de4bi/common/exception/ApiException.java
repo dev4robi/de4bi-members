@@ -60,7 +60,7 @@ public class ApiException extends RuntimeException {
     }
 
     public String getExternalMsg() {
-        return this.internalMsg;
+        return this.externalMsg;
     }
 
     public ApiException setExternalMsg(String msg) {

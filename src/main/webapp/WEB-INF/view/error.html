@@ -25,15 +25,17 @@
 		<!-- Error Box -->
 		<div class="col-sm-8 main-box">
 			<div class="row pt-2 pb-1 justify-content-center align-items-center">
-				<div class="col-sm-8 p-2 main-box-title">ERROR</div>
-				<div class="col-sm-8 p-2"><img class="error-img" src="/img/icon-de4bi.png" alt="D4"></div>
-				<input type="text" class="error-tid" id="input_error_tid" th:value="|TID:${tid}|" disabled>
+				<div class="col-sm-8 p-4 main-box-title">
+					<p style="margin: -1.2rem;"><span class="no-drag">ERROR</span></p>
+					<span type="text" class="error-tid" id="input_error_tid" th:text="|(${tid})|" disabled></span>
+				</div>
+				<!--<div class="col-sm-8 p-2"><img class="error-img" src="/img/icon-de4bi.png" alt="D4"></div>-->
+				<div class="col-sm-8 p-2" th:if="${message != null && message.length() > 0}">
+					<input type="text" class="error-msg" id="input_error_msg" th:value="${message}" disabled>
+				</div>
 			</div>
 			<div class="row justify-content-center align-items-center border-danger">
 				<div class="col-sm-8 main-box-form border-warning">
-					<div>
-						<input type="hidden" id="input_error_msg" th:value="${message}" disabled>
-					</div>
 					<div class="d-flex pt-3 justify-content-center align-items-center">
 						<button type="submit" id="button_goto_main" class="btn btn-outline-danger main-button">MAIN</button>
 					</div>

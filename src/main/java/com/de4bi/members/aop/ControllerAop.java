@@ -142,10 +142,6 @@ public class ControllerAop {
                 ctrResult = tempRst;
             }
             else {
-                // @@ e.getExternalMsg에서 NPE 발생.
-                // 뷰 컨트롤러에서 메시지를 안담아 보내서 그런 듯.
-                // OAuthPageController ln43 기억하고 (throw ApiException.of(tempRst.getCode());)
-                // 페이지/API단을 어떻게 이음할건지 다시 한번 고민. @@
                 pageCtrMap.put("message", codeMsgManager.getMsg(e.getExternalMsg(), null));
                 ctrResult = new ModelAndView("/error", pageCtrMap);
             }

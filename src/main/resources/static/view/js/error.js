@@ -13,7 +13,9 @@ const error_js = {
         }
         // 경고 메시지 출력
         const error_msg = $('#input_error_msg').val();
-        alert(error_msg);
+        if (!!error_msg) {
+            alert(error_msg);
+        }
     },
 
     // 메인으로 이동 버튼 클릭

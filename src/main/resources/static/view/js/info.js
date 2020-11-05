@@ -19,6 +19,7 @@ const info_js = {
 
         // 이벤트 부착
         $('#button_change').on('click', function(){info_js.api_changeMemberInfo()});
+        $('#button_delete_account').on('click', function(){info_js.api_deleteAccount()});
 
         // 회원정보 API호출
         if (!!member_jwt) {
@@ -144,7 +145,7 @@ const info_js = {
             }
 
             var len = name.length;
-            if (len < 1 || len > 8) {
+            if (len < 1 || len > 64) {
                 $('#label_name_error').html('이름은 1~64자 길이어야 합니다.');
                 param_check_ok = false;
             }
@@ -188,6 +189,76 @@ const info_js = {
                     else {
                         // Fail
 
+                    }
+                    location.reload();
+                },
+                function(jq_XHR, status, error) {
+                    // Connection Fail
+                    console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Fail!');
+                    alert('서버와 통신에 실패했습니다. (' + status + '/' + error + ')');
+                    location.replace(gb_pageurl_login);
+                }
+            );
+        }
+        else {
+            // member_jwt미존재 시 로그인 페이지로 이동
+            location.replace(gb_pageurl_login);
+        }
+    },
+
+    // 회원 탈퇴
+    api_deleteAccount : function() {
+        const member_jwt = $.cookie('member_jwt');
+        if (!!member_jwt) {
+            if (!confirm('정말 탈퇴하시겠습니까?\n탈퇴 시 계정의 모든 정보를 복원할 수 없습니다!')) {
+                alert('취소되었습니다.');
+                return;
+            }
+
+            if (!confirm('또한, 탈퇴 후 1달간 재가입이 불가능합니다.')) {
+                alert('취소되었습니다.');
+                return;
+            }
+
+            $('#label_old_pw_error').html('');
+            $('#label_new_pw_error').html('');
+            $('#input_name').html('');
+            $('#input_nickname').html('');
+
+            // 요청 파라미터 검사
+            var param_check_ok = true;
+            var old_password = $('#input_old_password').val();
+            var new_password = $('#input_new_password').val();
+            var name = $('#input_name').val();
+            var nickname = $('#input_nickname').val();
+
+            if (param_check_ok == false) {
+                return;
+            }
+
+            // API 호출
+            var method = 'DELETE';
+            var api_url = (gb_apiurl_member_info + '/' + $('#input_seq').val());
+            var header = {'member_jwt' : member_jwt};
+            var body = {
+                'password':old_password,
+            }
+
+            de4bi_api.apiCall(method, api_url, header, body, 
+                function() {
+                    // Always
+                    console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Call!');
+                },
+                function(api_result, status, jq_XHR) {
+                    // Success
+                    console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Success!');
+                    console.log('api_result:' + api_result);
+                    if (de4bi_api.isResultSuccess(api_result) == false) {
+                        alert(de4bi_api.getResultMsg(api_result));
+                        return;
+                    }
+                    else {
+                        // Fail
                     }
                     location.reload();
                 },

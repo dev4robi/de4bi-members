@@ -92,6 +92,10 @@ public class MembersUtil {
                 .setMessage("Banned member. Signin rejected! (id: " + membersDao.getId() + ")");
         }
 
+        // 탈퇴한지 한달 이내인지 확인
+        // ... @@ 여기부터 시작
+
+
         return ApiResult.of(true);
     }
 

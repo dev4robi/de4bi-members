@@ -205,6 +205,13 @@ label {
     width: 60%;
     font-size: small;
     text-align: center;
+    letter-spacing: -0.05rem;
+    color: darkgray;
+}
+
+.error-msg {
+    width: 90%;
+    text-align: center;
 }
 
 .main-button {
