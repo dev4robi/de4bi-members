@@ -40,7 +40,7 @@ public class OAuthPageController {
         // 회원가입 수행
         ApiResult<Void> tempRst = null;
         if ((tempRst = membersService.socialSignin(newMembersDto)).getResult() == false) {
-            throw ApiException.of(tempRst.getCode());
+            throw ApiException.of(codeMsgManager.getMsg(tempRst.getCode(), tempRst.getMsgParamList()));
         }
 
         // 자동 로그인 수행

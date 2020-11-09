@@ -142,7 +142,7 @@ public class ControllerAop {
                 ctrResult = tempRst;
             }
             else {
-                pageCtrMap.put("message", codeMsgManager.getMsg(e.getExternalMsg(), null));
+                pageCtrMap.put("message", e.getExternalMsg());
                 ctrResult = new ModelAndView("/error", pageCtrMap);
             }
         }

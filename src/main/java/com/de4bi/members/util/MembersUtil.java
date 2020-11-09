@@ -1,5 +1,8 @@
 package com.de4bi.members.util;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Objects;
 
 import com.de4bi.common.data.ApiResult;
@@ -92,9 +95,15 @@ public class MembersUtil {
                 .setMessage("Banned member. Signin rejected! (id: " + membersDao.getId() + ")");
         }
 
-        // 탈퇴한지 한달 이내인지 확인
-        // ... @@ 여기부터 시작
-
+        // 탈퇴 이후로 1달 이내인 경우
+        if (membersDao.getDeregisterDate() != null) {
+            final Instant joinableTime = membersDao.getDeregisterDate().toInstant().plus(30L, ChronoUnit.DAYS);
+            if (Instant.now().isBefore(joinableTime)) {
+                final String joinableTimeStr = joinableTime.toString().replaceAll("[TZ]", " ");
+                return ApiResult.of(false).setCode(ResponseCode.M_RECENTLY_DEREGISTERED).addMsgParam(joinableTimeStr)
+                    .setMessage("Deregistred recently. (id: " + membersDao.getId() + ", Joinable after: " + joinableTimeStr + ")");
+            }
+        }
 
         return ApiResult.of(true);
     }

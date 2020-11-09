@@ -159,7 +159,7 @@ public final class ApiResult<T> {
      * @apiNote 추가된 총 매개변수보다 <code>idx</code>값이 더 크면 <code>idx</code>만큼 빈 문자열("")을 리스트에 채워넣습니다.
      */
     public ApiResult<T> setMsgParam(int idx, String param) {
-        while (this.msgParamList.size() > idx) {
+        while (this.msgParamList.size() <= idx) {
             this.msgParamList.add("");
         }
         this.msgParamList.set(idx, param);

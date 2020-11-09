@@ -20,6 +20,7 @@
     <code code="M0011" msg="Sleeping member."/>
     <code code="M0012" msg="Change member info failed."/>
     <code code="M0013" msg="Delete account failed."/>
+    <code code="M0014" msg="Deregestred recently. (Joinable after {0})"/>
     <code code="M9999" msg="Member error has occured."/>
 
     <!-- MA:Member Auth -->

@@ -29,6 +29,7 @@ public class ResponseCode {
     public static final String M_SLEEPING_MEMBER        = "M0011"; // 휴면중 회원
     public static final String M_CHAGNE_INFO_FAILED     = "M0012"; // 회원정보 수정 실패
     public static final String M_DEREGISTER_FAILED      = "M0013"; // 회원탈퇴 실패
+    public static final String M_RECENTLY_DEREGISTERED  = "M0014"; // 최근 회원탈퇴
     public static final String M_ERROR                  = "M9999"; // 회원 관련 오류 발생
 
     // MA(회원 인증)
