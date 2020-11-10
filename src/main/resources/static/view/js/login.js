@@ -64,6 +64,12 @@ const login_js = {
         // 플랫폼별 로그인 페이지로 이동
         location.href = oauthUrl;
     },
+
+    // 로그인 클릭
+    onclick_login : function() {
+        // @@ 비밀번호 해싱해서 전달하는것부터 시작
+        
+    }
 }
 
 // 페이지 초기화

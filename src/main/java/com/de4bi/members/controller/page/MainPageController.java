@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.de4bi.common.util.UrlUtil;
 import com.de4bi.members.service.oauth.GoogleOAuthService;
+import com.de4bi.members.spring.SecureProperties;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -33,8 +33,8 @@ public class SecureProperties {
     private String dataSorucePassword;
 
     // custom.secure.keys
-    @Value("${custom.secure.keys.member-password-salt}")
-    private String memberPasswordSalt;
+    @Value("${custom.secure.keys.member-password-server-salt}")
+    private String memberPasswordServerSalt;
 
     @Value("${custom.secure.keys.member-jwt-secret}")
     private String memberJwtSecret;

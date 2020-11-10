@@ -371,7 +371,7 @@ public class MembersService {
 
         // 비밀번호 확인
         final String memberPw = loginMemberDao.getPassword();
-        final String saltedPw = SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordSalt());
+        final String saltedPw = SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordServerSalt());
         if ((tempRst = MembersUtil.checkMemberPassword(memberPw, saltedPw)).getResult() == false) {
             return ApiResult.of(tempRst, String.class);
         }
@@ -485,7 +485,7 @@ public class MembersService {
 
             // 비밀번호 일치 검사
             final String selPw = selMembersDao.getPassword();
-            final String inputPw = SecurityUtil.passwordSecureHashing(oldPassword, secureProps.getMemberPasswordSalt());
+            final String inputPw = SecurityUtil.passwordSecureHashing(oldPassword, secureProps.getMemberPasswordServerSalt());
             if ((tempRst = MembersUtil.checkMemberPassword(selPw, inputPw)).getResult() == false) {
                 return tempRst;
             }
@@ -506,7 +506,7 @@ public class MembersService {
         final String updPassword = 
             (newPassword == null 
                 ? selMembersDao.getPassword()
-                : SecurityUtil.passwordSecureHashing(newPassword, secureProps.getMemberPasswordSalt()));
+                : SecurityUtil.passwordSecureHashing(newPassword, secureProps.getMemberPasswordServerSalt()));
         final String updNickname = Optional.ofNullable(nickname).orElse(selMembersDao.getNickname());
         final String updName = Optional.ofNullable(name).orElse(selMembersDao.getName());
 
@@ -552,7 +552,7 @@ public class MembersService {
 
             // 비밀번호 일치 검사
             final String selPw = selMembersDao.getPassword();
-            final String inputPw = SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordSalt());
+            final String inputPw = SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordServerSalt());
             if ((tempRst = MembersUtil.checkMemberPassword(selPw, inputPw)).getResult() == false) {
                 return tempRst;
             }
