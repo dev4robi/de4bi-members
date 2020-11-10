@@ -88,13 +88,6 @@ public class MembersUtil {
             return ApiResult.of(true);
         }
 
-        // 기존에 가입했던 경우, 정지된 회원인지 확인
-        final long memberStatusSeq = membersDao.getStatus();
-        if (memberStatusSeq == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
-            return ApiResult.of(false).setCode(ResponseCode.M_BANNED_MEMBER)
-                .setMessage("Banned member. Signin rejected! (id: " + membersDao.getId() + ")");
-        }
-
         // 탈퇴 이후로 1달 이내인 경우
         if (membersDao.getDeregisterDate() != null) {
             final Instant joinableTime = membersDao.getDeregisterDate().toInstant().plus(30L, ChronoUnit.DAYS);
@@ -103,6 +96,18 @@ public class MembersUtil {
                 return ApiResult.of(false).setCode(ResponseCode.M_RECENTLY_DEREGISTERED).addMsgParam(joinableTimeStr)
                     .setMessage("Deregistred recently. (id: " + membersDao.getId() + ", Joinable after: " + joinableTimeStr + ")");
             }
+        }
+        else {
+            // 탈퇴한적이 없는 경우
+            return ApiResult.of(false).setCode(ResponseCode.M_DUPLICATED_EMAIL)
+                .setMessage("Member already sign-in! (id: " + membersDao.getId() + ")");
+        }
+
+        // 기존에 가입했던 경우, 정지된 회원인지 확인
+        final long memberStatusSeq = membersDao.getStatus();
+        if (memberStatusSeq == MembersCode.MEMBERS_STATUS_BANNED.getSeq()) {
+            return ApiResult.of(false).setCode(ResponseCode.M_BANNED_MEMBER)
+                .setMessage("Banned member. Signin rejected! (id: " + membersDao.getId() + ")");
         }
 
         return ApiResult.of(true);

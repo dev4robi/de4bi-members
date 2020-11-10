@@ -249,12 +249,11 @@ public class MembersService {
         final MembersDao selMembersDao = select(0L, newId, null).getData();
 
         ApiResult<Void> tempRst = MembersUtil.checkMemberExist(selMembersDao);
-        final boolean isRejoinMember = (tempRst.getResult() ? true : false);
-        
         if ((tempRst = MembersUtil.checkMemberSigninable(selMembersDao)).getResult() == false) {
             return tempRst;
         }
 
+        final boolean isRejoinMember = (tempRst.getResult() ? true : false);
         final MembersDao singinMembersDao = MembersDao.builder()
             .seq(isRejoinMember ? selMembersDao.getSeq() : 0L)
             .id(membersDto.getId())

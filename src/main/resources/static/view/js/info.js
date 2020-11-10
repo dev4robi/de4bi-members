@@ -20,6 +20,7 @@ const info_js = {
         // 이벤트 부착
         $('#button_change').on('click', function(){info_js.api_changeMemberInfo()});
         $('#button_delete_account').on('click', function(){info_js.api_deleteAccount()});
+        $('#button_logout').on('click', function(){info_js.onClickLogout()});
 
         // 회원정보 API호출
         if (!!member_jwt) {
@@ -274,6 +275,12 @@ const info_js = {
             // member_jwt미존재 시 로그인 페이지로 이동
             location.replace(gb_pageurl_login);
         }
+    },
+
+    // 로그아웃 버튼 클릭
+    onClickLogout : function() {
+        $.removeCookie('member_jwt');
+        location.replace(gb_pageurl_login);
     }
 }
 
