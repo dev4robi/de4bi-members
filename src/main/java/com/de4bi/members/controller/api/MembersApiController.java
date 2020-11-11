@@ -2,6 +2,7 @@ package com.de4bi.members.controller.api;
 
 import com.de4bi.common.annotation.RequireMemberJwt;
 import com.de4bi.common.data.ApiResult;
+import com.de4bi.members.controller.dto.LoginMembersDto;
 import com.de4bi.members.controller.dto.PutMemberBasicInfoReqDto;
 import com.de4bi.members.controller.dto.SelectMemberInfoResDto;
 import com.de4bi.members.service.MembersService;
@@ -14,9 +15,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RestController
 @RequestMapping(value = {"/api/v1"})
-@Api
 public class MembersApiController {
     
     private final MembersService membersSvc;
@@ -85,16 +85,8 @@ public class MembersApiController {
 
     @PostMapping("/members/login")
     @ApiOperation(value = "일반 로그인", notes = "일반 로그인을 수행합니다.")
-    public ApiResult<String> login(
-        @ApiParam(required = true, value = "아이디(이메일)")
-        @RequestBody String id,
-        @ApiParam(required = true, value = "비밀번호")
-        @RequestBody String password,
-        @ApiParam(required = true, value = "사용처")
-        @RequestBody String audience,
-        @ApiParam(required = true, value = "로그인 유지 여부")
-        @RequestBody boolean keepLoggedIn
-    ) {
-        return membersSvc.login(id, password, audience, keepLoggedIn);
+    public ApiResult<String> login(@RequestBody LoginMembersDto loginMembersDto) {
+        return membersSvc.login(loginMembersDto.getId(), loginMembersDto.getPassword(),
+            loginMembersDto.getAudience(), loginMembersDto.isKeepLoggedIn());
     }
 }

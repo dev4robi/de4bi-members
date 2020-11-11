@@ -168,8 +168,8 @@ const info_js = {
             var api_url = (gb_apiurl_member_info + '/' + $('#input_seq').val());
             var header = {'member_jwt' : member_jwt};
             var body = {
-                'old_password':old_password,
-                'new_password':new_password,
+                'old_password':de4bi_util.sha256(old_password),
+                'new_password':de4bi_util.sha256(new_password),
                 'name':name,
                 'nickname':nickname,
             }
@@ -187,16 +187,12 @@ const info_js = {
                         alert(de4bi_api.getResultMsg(api_result));
                         return;
                     }
-                    else {
-                        // Fail
-
-                    }
                     location.reload();
                 },
-                function(jq_XHR, status, error) {
-                    // Connection Fail
+                function(api_result, jq_XHR, status, error) {
+                    // Fail
                     console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Fail!');
-                    alert('서버와 통신에 실패했습니다. (' + status + '/' + error + ')');
+                    alert('정보 변경에 실패했습니다. (' + de4bi_api.getResultMsg(api_result) + ')');
                     location.replace(gb_pageurl_login);
                 }
             );
@@ -242,7 +238,7 @@ const info_js = {
             var api_url = (gb_apiurl_member_info + '/' + $('#input_seq').val());
             var header = {'member_jwt' : member_jwt};
             var body = {
-                'password':old_password,
+                'password':de4bi_util.sha256(old_password),
             }
 
             de4bi_api.apiCall(method, api_url, header, body, 
@@ -263,10 +259,10 @@ const info_js = {
                     }
                     location.reload();
                 },
-                function(jq_XHR, status, error) {
-                    // Connection Fail
+                function(api_result, jq_XHR, status, error) {
+                    // Fail
                     console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Fail!');
-                    alert('서버와 통신에 실패했습니다. (' + status + '/' + error + ')');
+                    alert('회원 탈퇴에 실패했습니다. (' + de4bi_api.getResultMsg(api_result) + ')');
                     location.replace(gb_pageurl_login);
                 }
             );

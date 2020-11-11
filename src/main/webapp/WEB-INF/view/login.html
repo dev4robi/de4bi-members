@@ -16,6 +16,7 @@
 	<!-- js & css-->
 	<script type="text/javascript" src="/lib/de4bi/js/api.js"></script>
 	<script type="text/javascript" src="/lib/de4bi/js/util.js"></script>
+	<script type="text/javascript" src="/view/js/common.js"></script>
 	<script type="text/javascript" src="/view/js/login.js"></script>
 	<link rel="stylesheet" href="/view/css/de4bi-skin.css">
 </head>
@@ -40,11 +41,11 @@
 					<form>
 						<div class="form-group">
 							<label class="form-control-label no-drag">ID</label>
-							<input type="text" class="form-control" placeholder="(Email)">
+							<input id="input_id" type="text" class="form-control" placeholder="(Email)">
 						</div>
 						<div class="form-group">
 							<label class="form-control-label no-drag">PASSWORD</label>
-							<input type="password" class="form-control">
+							<input id="input_pw" type="password" class="form-control">
 						</div>
 						<div class="row row-keep-login border-danger">
 							<div class="col-6 login-bottom text-left border-success">
@@ -55,14 +56,14 @@
 								<small><a class="no-drag" href="#">Forget info?</a></small>
 							</div>
 						</div>
-						<div class="d-flex pt-4 justify-content-end align-items-center">
-							<img id="btn_google_login" src="/img/icon-google.png" alt="GG" style="cursor: pointer" class="join-icon" th:url="${google_login_url}">
-							<img id="btn_naver_login" src="/img/icon-naver.png" alt="NV" style="cursor: pointer" class="join-icon" th:url="${naver_login_url}">
-							<img id="btn_kakao_login" src="/img/icon-kakao.png" alt="KA" style="cursor: pointer" class="join-icon" th:url="${kakao_login_url}">
-							<img id="btn_de4bi_login" src="/img/icon-de4bi.png" alt="D4" style="cursor: pointer" class="join-icon" th:url="${de4bi_login_url}">
-							<button type="submit" id="button_login" class="btn btn-outline-primary accept-button">LOGIN</button>
-						</div>
 					</form>
+					<div class="d-flex pt-4 justify-content-end align-items-center">
+						<img id="btn_google_login" src="/img/icon-google.png" alt="GG" style="cursor: pointer" class="join-icon" th:url="${google_login_url}">
+						<img id="btn_naver_login" src="/img/icon-naver.png" alt="NV" style="cursor: pointer" class="join-icon" th:url="${naver_login_url}">
+						<img id="btn_kakao_login" src="/img/icon-kakao.png" alt="KA" style="cursor: pointer" class="join-icon" th:url="${kakao_login_url}">
+						<img id="btn_de4bi_login" src="/img/icon-de4bi.png" alt="D4" style="cursor: pointer" class="join-icon" th:url="${de4bi_login_url}">
+						<button id="btn_login" class="btn btn-outline-primary accept-button">LOGIN</button>
+					</div>
 				</div>
 			</div>
 			<div class="row pt-1 pb-3 justify-content-center align-items-center"></div>

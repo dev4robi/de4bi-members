@@ -30,6 +30,8 @@ public class ResponseCode {
     public static final String M_CHAGNE_INFO_FAILED     = "M0012"; // 회원정보 수정 실패
     public static final String M_DEREGISTER_FAILED      = "M0013"; // 회원탈퇴 실패
     public static final String M_RECENTLY_DEREGISTERED  = "M0014"; // 최근 회원탈퇴
+    public static final String M_REQUIRE_PW_CHANGE      = "M0015"; // 비밀번호 변경 필요
+    public static final String M_REQUIRE_PW_REGISTER    = "M0016"; // 비밀번호 등록 필요
     public static final String M_ERROR                  = "M9999"; // 회원 관련 오류 발생
 
     // MA(회원 인증)

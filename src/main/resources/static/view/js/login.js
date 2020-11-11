@@ -42,10 +42,13 @@ const login_js = {
         // 이벤트 부착: 소셜 로그인 버튼 클릭
         const platforms = ['google', 'naver', 'kakao', 'de4bi'];
         for (i = 0; i < platforms.length; ++i) {
-            $('#btn_' + platforms[i] + '_login').click(function(){
+            $('#btn_' + platforms[i] + '_login').on('click', function(){
                 login_js.onclick_oauth_login($(this).attr('url'));
             });
         }
+
+        // 이벤트 부착: 로그인 버튼
+        $('#btn_login').on('click', function(){login_js.onclick_login();});
 
         console.log(this.page_js_name + ': End PageInit...');
     },
@@ -67,8 +70,53 @@ const login_js = {
 
     // 로그인 클릭
     onclick_login : function() {
-        // @@ 비밀번호 해싱해서 전달하는것부터 시작
-        
+        // 요청 파라미터 검사
+        var id = $('#input_id').val();
+        var pw = $('#input_pw').val();
+
+        if (!id) {
+            alert('아이디를 입력해 주세요.');
+            return;
+        }
+
+        if (!pw) {
+            alert('비밀번호를 입력해 주세요.');
+            return;
+        }
+
+        // API 호출
+        var method = 'POST';
+        var api_url = (gb_apiurl_login);
+        var header = null;
+        var body = {
+            'id' : id,
+            'password' : de4bi_util.sha256(pw),
+        }
+
+        de4bi_api.apiCall(method, api_url, header, body, 
+            function() {
+                // Always
+                console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Call!');
+            },
+            function(api_result, status, jq_XHR) {
+                // Success
+                console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Success!');
+                console.log('api_result:' + api_result);
+                if (de4bi_api.isResultSuccess(api_result) == false) {
+                    alert('로그인 실패. (' + de4bi_api.getResultMsg(api_result) + ')');
+                    return;
+                }
+
+                var rt_url = $('#dp_return_url').val() + '?' + $('#dp_return_data').val();
+                location.replace(rt_url);
+            },
+            function(api_result, jq_XHR, status, error) {
+                // Fail
+                console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Fail!');
+                alert('로그인 실패. (' + de4bi_api.getResultMsg(api_result) + ')');
+                return;
+            }
+        );
     }
 }
 

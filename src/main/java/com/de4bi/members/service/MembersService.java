@@ -371,6 +371,13 @@ public class MembersService {
 
         // 비밀번호 확인
         final String memberPw = loginMemberDao.getPassword();
+        if (memberPw == null) {
+            // 소셜 가입 후 비밀번호를 등록하지 않았으면 일반로그인 불가
+            return ApiResult.of(false, String.class).setData(null)
+                .setCode(ResponseCode.M_REQUIRE_PW_REGISTER)
+                .setMessage("Password is null! (id: " + loginMemberDao.getId() + ")");
+        }
+
         final String saltedPw = SecurityUtil.passwordSecureHashing(password, secureProps.getMemberPasswordServerSalt());
         if ((tempRst = MembersUtil.checkMemberPassword(memberPw, saltedPw)).getResult() == false) {
             return ApiResult.of(tempRst, String.class);
@@ -474,6 +481,11 @@ public class MembersService {
         if (tempRst.getResult() == false) {
             return tempRst;
         }
+
+        // @@ 구 비밀번호 입력의 필요성? && 계정 삭제시에만 입력하면 되지 않나?
+        // @@ 비밀번호 변경 시 확인필드 필요할 듯.
+        // @@ 비밀번호 변경이랑 로그인에서의 비밀번호가 다른듯? 비밀번호 변경 후 로그인이 비밀번호 오류 나는거 같다...
+        // @@ 로그인 시 비밀번호 체크 잘 하나 확인!!
 
         // 관리자 권한이 아닌 경우 추가 검사
         if (isAdminAuthority == false) {

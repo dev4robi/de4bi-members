@@ -24,9 +24,9 @@ public class MainPageController {
     @RequestMapping(value = {"", "/login"})
     public ModelAndView loginPage(
         // 로그인창 종류(page, popup, iframe)
-        @RequestParam(required = false, name = "frame_type", defaultValue = "info") String frameType,
+        @RequestParam(required = false, name = "frame_type", defaultValue = "page") String frameType,
         // 로그인 후 이동할 페이지 URL
-        @RequestParam(required = false, name = "return_url") String returnUrl,
+        @RequestParam(required = false, name = "return_url", defaultValue = "/info") String returnUrl,
         // 로그인 후 이동할 페이지에 전달할 파라미터
         @RequestParam(required = false, name = "return_data") String returnData,
         // 로그인 완료한 경우 전달받은 member_jwt

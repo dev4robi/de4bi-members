@@ -36,7 +36,8 @@ const de4bi_api = {
             if (!!doneFunc) doneFunc(data, textStatus, jqXHR);
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
-            if (!!failFunc) failFunc(jqXHR, textStatus, errorThrown);
+            try { data = JSON.parse(jqXHR.responseText) } catch (e) {} // 일단 JSON변환 수행, 이미 JSON포멧이면 예외 삼킴
+            if (!!failFunc) failFunc(data, jqXHR, textStatus, errorThrown);
         });
 
         return true;
