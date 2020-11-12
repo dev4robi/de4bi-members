@@ -1,5 +1,6 @@
 // 전역
 const gb_pageurl_login = (location.origin + '/login');
+const gb_pageurl_info = (location.origin + '/info');
 const gb_apiurl_header = ('/api/v1');
 const gb_apiurl_login = (location.origin + gb_apiurl_header + '/members/login');
 const gb_apiurl_member_info = (location.origin + gb_apiurl_header + '/members');

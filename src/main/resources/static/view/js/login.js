@@ -90,7 +90,7 @@ const login_js = {
         var header = null;
         var body = {
             'id' : id,
-            'password' : de4bi_util.sha256(pw),
+            'password' : (!pw ? de4bi_util.sha256(pw) : ''),
         }
 
         de4bi_api.apiCall(method, api_url, header, body, 
@@ -101,13 +101,17 @@ const login_js = {
             function(api_result, status, jq_XHR) {
                 // Success
                 console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Success!');
-                console.log('api_result:' + api_result);
+                console.log('api_result:' + JSON.stringify(api_result));
                 if (de4bi_api.isResultSuccess(api_result) == false) {
                     alert('로그인 실패. (' + de4bi_api.getResultMsg(api_result) + ')');
                     return;
                 }
 
-                var rt_url = $('#dp_return_url').val() + '?' + $('#dp_return_data').val();
+                $.cookie('member_jwt', de4bi_api.getResultData(api_result));
+
+                var base_url = $('#dp_return_url').val();
+                var extra_param = $('#dp_return_data').val();
+                var rt_url = (!base_url ? gb_pageurl_info : base_url) + (!extra_param ? '' : ('?' + extra_param));
                 location.replace(rt_url);
             },
             function(api_result, jq_XHR, status, error) {

@@ -185,7 +185,7 @@ public class MembersUtil {
 
         Objects.requireNonNull(inputPw, "'inputPw' is null!");
 
-        if (originPw.equals(inputPw)) {
+        if (originPw.equals(inputPw) == false) {
             return ApiResult.of(false)
                 .setCode(ResponseCode.M_NOT_EXIST_OR_WRONG_PW)
                 .setMessage("Wrong password!");

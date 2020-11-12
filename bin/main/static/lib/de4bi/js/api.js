@@ -59,8 +59,8 @@ const de4bi_api = {
 
     /**
      * Result에서 key값에 해당하는 데이터를 반환합니다.
-     * @param {*} result apiCall()응답 결과
-     * @param {*} key 데이터 키
+     * @param {*} result apiCall()응답 data부에서 key값에 해당하는 값
+     * @param {*} key 데이터 키 (null일 경우 데이터 전부를 획득)
      * @return 성공 시 데이터값, 실패 시 null
      */
     getResultData : function(result, key) {
@@ -70,8 +70,7 @@ const de4bi_api = {
         }
 
         if (!key) {
-            console.log('Invaild key! (key: ' + key + ')');
-            return false;
+            return result.data;
         }
 
         var rt = '';

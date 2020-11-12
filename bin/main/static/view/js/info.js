@@ -35,7 +35,7 @@ const info_js = {
                 function(api_result, status, jq_XHR) {
                     // Success
                     console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Success!');
-                    console.log('api_result:' + api_result);
+                    console.log('api_result:' + JSON.stringify(api_result));
                     setTimeout(info_js.updateMemberInfoUI, 1000, api_result);
                 },
                 function(jq_XHR, status, error) {
@@ -126,6 +126,7 @@ const info_js = {
             var param_check_ok = true;
             var old_password = $('#input_old_password').val();
             var new_password = $('#input_new_password').val();
+            var new_password_check = $('#input_new_password_check').val();
             var name = $('#input_name').val();
             var nickname = $('#input_nickname').val();
 
@@ -141,6 +142,11 @@ const info_js = {
                 var len = new_password.length;
                 if (len < 8 || len > 32) {
                     $('#label_new_pw_error').html('비밀번호는 8~32자 길이어야 합니다.');
+                    param_check_ok = false;
+                }
+
+                if (!new_password_check || new_password != new_password_check) {
+                    $('#label_new_pw_error').html('새 비밀번호가 일치하지 않습니다.');
                     param_check_ok = false;
                 }
             }
@@ -168,8 +174,8 @@ const info_js = {
             var api_url = (gb_apiurl_member_info + '/' + $('#input_seq').val());
             var header = {'member_jwt' : member_jwt};
             var body = {
-                'old_password':de4bi_util.sha256(old_password),
-                'new_password':de4bi_util.sha256(new_password),
+                'old_password':(!!old_password ? de4bi_util.sha256(old_password) : ''),
+                'new_password':(!!new_password ? de4bi_util.sha256(new_password) : ''),
                 'name':name,
                 'nickname':nickname,
             }
@@ -182,11 +188,13 @@ const info_js = {
                 function(api_result, status, jq_XHR) {
                     // Success
                     console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Success!');
-                    console.log('api_result:' + api_result);
-                    if (de4bi_api.isResultSuccess(api_result) == false) {
-                        alert(de4bi_api.getResultMsg(api_result));
+                    console.log('api_result:' + JSON.stringify(api_result));
+                    alert(de4bi_api.getResultMsg(api_result));
+
+                    if (de4bi_api.isResultSuccess(api_result) == false) {    
                         return;
                     }
+
                     location.reload();
                 },
                 function(api_result, jq_XHR, status, error) {
@@ -238,7 +246,7 @@ const info_js = {
             var api_url = (gb_apiurl_member_info + '/' + $('#input_seq').val());
             var header = {'member_jwt' : member_jwt};
             var body = {
-                'password':de4bi_util.sha256(old_password),
+                'password':(!!old_password ? de4bi_util.sha256(old_password) : ''),
             }
 
             de4bi_api.apiCall(method, api_url, header, body, 
@@ -249,7 +257,7 @@ const info_js = {
                 function(api_result, status, jq_XHR) {
                     // Success
                     console.log('de4bi_apiCall(' + method + ' ' + api_url + ') Success!');
-                    console.log('api_result:' + api_result);
+                    console.log('api_result:' + JSON.stringify(api_result));
                     if (de4bi_api.isResultSuccess(api_result) == false) {
                         alert(de4bi_api.getResultMsg(api_result));
                         return;
