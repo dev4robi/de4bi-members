@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import io.swagger.models.Response;
 import lombok.AllArgsConstructor;
 
 /**
@@ -100,10 +101,10 @@ public class MembersService {
                 extMsg = extMsg + " (nickname: " + nickname + ")";
             }
             
-            return ApiResult.of(false, MembersDao.class).setMessage(extMsg);
+            return ApiResult.of(false, MembersDao.class).setCode(ResponseCode.DB_SELECT_FAIL).setMessage(extMsg);
         }
         
-        return ApiResult.of(true, MembersDao.class).setData(selDao);
+        return ApiResult.of(true, MembersDao.class).setData(selDao).setCode(ResponseCode.DB_SUCCESS);
     }
 
     /**
@@ -115,8 +116,8 @@ public class MembersService {
     public ApiResult<Void> insert(MembersDao membersDao) {
         Objects.requireNonNull(membersDao, "'membersDao' is null!");
         final boolean rtRst = (membersMapper.insert(membersDao) != 0);
-        return ApiResult.of(rtRst)
-            .setMessage(rtRst == false ? "Fail to insert member. (seq: " + membersDao.getSeq() + ")" : null);
+        return ApiResult.of(rtRst).setCode(rtRst ? ResponseCode.DB_SUCCESS : ResponseCode.DB_INSERT_FAIL)
+            .setMessage(rtRst ? null : "Fail to insert member. (seq: " + membersDao.getSeq() + ")");
     }
 
     /**
@@ -129,8 +130,8 @@ public class MembersService {
     public ApiResult<Void> update(MembersDao membersDao) {
         Objects.requireNonNull(membersDao, "'membersDao' is null!");
         final boolean rtRst = (membersMapper.update(membersDao) != 0);
-        return ApiResult.of(rtRst)
-            .setMessage(rtRst == false ? "Fail to update member. (seq: " + membersDao.getSeq() + ")" : null);
+        return ApiResult.of(rtRst).setCode(rtRst ? ResponseCode.DB_SUCCESS : ResponseCode.DB_UPDATE_FAIL)
+            .setMessage(rtRst ? null : "Fail to update member. (seq: " + membersDao.getSeq() + ")");
     }
 
     /**
@@ -141,8 +142,8 @@ public class MembersService {
      */
     public ApiResult<Void> delete(long seq) {
         final boolean rtRst = (membersMapper.delete(seq) != 0);
-        return ApiResult.of(rtRst)
-            .setMessage(rtRst == false ? "Fail to delete member. (seq: " + rtRst + ")" : null);
+        return ApiResult.of(rtRst).setCode(rtRst ? ResponseCode.DB_SUCCESS : ResponseCode.DB_DELETE_FAIL)
+            .setMessage(rtRst ? null : "Fail to delete member. (seq: " + rtRst + ")");
     }
 
     ////////////////////////////////////////////////////////////////
@@ -176,7 +177,7 @@ public class MembersService {
             .build();
         final String memberJwt = MemberJwtUtil.issue(null, jwtClaims, secureProps.getMemberJwtSecret());
         
-        return ApiResult.of(true, String.class).setData(memberJwt);
+        return ApiResult.of(true, String.class).setCode(ResponseCode.A_SUCCESS).setData(memberJwt);
     }
 
     /**
@@ -234,7 +235,7 @@ public class MembersService {
             return ApiResult.of(tempRst, MembersDao.class);
         }
 
-        return ApiResult.of(true, MembersDao.class).setData(loginMemberDao);
+        return ApiResult.of(true, MembersDao.class).setCode(ResponseCode.MA_SUCCESS).setData(loginMemberDao);
     }
 
     /**
@@ -459,7 +460,7 @@ public class MembersService {
             .lastLoginDate(StringUtil.format(selMembersDao.getLastLoginDate()))
             .build();
 
-        return ApiResult.of(true, SelectMemberInfoResDto.class).setData(rtDto);
+        return ApiResult.of(true, SelectMemberInfoResDto.class).setCode(ResponseCode.A_SUCCESS).setData(rtDto);
     }
 
     /**
@@ -526,7 +527,7 @@ public class MembersService {
                 .setMessage("Fail to update! (seq: " + seq + ")");
         }
 
-        return ApiResult.of(true);
+        return ApiResult.of(true).setCode(ResponseCode.A_SUCCESS);
     }
 
     /**
@@ -573,6 +574,6 @@ public class MembersService {
                 .setMessage("Fail to update! (seq: " + seq + ")");
         }
 
-        return ApiResult.of(true);
+        return ApiResult.of(true).setCode(ResponseCode.A_SUCCESS);
     }
 }
